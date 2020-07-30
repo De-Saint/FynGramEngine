@@ -1,0 +1,39 @@
+# Created by https://www.gitignore.io/api/java-web
+# Edit at https://www.gitignore.io/?templates=java-web
+
+### Java-Web ###
+## ignoring target file
+target/
+
+# End of https://www.gitignore.io/api/java-web
+# NetBeans specific #
+nbactions.xml
+nb-configuration.xml
+/src/**/tmp # exclude any /tmp files or folders at any level in the /src/ folder.
+**/nbproject/private/
+nbproject/private/*
+nbproject/private/private.xml
+**/nbproject/Makefile-*.mk
+**/nbproject/Package-*.bash
+**/nbproject/build-impl.xml
+**/nbproject/ant-deploy.xml
+**/nbproject/genfiles.properties
+build/
+build.xml
+nbbuild/
+dist/
+nbdist/
+build.xml
+.nb-gradle
+# Class Files #
+*.class
+/nbproject/build-impl.xml
+/nbproject/genfiles.properties
+/build.xml
+nbproject/project.properties
+logback-classic-1.2.3.jar
+log4j-1.2.17.jar
+logback-core-1.2.3.jar
+slf4j-api-1.7.25.jar
+slf4j-simple-1.7.25.jar
+lib/gson-2.3.jar
