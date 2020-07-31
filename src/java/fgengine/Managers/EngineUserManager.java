@@ -637,10 +637,10 @@ public class EngineUserManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String ComputeGuest(String NewSessionID, String Location) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+    public static String ComputeGuest(String NewSessionID, String Location, String IPAddress) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         String result = "failed";
         String ComputerName = GetGuestComputerName();
-        String IPAddress = GetGuestSystemIPAddress();
+//        String IPAddress = GetGuestSystemIPAddress();
         String OperatingSystemName = GetGuestComputerOS();
         int GuestID = GetGuestIDByIPAddress(IPAddress);
         if (GuestID == 0) {

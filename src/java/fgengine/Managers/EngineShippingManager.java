@@ -80,6 +80,7 @@ public class EngineShippingManager {
      */
     public static String GetShippingFees(double CartAmount) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         String result = "";
+        int shippingfeesid = 0;
         ArrayList<Integer> IDs = DBManager.GetIntArrayList(Tables.ShippingFeesTable.ID, Tables.ShippingFeesTable.Table, "");
         if (!IDs.isEmpty()) {
             for (int id : IDs) {
@@ -93,9 +94,10 @@ public class EngineShippingManager {
                 } else if (CartAmount > MinCartAmount && MaxCartAmount == 0) {
                     result = DBManager.GetString(Tables.ShippingFeesTable.DeliveryFees, Tables.ShippingFeesTable.Table, "where " + Tables.ShippingFeesTable.ID + " = " + id);
                 }
+                shippingfeesid = id;
             }
         }
-        return result;
+        return result + "#" + shippingfeesid;
     }
 
     /**

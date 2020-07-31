@@ -610,6 +610,20 @@ public class EngineAddressManager {
         return Data;
     }
 
+    /**
+     *
+     * @param UserID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static HashMap<String, String> GetAddressDataByUserID(int UserID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        int ID = GetDefaultAddressDetailsIDByUserID("" + UserID);
+        HashMap<String, String> Data = GetAddressData(ID);
+        return Data;
+    }
+
     public static ArrayList<Integer> GetAddressTypeIDs() throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         ArrayList<Integer> IDs = DBManager.GetIntArrayListDescending(Tables.AddressTypeTable.ID, Tables.AddressTypeTable.Table, "Order by " + Tables.AddressTypeTable.Name);
         return IDs;
@@ -664,25 +678,6 @@ public class EngineAddressManager {
 
     /**
      *
-     * @param UserID
-     * @return
-     * @throws ClassNotFoundException
-     * @throws SQLException
-     * @throws UnsupportedEncodingException
-     */
-    public static HashMap<String, String> GetAddressDataByUserID(int UserID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        int ID = GetDefaultAddressDetailsIDByUserID("" + UserID);
-        HashMap<String, String> Data = DBManager.GetTableData(Tables.AddressDetailsTable.Table, "where " + Tables.AddressDetailsTable.ID + " = " + ID);
-        if (!Data.isEmpty()) {
-            int Addresstypeid = Integer.parseInt(Data.get(Tables.AddressDetailsTable.AddressTypeID));
-            String addresstypename = GetAddressTypeNameByID(Addresstypeid);
-            Data.put("addresstypename", addresstypename);
-        }
-        return Data;
-    }
-    
-       /**
-     *
      * @param AddressDetailID
      * @param Status
      * @return
@@ -695,7 +690,8 @@ public class EngineAddressManager {
         result = DBManager.DeleteObject(Tables.AddressDetailsTable.Table, "where " + Tables.AddressDetailsTable.ID + " = " + AddressDetailID);
         return result;
     }
-       /**
+
+    /**
      *
      * @param AddressDetailID
      * @param Status

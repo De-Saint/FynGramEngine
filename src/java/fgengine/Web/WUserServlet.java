@@ -130,7 +130,7 @@ public class WUserServlet extends HttpServlet {
                     String IPaddress = data[0].trim();
                     String Location = data[1].trim();
                     String sessionid = session.getId() + "#G";
-                    EngineUserManager.ComputeGuest(sessionid, Location);
+                    EngineUserManager.ComputeGuest(sessionid, Location, IPaddress);
                     json = new Gson().toJson(sessionid);
                     break;
                 }

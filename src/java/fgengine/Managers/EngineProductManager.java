@@ -173,6 +173,7 @@ public class EngineProductManager {
 //        }
 //        return result;
 //    }
+
     /**
      *
      * @param ObjectTags
@@ -762,8 +763,32 @@ public class EngineProductManager {
     public static HashMap<String, String> GetProductSellerData(int SellerProductID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         HashMap<String, String> Details = DBManager.GetTableData(Tables.SellerProductsTable.Table, "where " + Tables.SellerProductsTable.ID + " = " + SellerProductID);
         int SellerUserID = Integer.parseInt(Details.get(Tables.SellerProductsTable.SellerUserID));
-        String SellerUserName = EngineUserManager.GetUserName(SellerUserID);
-        Details.put("SellerUserName", SellerUserName);
+        HashMap<String, String> InfoDetails = GetSellerInfoData(SellerUserID);
+        Details.putAll(InfoDetails);
+        return Details;
+    }
+
+    /**
+     *
+     * @param SellerID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static HashMap<String, String> GetSellerInfoData(int SellerID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        HashMap<String, String> Details = DBManager.GetTableData(Tables.SellerInfoTable.Table, "where " + Tables.SellerInfoTable.SellerUserID + " = " + SellerID);
+        Details.put("SellerUserName", Details.get(Tables.SellerInfoTable.BusinessName));
+        int shipmin = Integer.parseInt(Details.get(Tables.SellerInfoTable.MinimumShippingDays));
+        int shipmax = Integer.parseInt(Details.get(Tables.SellerInfoTable.MaximumShippingDays));
+
+        LocalDate CurrentDate = LocalDate.now();
+        LocalDate startDate = CurrentDate.plusDays(shipmin);
+        LocalDate endDate = CurrentDate.plusDays(shipmax);
+        String sdate = DateManager.readDate(""+startDate);
+        Details.put("shipStartDate", sdate);
+        String eDate = DateManager.readDate(""+endDate);
+        Details.put("shipEndDate", eDate);
         return Details;
     }
 
