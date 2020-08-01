@@ -44,8 +44,8 @@ public class EngineOrderManager {
                 int OrderAmount = Integer.parseInt(Orderamount);
                 String Totalamount = CartData.get(Tables.CartTable.TotalAmount);
                 int TotalAmount = Integer.parseInt(Totalamount);
-                String Addressid = CartData.get(Tables.CartTable.AddressID);
-                int AddressID = Integer.parseInt(Addressid);
+                String shippingAddressid = CartData.get(Tables.CartTable.ShippingAddressID);
+                int ShippingAddressID = Integer.parseInt(shippingAddressid);
                 String Deliveryfees = CartData.get(Tables.CartTable.Fees);
                 int DeliveryFess = Integer.parseInt(Deliveryfees);
                 String discountcodeid = CartData.get(Tables.CartTable.DiscountCodeID);
@@ -60,8 +60,6 @@ public class EngineOrderManager {
                 if (Discountedamount != null) {
                     DiscountedAmount = Integer.parseInt(Discountedamount);
                 }
-                String Shippingid = CartData.get(Tables.CartTable.ShippingID);
-                int ShippingID = Integer.parseInt(Shippingid);
 
                 int UserAcctBalance = EngineWalletManager.GetUserBalance(UserID, EngineWalletManager.GetMainWalletID());
                 if (UserAcctBalance > TotalAmount) {
@@ -80,7 +78,7 @@ public class EngineOrderManager {
                             int SellerUserID = Integer.parseInt(seller.split("-")[0]);
                             int SellerAmount = Integer.parseInt(seller.split("-")[1]);
 
-                            OrderID = CreateOrder(Reference, CartID, UserID, SellerUserID, SellerAmount, ShippingTypeID, ShippingID, OrderAmount, TotalAmount, AddressID, DeliveryFess, DiscountCodeID, DiscountedAmount, DiscountAmount, PaymentStatusID, Message);
+                            OrderID = CreateOrder(Reference, CartID, UserID, SellerUserID, SellerAmount, ShippingTypeID, ShippingAddressID, OrderAmount, TotalAmount, DeliveryFess, DiscountCodeID, DiscountedAmount, DiscountAmount, PaymentStatusID, Message);
                             if (OrderID != 0) {
                                 if (allSellersArray.size() > 1) {
                                     if (OrderRef.isEmpty()) {
@@ -89,9 +87,9 @@ public class EngineOrderManager {
                                     UpdateOrderReferenceNumber(OrderID, Reference);
                                 }
                                 String InvoiceNumber = ComputeInvoiceNumber();
-                                result = CreateOrderInvoices(OrderID, InvoiceNumber, TotalAmount, ShippingTypeID, ShippingID, AddressID);
+                                result = CreateOrderInvoices(OrderID, InvoiceNumber, TotalAmount, ShippingTypeID, ShippingAddressID);
                                 if (result.equals("success")) {
-                                    result = CreateOrderDelivery(OrderID, TotalAmount, ShippingTypeID, ShippingID, AddressID);
+                                    result = CreateOrderDelivery(OrderID, TotalAmount, ShippingTypeID, ShippingAddressID);
                                     if (result.equals("success")) {
                                         result = ComputeOrderHistory(OrderID, CartID, SellerUserID);
                                         if (!result.equals("success")) {
@@ -275,7 +273,7 @@ public class EngineOrderManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static int CreateOrder(String Reference, int CartID, int CustomerUserID, int SellerUserID, int SellerAmount, int ShippingTypeID, int ShippingID, int OrderAmount, int TotalPaid, int DeliveryID, int DeliveryFees,
+    public static int CreateOrder(String Reference, int CartID, int CustomerUserID, int SellerUserID, int SellerAmount, int ShippingTypeID, int ShippingAddressID, int OrderAmount, int TotalPaid, int DeliveryFees,
             int DiscountCodeID, int DiscountedAmount, int DiscountAmount, int PaymentStatusID, String Message) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         HashMap<String, Object> tableData = new HashMap<>();
         tableData.put(Tables.OrdersTable.Reference, Reference);
@@ -286,8 +284,7 @@ public class EngineOrderManager {
         tableData.put(Tables.OrdersTable.OrderAmount, OrderAmount);
         tableData.put(Tables.OrdersTable.TotalPaid, TotalPaid);
         tableData.put(Tables.OrdersTable.ShippingTypeID, ShippingTypeID);
-        tableData.put(Tables.OrdersTable.ShippingID, ShippingID);
-        tableData.put(Tables.OrdersTable.DeliveryID, DeliveryID);
+        tableData.put(Tables.OrdersTable.ShippingAddressID, ShippingAddressID);
         tableData.put(Tables.OrdersTable.DeliveryFees, DeliveryFees);
         tableData.put(Tables.OrdersTable.DiscountCodeID, DiscountCodeID);
         tableData.put(Tables.OrdersTable.DiscountedAmount, DiscountedAmount);
@@ -327,21 +324,19 @@ public class EngineOrderManager {
      * @param InvoiceNumber
      * @param Amount
      * @param ShippingTypeID
-     * @param ShippingID
-     * @param AddressID
+     * @param ShippingAddressID
      * @return
      * @throws ClassNotFoundException
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String CreateOrderInvoices(int OrderID, String InvoiceNumber, int Amount, int ShippingTypeID, int ShippingID, int AddressID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+    public static String CreateOrderInvoices(int OrderID, String InvoiceNumber, int Amount, int ShippingTypeID, int ShippingAddressID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         HashMap<String, Object> tableData = new HashMap<>();
         tableData.put(Tables.OrderInvoicesTable.OrderID, OrderID);
         tableData.put(Tables.OrderInvoicesTable.InvoiceNumber, InvoiceNumber);
         tableData.put(Tables.OrderInvoicesTable.Amount, Amount);
         tableData.put(Tables.OrderInvoicesTable.ShippingTypeID, ShippingTypeID);
-        tableData.put(Tables.OrderInvoicesTable.ShippingID, ShippingID);
-        tableData.put(Tables.OrderInvoicesTable.AddressID, AddressID);
+        tableData.put(Tables.OrderInvoicesTable.ShippingAddressID, ShippingAddressID);
         int InvoiceID = DBManager.insertTableDataReturnID(Tables.OrderInvoicesTable.Table, tableData, "");
         String result = DBManager.UpdateCurrentDate(Tables.OrderInvoicesTable.Table, Tables.OrderInvoicesTable.Date, "where " + Tables.OrderInvoicesTable.ID + " = " + InvoiceID);
         DBManager.UpdateCurrentTime(Tables.OrderInvoicesTable.Table, Tables.OrderInvoicesTable.Time, "where " + Tables.OrderInvoicesTable.ID + " = " + InvoiceID);
@@ -353,20 +348,18 @@ public class EngineOrderManager {
      * @param OrderID
      * @param Amount
      * @param ShippingTypeID
-     * @param ShippingID
-     * @param AddressID
+     * @param ShippingAddressID
      * @return
      * @throws ClassNotFoundException
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String CreateOrderDelivery(int OrderID, int Amount, int ShippingTypeID, int ShippingID, int AddressID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+    public static String CreateOrderDelivery(int OrderID, int Amount, int ShippingTypeID, int ShippingAddressID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         HashMap<String, Object> tableData = new HashMap<>();
         tableData.put(Tables.OrderDeliveryTable.OrderID, OrderID);
         tableData.put(Tables.OrderDeliveryTable.Amount, Amount);
         tableData.put(Tables.OrderDeliveryTable.ShippingTypeID, ShippingTypeID);
-        tableData.put(Tables.OrderDeliveryTable.ShippingID, ShippingID);
-        tableData.put(Tables.OrderDeliveryTable.AddressID, AddressID);
+        tableData.put(Tables.OrderDeliveryTable.ShippingAddressID, ShippingAddressID);
         int DeliveryID = DBManager.insertTableDataReturnID(Tables.OrderDeliveryTable.Table, tableData, "");
         String result = DBManager.UpdateCurrentDate(Tables.OrderDeliveryTable.Table, Tables.OrderDeliveryTable.Date, "where " + Tables.OrderDeliveryTable.ID + " = " + DeliveryID);
         DBManager.UpdateCurrentTime(Tables.OrderDeliveryTable.Table, Tables.OrderDeliveryTable.Time, "where " + Tables.OrderDeliveryTable.ID + " = " + DeliveryID);
@@ -539,8 +532,8 @@ public class EngineOrderManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static int GetOrderDeliveryID(int OrderID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        int result = DBManager.GetInt(Tables.OrdersTable.DeliveryID, Tables.OrdersTable.Table, "where " + Tables.OrdersTable.ID + " = " + OrderID);
+    public static int GetOrderShippingAddressID(int OrderID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        int result = DBManager.GetInt(Tables.OrdersTable.ShippingAddressID, Tables.OrdersTable.Table, "where " + Tables.OrdersTable.ID + " = " + OrderID);
         return result;
     }
 
@@ -881,11 +874,11 @@ public class EngineOrderManager {
             int AdminTransactionPercent = EngineTransactionManager.GetAdminTransactionPercentageBySellerType(SellerTypeID);
             int AdminShippingPercentage = 0;
             ArrayList<Integer> OrderIdsByRef = GetOrderIDsByReferenceNumber(OrderRef);
-            int DeliveryID = GetOrderDeliveryID(OrderID);
+            int ShippingAddressID = GetOrderShippingAddressID(OrderID);
             if (ShippingTypeID == 1) {//Use my address
-                AdminShippingPercentage = EngineShippingManager.GetAdminShippingPercentage(DeliveryID);
+                AdminShippingPercentage = EngineShippingManager.GetAdminShippingPercentage(ShippingAddressID);
             } else if (ShippingTypeID == 2) {//Use Pickup address
-                AdminShippingPercentage = EngineAddressManager.GetAdminPickupPercentage(DeliveryID);
+                AdminShippingPercentage = EngineAddressManager.GetAdminPickupPercentage(ShippingAddressID);
             }
 
             int AdminTransactionShare = EngineDiscountManager.ComputePercentageAmount(AdminTransactionPercent, SellerAmount);

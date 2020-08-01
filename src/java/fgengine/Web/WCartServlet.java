@@ -11,7 +11,9 @@ import com.google.gson.JsonObject;
 import fgengine.Managers.*;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Level;
@@ -20,7 +22,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import org.json.simple.JSONObject;
 
 /**
@@ -39,7 +40,7 @@ public class WCartServlet extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException, ClassNotFoundException, SQLException {
+            throws ServletException, IOException, ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
             String json = "";
@@ -359,6 +360,76 @@ public class WCartServlet extends HttpServlet {
 
                     break;
                 }
+                case "GetCartShippingFees": {
+                    String amount = request.getParameter("data");
+                    double Amount = Double.parseDouble(amount);
+                    String shippingFees = EngineShippingManager.GetShippingFees(Amount);
+                    json = new Gson().toJson(shippingFees);
+                    break;
+                }
+                case "GetCartDefaultAddress": {
+                    String sessionid = request.getParameter("data");
+                    String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
+                    int UserID = Integer.parseInt(SessionID);
+                    int addressid = EngineAddressManager.GetDefaultAddressDetailsIDByUserID("" + UserID);
+                    HashMap<String, String> data = EngineAddressManager.GetAddressData(addressid);
+                    JSONObject datares = new JSONObject();
+                    datares.putAll(data);
+                    json = new Gson().toJson(datares);
+                    break;
+                }
+                case "CartShippingAddress": {
+                    String[] data = request.getParameterValues("data[]");
+                    String sessionid = data[0].trim();
+                    String UserID = EngineUserManager.GetLoginIDBySessionID(sessionid);
+                    String shippingtypeid = data[1].trim();
+                    int ShippingTypeID = Integer.parseInt(shippingtypeid);
+                    String shippingaddressid = data[2].trim();
+                    int ShippingAddressID = Integer.parseInt(shippingaddressid);
+                    String shippingfees = data[3].trim();
+                    double ShippingFees = Double.parseDouble(shippingfees);
+                    result = EngineCartManager.ComputeCartShipping(ShippingTypeID, UserID, ShippingAddressID, ShippingFees);
+                    JsonObject returninfo = new JsonObject();
+                    if (result.equals("success")) {
+                        returninfo.addProperty("status", "success");
+                        returninfo.addProperty("msg", "Address has been successfully set to the default address..");
+                    } else {
+                        if (!result.equals("failed")) {
+                            returninfo.addProperty("msg", result);
+                        } else {
+                            returninfo.addProperty("msg", "Something went wrong. Please try again.");
+                        }
+                        returninfo.addProperty("status", "error");
+                    }
+                    json = new Gson().toJson(returninfo);
+                    break;
+                }
+                case "CartDiscountCode": {
+                    String[] data = request.getParameterValues("data[]");
+                    String sessionid = data[0].trim();
+                    String UserID = EngineUserManager.GetLoginIDBySessionID(sessionid);
+                    String DiscountCode = data[1].trim();
+                    result = EngineCartManager.ComputeCartDiscountCode(UserID, DiscountCode);
+                    JsonObject returninfo = new JsonObject();
+                    if (result.equals("success")) {
+                        returninfo.addProperty("status", "success");
+                        int CartID = EngineCartManager.GetCartIDByUserID(UserID);
+                        String discountAmt = EngineCartManager.GetDiscountAmountByCartID(CartID);
+                        returninfo.addProperty("cartDiscountAmount", discountAmt);
+                        String cartAmount = EngineCartManager.GetCartTotalAmountByUserID(UserID);
+                        returninfo.addProperty("cartTotalAmount", cartAmount);
+                        returninfo.addProperty("msg", "Discount Code has been added and your cart has been updated.");
+                    } else {
+                        if (!result.equals("failed")) {
+                            returninfo.addProperty("msg", result);
+                        } else {
+                            returninfo.addProperty("msg", "Something went wrong. Please try again.");
+                        }
+                        returninfo.addProperty("status", "error");
+                    }
+                    json = new Gson().toJson(returninfo);
+                    break;
+                }
             }
 
             response.setContentType("application/json");
@@ -378,10 +449,10 @@ public class WCartServlet extends HttpServlet {
      */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+            throws ServletException, IOException, UnsupportedEncodingException {
         try {
             processRequest(request, response);
-        } catch (ClassNotFoundException | SQLException ex) {
+        } catch (ClassNotFoundException | SQLException | ParseException ex) {
             Logger.getLogger(WCartServlet.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
@@ -396,10 +467,10 @@ public class WCartServlet extends HttpServlet {
      */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+            throws ServletException, IOException, UnsupportedEncodingException {
         try {
             processRequest(request, response);
-        } catch (ClassNotFoundException | SQLException ex) {
+        } catch (ClassNotFoundException | SQLException | ParseException ex) {
             Logger.getLogger(WCartServlet.class.getName()).log(Level.SEVERE, null, ex);
         }
     }

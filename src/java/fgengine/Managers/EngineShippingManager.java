@@ -202,8 +202,10 @@ public class EngineShippingManager {
 
     /**
      *
-     * @param Name
-     * @param DeliveryInterval
+     * @param ShippingAmt
+     * @param ShippingMaxCartAmt
+     * @param Action
+     * @param ShippingMinCartAmt
      * @return
      * @throws ClassNotFoundException
      * @throws SQLException

@@ -557,13 +557,7 @@ public class Tables {
         /**
          *
          */
-        public static String ShippingID = "shipping_id";
-
-        /**
-         *
-         */
-        public static String AddressID = "address_id";//addresdetail id or pickstation id
-
+        public static String ShippingAddressID = "shipping_address_id";
         /**
          *
          */
@@ -1355,12 +1349,7 @@ public class Tables {
         /**
          *
          */
-        public static String ShippingID = "shipping_id";
-
-        /**
-         *
-         */
-        public static String AddressID = "address_id";
+        public static String ShippingAddressID = "shipping_address_id";
 
         /**
          *
@@ -1406,12 +1395,7 @@ public class Tables {
         /**
          *
          */
-        public static String ShippingID = "shipping_id";
-
-        /**
-         *
-         */
-        public static String AddressID = "address_id";
+        public static String ShippingAddressID = "shipping_address_id";
 
         /**
          *
@@ -1513,12 +1497,7 @@ public class Tables {
         /**
          *
          */
-        public static String ShippingID = "shipping_id";
-
-        /**
-         *
-         */
-        public static String DeliveryID = "deliveryid";
+        public static String ShippingAddressID = "shipping_address_id";
 
         /**
          *

@@ -329,24 +329,10 @@ public class WAddressServlet extends HttpServlet {
                     json = "[" + json1 + "," + json2 + "," + json3 + "]";
                     break;
                 }
-                case "GetDefaultAddress": {
-                    String sessionid = request.getParameter("data");
-                    String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
-                    int UserID = Integer.parseInt(SessionID);
-                    int addressid = EngineAddressManager.GetDefaultAddressDetailsIDByUserID("" + UserID);
-                    HashMap<String, String>  data = EngineAddressManager.GetAddressData(addressid);
-                    JSONObject datares = new JSONObject();
-                    datares.putAll(data);
-                    json = new Gson().toJson(datares);
-                    break;
-                }
-                case "GetShippingFees": {
-                    String amount = request.getParameter("data");
-                    double Amount = Double.parseDouble(amount);
-                    String shippingFees = EngineShippingManager.GetShippingFees(Amount);
-                    json = new Gson().toJson(shippingFees);
-                    break;
-                }
+               
+              
+                
+                
             }
 
             response.setContentType("application/json");

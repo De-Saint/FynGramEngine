@@ -963,105 +963,50 @@ public class EngineCartManager {
      */
     public static String ComputeCartDiscountCode(String UserID, String DiscountCode) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
         String result = "failed";
-        String cartAmount = GetCartAmountByUserID(UserID);
+        String cartAmount = GetCartTotalAmountByUserID(UserID);
         double CartAmount = Double.parseDouble(cartAmount);
         int CartID = GetCartIDByUserID(UserID);
         double CartDiscountedAmount = 0.0;
         int DiscountCodeID = EngineDiscountManager.GetDiscountCodeIDByCode(UserID, DiscountCode);
         if (DiscountCodeID != 0) {
-            int DiscountDeductionTypeID = EngineDiscountManager.GetDiscountCodeDeductionTypeByDiscounCodeID(DiscountCodeID);
-            int DiscountDeductionValue = EngineDiscountManager.GetDiscountCodeDeductionValueByDiscounCodeID(DiscountCodeID);
-            if (DiscountDeductionTypeID == 1) {//percentage
-                int DiscountAmt = EngineDiscountManager.ComputePercentageAmount(DiscountDeductionValue, CartAmount);
-                CartDiscountedAmount = CartAmount - DiscountAmt;
-                result = DBManager.UpdateIntData(Tables.CartTable.DiscountAmount, DiscountAmt, Tables.CartTable.Table, "where " + Tables.CartTable.ID + " = " + CartID);
-            } else if (DiscountDeductionTypeID == 2) {//amount
-                CartDiscountedAmount = CartAmount - DiscountDeductionValue;
-                result = DBManager.UpdateIntData(Tables.CartTable.DiscountAmount, DiscountDeductionValue, Tables.CartTable.Table, "where " + Tables.CartTable.ID + " = " + CartID);
-            }
-            if (result.equals("success")) {
-                result = DBManager.UpdateStringData(Tables.CartTable.Table, Tables.CartTable.DiscountedAmount, "" + CartDiscountedAmount, "where " + Tables.CartTable.ID + " = " + CartID);
+            int ExistingDiscountCodeID = GetDiscountCodeIDByCartID(CartID);
+            if (ExistingDiscountCodeID == 0 && ExistingDiscountCodeID != DiscountCodeID) {
+                int DiscountDeductionTypeID = EngineDiscountManager.GetDiscountCodeDeductionTypeByDiscounCodeID(DiscountCodeID);
+                int DiscountDeductionValue = EngineDiscountManager.GetDiscountCodeDeductionValueByDiscounCodeID(DiscountCodeID);
+                if (DiscountDeductionTypeID == 1) {//percentage
+                    int DiscountAmt = EngineDiscountManager.ComputePercentageAmount(DiscountDeductionValue, CartAmount);
+                    CartDiscountedAmount = CartAmount - DiscountAmt;
+                    result = DBManager.UpdateIntData(Tables.CartTable.DiscountAmount, DiscountAmt, Tables.CartTable.Table, "where " + Tables.CartTable.ID + " = " + CartID);
+                } else if (DiscountDeductionTypeID == 2) {//amount
+                    CartDiscountedAmount = CartAmount - DiscountDeductionValue;
+                    result = DBManager.UpdateIntData(Tables.CartTable.DiscountAmount, DiscountDeductionValue, Tables.CartTable.Table, "where " + Tables.CartTable.ID + " = " + CartID);
+                }
                 if (result.equals("success")) {
-                    result = DBManager.UpdateIntData(Tables.CartTable.DiscountCodeID, DiscountCodeID, Tables.CartTable.Table, "where " + Tables.CartTable.ID + " = " + CartID);
+                    result = DBManager.UpdateStringData(Tables.CartTable.Table, Tables.CartTable.DiscountedAmount, "" + CartDiscountedAmount, "where " + Tables.CartTable.ID + " = " + CartID);
                     if (result.equals("success")) {
-                        result = DBManager.UpdateStringData(Tables.CartTable.Table, Tables.CartTable.TotalAmount, "" + CartDiscountedAmount, "where " + Tables.CartTable.ID + " = " + CartID);
+                        result = DBManager.UpdateIntData(Tables.CartTable.DiscountCodeID, DiscountCodeID, Tables.CartTable.Table, "where " + Tables.CartTable.ID + " = " + CartID);
                         if (result.equals("success")) {
-                            result = EngineDiscountManager.UpdateDiscountCodeUsage(UserID, DiscountCodeID);
+                            result = DBManager.UpdateStringData(Tables.CartTable.Table, Tables.CartTable.TotalAmount, "" + CartDiscountedAmount, "where " + Tables.CartTable.ID + " = " + CartID);
+                            if (result.equals("success")) {
+                                result = EngineDiscountManager.UpdateDiscountCodeUsage(UserID, DiscountCodeID);
+                            } else {
+
+                                result = "Discount Code Total Amount could not be updated";
+                            }
                         } else {
-
-                            result = "Discount Code Total Amount could not be updated";
+                            result = "Discount Code ID could not be updated";
                         }
                     } else {
-                        result = "Discount Code ID could not be updated";
+                        result = "Discount Code Amount could not be updated";
                     }
                 } else {
-                    result = "Discount Code Amount could not be updated";
+                    result = "Discount Code Discount Amount could not be updated";
                 }
             } else {
-                result = "Discount Code Discount Amount could not be updated";
+                result = "Discount Code has already been added and cannot be used more than once on an order.";
             }
         } else {
-            result = "Discount Code has expired or it has been used";
-        }
-        return result;
-    }
-
-    
-    
-    
-    /**
-     *
-     * @param ShippingTypeID
-     * @param UserID
-     * @param ShippingID
-     * @param PickUpStationID
-     * @return
-     * @throws ClassNotFoundException
-     * @throws SQLException
-     * @throws UnsupportedEncodingException
-     */
-    public static String ComputeCartShipping(int ShippingTypeID, String UserID, int ShippingID, int PickUpStationID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        String result = "failed";
-        int CartID = GetCartIDByUserID(UserID);
-        Double Fees = 0.0;
-        String shippingFees = "";
-        String oldCartTotalAmount = GetCartTotalAmountByUserID(UserID);
-         double OldCartTotalAmount = Double.parseDouble(oldCartTotalAmount);
-        if (ShippingTypeID == 1) {//Use My address
-            int AddressID = EngineAddressManager.GetDefaultAddressDetailsIDByUserID(UserID);
-            
-            shippingFees = EngineShippingManager.GetShippingFees(OldCartTotalAmount);
-            result = UpdateCartAddressByCartID(CartID, AddressID);
-        } else if (ShippingTypeID == 2) {//use pickup station
-            int sFees = EngineAddressManager.GetPickupStationFeesByID(PickUpStationID);
-            result = UpdateCartAddressByCartID(CartID, PickUpStationID);
-        }
-        if (result.equals("success")) {
-            //add the  fees to the cart amount 
-           Fees = Double.parseDouble(shippingFees);
-           
-            double newCartTotalAmount = OldCartTotalAmount + Fees;
-            result = UpdateCartTotalAmount(CartID, "" + newCartTotalAmount);
-            if (result.equals("success")) {
-                result = UpdateCartShippingTypeIDByCartID(CartID, ShippingTypeID);
-                if (result.equals("success")) {
-                    result = UpdateCartFeesByCartID(CartID, Fees);
-                    if (result.equals("success")) {
-                        result = UpdateCartShippingIDByCartID(CartID, ShippingID);
-                        if (!result.equals("success")) {
-                            result = "Updating Cart Shipping could not be completed.";
-                        }
-                    } else {
-                        result = "Updating Cart Shipping fess could not be completed.";
-                    }
-                } else {
-                    result = "Updating Cart Shipping Type could not be completed.";
-                }
-            } else {
-                result = "Updating Cart Total Amount  could not be completed.";
-            }
-        } else {
-            result = "Cart Shipping could not be completed.";
+            result = "Discount Code has expired or it has exceeded it's maximum usage. Please, use another discount code.";
         }
         return result;
     }
@@ -1069,14 +1014,85 @@ public class EngineCartManager {
     /**
      *
      * @param CartID
-     * @param AddressID
      * @return
      * @throws ClassNotFoundException
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String UpdateCartAddressByCartID(int CartID, int AddressID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        String result = DBManager.UpdateIntData(Tables.CartTable.AddressID, AddressID, Tables.CartTable.Table, "Where " + Tables.CartTable.ID + " = " + CartID);
+    public static String GetDiscountAmountByCartID(int CartID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        String result = DBManager.GetString(Tables.CartTable.DiscountAmount, Tables.CartTable.Table, "where " + Tables.CartTable.ID + " = " + CartID);
+        return result;
+    }
+
+    /**
+     *
+     * @param CartID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static int GetDiscountCodeIDByCartID(int CartID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        int result = DBManager.GetInt(Tables.CartTable.DiscountCodeID, Tables.CartTable.Table, "where " + Tables.CartTable.ID + " = " + CartID);
+        return result;
+    }
+
+    /**
+     *
+     * @param ShippingTypeID
+     * @param UserID
+     * @param ShippingAdddresID
+     * @param ShippingFees
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static String ComputeCartShipping(int ShippingTypeID, String UserID, int ShippingAdddresID, double ShippingFees) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        String result = "failed";
+        int CartID = GetCartIDByUserID(UserID);
+        String oldCartTotalAmount = GetCartTotalAmountByUserID(UserID);
+        double OldCartTotalAmount = Double.parseDouble(oldCartTotalAmount);
+        int shippingaddressid = GetCartShippingAddressIDByCartID(CartID);
+        if (shippingaddressid == 0) {
+            result = UpdateCartShippingAddressIDByCartID(CartID, ShippingAdddresID);
+            if (result.equals("success")) {
+                //add the  fees to the cart amount 
+                double newCartTotalAmount = OldCartTotalAmount + ShippingFees;
+                result = UpdateCartTotalAmount(CartID, "" + newCartTotalAmount);
+                if (result.equals("success")) {
+                    result = UpdateCartShippingTypeIDByCartID(CartID, ShippingTypeID);
+                    if (result.equals("success")) {
+                        result = UpdateCartShippingFeesByCartID(CartID, "" + ShippingFees);
+                        if (!result.equals("success")) {
+                            result = "Updating Cart Shipping fess could not be completed.";
+                        }
+                    } else {
+                        result = "Updating Cart Shipping Type could not be completed.";
+                    }
+                } else {
+                    result = "Updating Cart Total Amount  could not be completed.";
+                }
+            } else {
+                result = "Cart Shipping could not be completed.";
+            }
+        } else {
+            result = "Shipping Address has been updated";
+        }
+
+        return result;
+    }
+
+    /**
+     *
+     * @param CartID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static int GetCartShippingAddressIDByCartID(int CartID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        int result = DBManager.GetInt(Tables.CartTable.ShippingAddressID, Tables.CartTable.Table, "where " + Tables.CartTable.ID + " = " + CartID);
         return result;
     }
 
@@ -1089,8 +1105,8 @@ public class EngineCartManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String UpdateCartFeesByCartID(int CartID, double Fees) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        String result = DBManager.UpdateStringData(Tables.CartTable.Fees, ""+Fees, Tables.CartTable.Table, "Where " + Tables.CartTable.ID + " = " + CartID);
+    public static String UpdateCartShippingFeesByCartID(int CartID, String Fees) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        String result = DBManager.UpdateStringData(Tables.CartTable.Table, Tables.CartTable.Fees, Fees, "Where " + Tables.CartTable.ID + " = " + CartID);
         return result;
     }
 
@@ -1117,8 +1133,8 @@ public class EngineCartManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String UpdateCartShippingIDByCartID(int CartID, int ShippingID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        String result = DBManager.UpdateIntData(Tables.CartTable.ShippingID, ShippingID, Tables.CartTable.Table, "Where " + Tables.CartTable.ID + " = " + CartID);
+    public static String UpdateCartShippingAddressIDByCartID(int CartID, int ShippingAddressID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        String result = DBManager.UpdateIntData(Tables.CartTable.ShippingAddressID, ShippingAddressID, Tables.CartTable.Table, "Where " + Tables.CartTable.ID + " = " + CartID);
         return result;
     }
 

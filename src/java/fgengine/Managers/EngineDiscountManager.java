@@ -288,12 +288,12 @@ public class EngineDiscountManager {
         String ExpiryDate = GetDiscountCodeExpiryDateByDiscounCodeID(DiscountCodeID);
         int DiscountCodeStatus = GetDiscountCodeStatusByDiscounCodeID(DiscountCodeID);
         String CustomerDiscountCodeStatus = GetCustomerDiscountCodeStatus(UserID, DiscountCodeID);
-        if (DiscountCodeStatus == 1) {
-            if (CustomerDiscountCodeStatus.equals("Pending")) {
+        if (DiscountCodeStatus == 1) {//active
+            if (CustomerDiscountCodeStatus.equals("Unused")) {
                 LocalDate ConvertedExpiryDate = LocalDate.parse(ExpiryDate);
                 if (CurrentDate.isAfter(ConvertedExpiryDate)) {
-                    DiscountCodeID = 0;
                     UpdateDiscountCodeStatus(DiscountCodeID, 2);
+                     DiscountCodeID = 0;
                 }
             } else {
                 DiscountCodeID = 0;
@@ -400,7 +400,7 @@ public class EngineDiscountManager {
             result = UpdateCustomerTotalAvailable(DiscountCodeID, NewCustomerTotalAvail, UserID);
         } else {
             result = UpdateCustomerTotalAvailable(DiscountCodeID, NewCustomerTotalAvail, UserID);
-            result = UpdateCustomerDiscountCodeStatus(UserID, DiscountCodeID);//to pending
+            result = UpdateCustomerDiscountCodeStatus(UserID, DiscountCodeID);//to unused
         }
 
         return result;
@@ -609,12 +609,18 @@ public class EngineDiscountManager {
 //                }
                 String Status = "";
                 int active = Integer.parseInt(Details.get(Tables.DiscountCodesTable.Active));
-                if (active == 1) {
-                    Status = "Active";
-                } else if (active == 0) {
-                    Status = "InActive";
-                } else if (active == 2) {
-                    Status = "Expired";
+                switch (active) {
+                    case 1:
+                        Status = "Active";
+                        break;
+                    case 0:
+                        Status = "InActive";
+                        break;
+                    case 2:
+                        Status = "Expired";
+                        break;
+                    default:
+                        break;
                 }
                 Details.put("Status", Status);
             } catch (Exception ex) {
