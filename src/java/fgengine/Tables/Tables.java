@@ -470,6 +470,14 @@ public class Tables {
          *
          */
         public static String Name = "name";
+        /**
+         *
+         */
+        public static String Phone = "phone";
+        /**
+         *
+         */
+        public static String Email = "email";
 
         /**
          *
@@ -910,6 +918,10 @@ public class Tables {
          *
          */
         public static String Active = "active";
+        /**
+         *
+         */
+        public static String SplitDeductionValue = "split_deduction_value";
     }
 
     /**
@@ -1442,6 +1454,64 @@ public class Tables {
          *
          */
         public static String Color = "color";
+    }
+
+    /**
+     *
+     */
+    public static class OrderCancelRulesTable {
+
+        /**
+         *
+         */
+        public static String Table = "fg_order_cancel_rules";
+
+        /**
+         *
+         */
+        public static String ID = "id";
+
+        /**
+         *
+         */
+        public static String Percent = "percent";
+
+        /**
+         *
+         */
+        public static String EnforceRule = "enforce_rule";
+
+    }
+
+    /**
+     *
+     */
+    public static class OrderShippingMethodTable {
+
+        /**
+         *
+         */
+        public static String Table = "fg_order_shipping_method";
+
+        /**
+         *
+         */
+        public static String ID = "id";
+
+        /**
+         *
+         */
+        public static String OrderID = "orderid";
+
+        /**
+         *
+         */
+        public static String ShippingMethodID = "shipping_method_id";
+        /**
+         *
+         */
+        public static String ShippingFees = "shipping_fees";
+
     }
 
     /**
@@ -3252,7 +3322,7 @@ public class Tables {
          *
          */
         public static String MinCartAmount = "min_cart_amount";
-         /**
+        /**
          *
          */
         public static String MaxCartAmount = "max_cart_amount";

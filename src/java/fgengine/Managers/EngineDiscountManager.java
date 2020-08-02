@@ -38,7 +38,7 @@ public class EngineDiscountManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static int CreateDiscountCode(String Name, String Description, String Code, int DiscountCodeTypeID, int DiscountCodeObjectID, int DiscountDeductionTypeID, int DecductionValue, Date StartingDate, Date ExpiryDate, int TotalPerCustomer) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+    public static int CreateDiscountCode(String Name, String Description, String Code, int DiscountCodeTypeID, int DiscountCodeObjectID, int DiscountDeductionTypeID, int DecductionValue, Date StartingDate, Date ExpiryDate, int TotalPerCustomer, int SplitDeductionValue) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         HashMap<String, Object> tableData = new HashMap<>();
         tableData.put(Tables.DiscountCodesTable.Name, Name);
         tableData.put(Tables.DiscountCodesTable.Description, Name);
@@ -49,6 +49,7 @@ public class EngineDiscountManager {
         tableData.put(Tables.DiscountCodesTable.DeductionValue, DecductionValue);
         tableData.put(Tables.DiscountCodesTable.ExpiryDate, ExpiryDate);
         tableData.put(Tables.DiscountCodesTable.StartDate, StartingDate);
+        tableData.put(Tables.DiscountCodesTable.SplitDeductionValue, SplitDeductionValue);
         int discountid = DBManager.insertTableDataReturnID(Tables.DiscountCodesTable.Table, tableData, "");
         return discountid;
     }
@@ -65,6 +66,7 @@ public class EngineDiscountManager {
      * @param Expirydate
      * @param CustomerUserID
      * @param TotalPerCustomer
+     * @param SplitDeductionValue
      * @return
      * @throws ClassNotFoundException
      * @throws SQLException
@@ -72,12 +74,12 @@ public class EngineDiscountManager {
      * @throws ParseException
      */
     public static String ComputeDiscountCode(String Name, String Description, int DiscountCodeTypeID, int DiscountCodeObjectID,
-            int DiscountCodeDeductionTypeID, int DecductionValue, String Startingdate, String Expirydate, int CustomerUserID, int TotalPerCustomer) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
+            int DiscountCodeDeductionTypeID, int DecductionValue, String Startingdate, String Expirydate, int CustomerUserID, int TotalPerCustomer, int SplitDeductionValue) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
         String result = "failed";
         String Code = GenerateDiscountCode(DiscountCodeTypeID, DiscountCodeObjectID, DiscountCodeDeductionTypeID);
         Date ExpiryDate = UtilityManager.getSqlDateFromString(Expirydate);
         Date StartingDate = UtilityManager.getSqlDateFromString(Startingdate);
-        int DiscountCodeID = CreateDiscountCode(Name, Description, Code, DiscountCodeTypeID, DiscountCodeObjectID, DiscountCodeDeductionTypeID, DecductionValue, StartingDate, ExpiryDate, TotalPerCustomer);
+        int DiscountCodeID = CreateDiscountCode(Name, Description, Code, DiscountCodeTypeID, DiscountCodeObjectID, DiscountCodeDeductionTypeID, DecductionValue, StartingDate, ExpiryDate, TotalPerCustomer, SplitDeductionValue);
         if (DiscountCodeID != 0) {
             if (DiscountCodeTypeID == 1) {//Single Customer
                 result = CreateCustomerDiscountCode(DiscountCodeID, CustomerUserID, TotalPerCustomer);
@@ -293,7 +295,7 @@ public class EngineDiscountManager {
                 LocalDate ConvertedExpiryDate = LocalDate.parse(ExpiryDate);
                 if (CurrentDate.isAfter(ConvertedExpiryDate)) {
                     UpdateDiscountCodeStatus(DiscountCodeID, 2);
-                     DiscountCodeID = 0;
+                    DiscountCodeID = 0;
                 }
             } else {
                 DiscountCodeID = 0;
@@ -363,13 +365,12 @@ public class EngineDiscountManager {
      * @param TotalAmount
      * @return
      */
-    public static int ComputePercentageAmount(int PecertageValue, double TotalAmount) {
+    public static int ComputePercentageAmount(double PecertageValue, double TotalAmount) {
         int result = 0;
         double amt;
         double newamt;
         newamt = (PecertageValue * TotalAmount);
         amt = (newamt / 100);
-        result = (int) amt;
         return result;
     }
 
@@ -391,7 +392,7 @@ public class EngineDiscountManager {
             result = UpdateDiscountCodeTotalAvailable(DiscountCodeID, NewDiscountCodeTotalAvailable);
         } else {
             result = UpdateDiscountCodeTotalAvailable(DiscountCodeID, NewDiscountCodeTotalAvailable);
-            result = UpdateDiscountCodeStatus(DiscountCodeID, 0);
+            UpdateDiscountCodeStatus(DiscountCodeID, 0);
         }
         //for customer
         int CustomerTotalAvailable = GetCustomerTotalAvailable(UserID, DiscountCodeID);
@@ -400,7 +401,7 @@ public class EngineDiscountManager {
             result = UpdateCustomerTotalAvailable(DiscountCodeID, NewCustomerTotalAvail, UserID);
         } else {
             result = UpdateCustomerTotalAvailable(DiscountCodeID, NewCustomerTotalAvail, UserID);
-            result = UpdateCustomerDiscountCodeStatus(UserID, DiscountCodeID);//to unused
+            UpdateCustomerDiscountCodeStatus(UserID, DiscountCodeID);//to unused
         }
 
         return result;
@@ -509,8 +510,7 @@ public class EngineDiscountManager {
      * @throws UnsupportedEncodingException
      */
     public static ArrayList<Integer> GetDeductionTypeIDs() throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        ArrayList<Integer> IDs = DBManager.GetIntArrayList(Tables.DiscountCodeDeductionType.ID, Tables.DiscountCodeDeductionType.Table, "");
-        IDs = UtilityManager.SortAndReverseIntegerArrayList(IDs);
+        ArrayList<Integer> IDs = DBManager.GetIntArrayListDescending(Tables.DiscountCodeDeductionType.ID, Tables.DiscountCodeDeductionType.Table, "");
         return IDs;
     }
 
@@ -803,5 +803,18 @@ public class EngineDiscountManager {
             }
         }
         return Data;
+    }
+
+    /**
+     *
+     * @param DiscountCodeID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static int GetDiscountSplitDeductionValue(int DiscountCodeID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        int result = DBManager.GetInt(Tables.DiscountCodesTable.SplitDeductionValue, Tables.DiscountCodesTable.Table, "where " + Tables.DiscountCodesTable.ID + " = " + DiscountCodeID);
+        return result;
     }
 }

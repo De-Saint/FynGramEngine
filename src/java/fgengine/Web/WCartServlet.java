@@ -430,6 +430,26 @@ public class WCartServlet extends HttpServlet {
                     json = new Gson().toJson(returninfo);
                     break;
                 }
+                case "ViewWalletBalance": {
+                    String[] data = request.getParameterValues("data[]");
+                    String sessionid = data[0].trim();
+                    String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
+                    int UserID = Integer.parseInt(SessionID);
+                    String Pin = data[1].trim();
+
+                    int PIN = EngineWalletManager.GetUserWalletPIN(UserID);
+                    int WPin = Integer.parseInt(Pin);
+                    JsonObject returninfo = new JsonObject();
+                    if (WPin == PIN) {
+                        int bal = EngineWalletManager.GetUserBalance(UserID, EngineWalletManager.GetMainWalletID());
+                        returninfo.addProperty("walletbalance", bal);
+                    } else {
+                        returninfo.addProperty("msg", "Invalid Pin: The Wallet Pin provided is invalid. Please, check the pin and try again.");
+                        returninfo.addProperty("status", "error");
+                    }
+                    json = new Gson().toJson(returninfo);
+                    break;
+                }
             }
 
             response.setContentType("application/json");

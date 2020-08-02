@@ -23,15 +23,19 @@ public class EngineShippingManager {
      * @param Name
      * @param DeliveryInterval
      * @param AdminPercentage
-     * @param SellerPercentage
+     * @param ShipMethodPercentage
+     * @param Phone
+     * @param Email
      * @return
      * @throws ClassNotFoundException
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String CreateShipping(String Name, String DeliveryInterval, int AdminPercentage, int ShipMethodPercentage) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+    public static String CreateShipping(String Name, String DeliveryInterval, int AdminPercentage, int ShipMethodPercentage, String Phone, String Email) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         HashMap<String, Object> tableData = new HashMap<>();
         tableData.put(Tables.ShippingTable.Name, Name);
+        tableData.put(Tables.ShippingTable.Phone, Phone);
+        tableData.put(Tables.ShippingTable.Email, Email);
         tableData.put(Tables.ShippingTable.DeliveryInterval, DeliveryInterval);
         tableData.put(Tables.ShippingTable.AdminShippingPercentage, AdminPercentage);
         tableData.put(Tables.ShippingTable.ShippingMethodPercentage, ShipMethodPercentage);
@@ -52,10 +56,16 @@ public class EngineShippingManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String EditShipping(int ShippingID, String Name, String DeliveryInterval, int AdminPercentage, int ShipMethodPercentage) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+    public static String EditShipping(int ShippingID, String Name, String DeliveryInterval, int AdminPercentage, int ShipMethodPercentage, String Phone, String Email) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         String result = "failed";
         if (!Name.equals("")) {
             result = DBManager.UpdateStringData(Tables.ShippingTable.Table, Tables.ShippingTable.Name, Name, "where " + Tables.ShippingTable.ID + " = " + ShippingID);
+        }
+        if (!Phone.equals("")) {
+            result = DBManager.UpdateStringData(Tables.ShippingTable.Table, Tables.ShippingTable.Phone, Phone, "where " + Tables.ShippingTable.ID + " = " + ShippingID);
+        }
+        if (!Email.equals("")) {
+            result = DBManager.UpdateStringData(Tables.ShippingTable.Table, Tables.ShippingTable.Email, Email, "where " + Tables.ShippingTable.ID + " = " + ShippingID);
         }
         if (!DeliveryInterval.equals("")) {
             result = DBManager.UpdateStringData(Tables.ShippingTable.Table, Tables.ShippingTable.DeliveryInterval, DeliveryInterval, "where " + Tables.ShippingTable.ID + " = " + ShippingID);
@@ -136,6 +146,68 @@ public class EngineShippingManager {
      */
     public static String GetShippingTypeNameByID(int ShippingTypeID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         String result = DBManager.GetString(Tables.ShippingTypeTable.Name, Tables.ShippingTypeTable.Table, "where " + Tables.ShippingTypeTable.ID + " = " + ShippingTypeID);
+        return result;
+    }
+
+    /**
+     *
+     * @param ShippingMethodID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static String GetShippingMethodName(int ShippingMethodID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        String result = DBManager.GetString(Tables.ShippingTable.Name, Tables.ShippingTable.Table, "where " + Tables.ShippingTable.ID + " = " + ShippingMethodID);
+        return result;
+    }
+
+    /**
+     *
+     * @param ShippingMethodID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static String GetShippingMethodEmail(int ShippingMethodID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        String result = DBManager.GetString(Tables.ShippingTable.Email, Tables.ShippingTable.Table, "where " + Tables.ShippingTable.ID + " = " + ShippingMethodID);
+        return result;
+    }
+
+    /**
+     *
+     * @param ShippingMethodID
+     * @param ShippingFeesAmount
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static String UpdateShippingMethodEarnings(int ShippingMethodID, double ShippingFeesAmount) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        String result = "failed";
+        double ExistingEarning = 0.0;
+        result = DBManager.GetString(Tables.ShippingTable.TotalEarnings, Tables.ShippingTable.Table, "where " + Tables.ShippingTable.ID + " = " + ShippingMethodID);
+        ExistingEarning = Double.parseDouble(result);
+        ExistingEarning = ExistingEarning + ShippingFeesAmount;
+
+        result = DBManager.UpdateStringData(Tables.ShippingTable.Table, Tables.ShippingTable.TotalEarnings, "" + ExistingEarning, "where " + Tables.ShippingTable.ID + " = " + ShippingMethodID);
+        return result;
+    }
+
+    /**
+     *
+     * @param ShippingMethodID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static String UpdateShippingMethodNumberOfDelivery(int ShippingMethodID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        String result = "failed";
+        int ExistingDelivery = DBManager.GetInt(Tables.ShippingTable.NumberOfDelivery, Tables.ShippingTable.Table, "where " + Tables.ShippingTable.ID + " = " + ShippingMethodID);
+        ExistingDelivery = ExistingDelivery + 1;
+        result = DBManager.UpdateIntData(Tables.ShippingTable.NumberOfDelivery, ExistingDelivery, Tables.ShippingTable.Table, "where " + Tables.ShippingTable.ID + " = " + ShippingMethodID);
         return result;
     }
 
@@ -232,11 +304,8 @@ public class EngineShippingManager {
 
     /**
      *
-     * @param ShippingID
-     * @param Name
-     * @param DeliveryInterval
-     * @param AdminPercentage
-     * @param ShipMethodPercentage
+     * @param ShippingFeesID
+     * @param ShippingAmt
      * @return
      * @throws ClassNotFoundException
      * @throws SQLException

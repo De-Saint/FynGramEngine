@@ -186,4 +186,16 @@ public class EnginePaymentManager {
         String result = DBManager.DeleteObject(Tables.PaymentsTable.Table, "where " + Tables.PaymentsTable.ID + " = " + PaymentID);
         return result;
     }
+    /**
+     *
+     * @param PaymentID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static String GetPaymentReferenceCode(int PaymentID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        String result = DBManager.GetString(Tables.PaymentsTable.ReferenceCode, Tables.PaymentsTable.Table, "where " + Tables.PaymentsTable.ID + " = " + PaymentID);
+        return result;
+    }
 }

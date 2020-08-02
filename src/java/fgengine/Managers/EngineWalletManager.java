@@ -120,7 +120,7 @@ public class EngineWalletManager {
      * @throws UnsupportedEncodingException
      * @throws ParseException
      */
-    public static String CreateWalletRecord(int FromUserID, int ToUserID, int TransactionAmount, int FromWalletTypeID, int ToWalletTypeID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
+    public static String CreateWalletRecord(int FromUserID, int ToUserID, double TransactionAmount, int FromWalletTypeID, int ToWalletTypeID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
         String result = "falied";
         result = InsertWalletRecord(FromUserID, TransactionAmount, FromWalletTypeID, "Debit");
         if (result.equals("success")) {
@@ -147,7 +147,7 @@ public class EngineWalletManager {
      * @throws UnsupportedEncodingException
      * @throws ParseException
      */
-    public static String ComputeWalletRecord(int FromUserID, int ToUserID, int FromWalletTypeID, int ToWalletTypeID, int TransactionAmount, String TransactionTypeName) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
+    public static String ComputeWalletRecord(int FromUserID, int ToUserID, int FromWalletTypeID, int ToWalletTypeID, double TransactionAmount, String TransactionTypeName) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
         String result = "failed";
         String Description = "";
         int ToUserOldBalance = 0;
@@ -201,7 +201,7 @@ public class EngineWalletManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String InsertWalletRecord(int UserID, int TransactionAmount, int WalletType, String TransactionType) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+    public static String InsertWalletRecord(int UserID, double TransactionAmount, int WalletType, String TransactionType) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         String result = "failed";
         String userbalance = DBManager.GetString(Tables.WalletTable.Balance, Tables.WalletTable.Table, "where " + Tables.WalletTable.UserID + " = " + UserID);
         if (WalletType == 1) {

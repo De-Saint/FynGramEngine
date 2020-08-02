@@ -1109,6 +1109,20 @@ public class EngineCartManager {
         String result = DBManager.UpdateStringData(Tables.CartTable.Table, Tables.CartTable.Fees, Fees, "Where " + Tables.CartTable.ID + " = " + CartID);
         return result;
     }
+    
+      /**
+     *
+     * @param CartID
+     * @param Fees
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static String UpdateCartStatusByCartID(int CartID, String Status) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        String result = DBManager.UpdateStringData(Tables.CartTable.Table, Tables.CartTable.Status, Status, "Where " + Tables.CartTable.ID + " = " + CartID);
+        return result;
+    }
 
     /**
      *

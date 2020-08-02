@@ -75,7 +75,7 @@ public class WPaymentServlet extends HttpServlet {
                     try {
                         jsonParameter = (JSONObject) parser.parse(payresult);
                     } catch (Exception e) {
-                        message = "Your payment validation was not successful, Please contact the admin if your account was debited and send prove of payment!";
+                        message = "Your payment validation was not successful, Please contact the support team if your bank account was debited and send the debit advise!";
                         returninfo.addProperty("status", "error");
                         returninfo.addProperty("msg", message);
                         json = new Gson().toJson((JsonElement) returninfo);
@@ -83,7 +83,7 @@ public class WPaymentServlet extends HttpServlet {
                     }
                     String Status = jsonParameter.get("status").toString();
                     if (Status.equals("false")) {
-                        message = "Your payment validation was not successful, Please contact the admin if your account was debited and send prove of payment!";
+                        message = "Your payment validation was not successful, Please contact the support team if your bank account was debited and send the debit advise!";
                         returninfo.addProperty("status", "error");
                         returninfo.addProperty("msg", message);
                         json = new Gson().toJson((JsonElement) returninfo);
@@ -101,7 +101,25 @@ public class WPaymentServlet extends HttpServlet {
                                 returninfo.addProperty("msg", "Something went wrong! Please, try again!");
                             }
                             datares.put("result", returninfo);
-                            json = new Gson().toJson(datares);
+                            json = new Gson().toJson(returninfo);
+                        } else if (PaymentType.equals("CheckOut Payment")) {
+                            result = EnginePaymentManager.ComputePaymentWithCash(UserID, Amount, TransCode, RefereceCode, PaymentType);
+                            if (result.equals("success")) {
+                                String orderNote = data[5].trim();
+                                result = EngineOrderManager.ComputePlaceOrder(UserID, "PayStack", orderNote, RefereceCode);
+                                if (result.equals("success")) {
+                                    returninfo.addProperty("status", "success");
+                                    returninfo.addProperty("msg", "Your Payment was Successful and your order has been placed.");
+                                } else {
+                                    returninfo.addProperty("status", "error");
+                                    returninfo.addProperty("msg", "Something went wrong! Please, contact the support team for assistance!");
+                                }
+                            } else {
+                                returninfo.addProperty("status", "error");
+                                message = "An error occured while updating your wallet, Please contact the support team if your bank account was debited and send the debit advise!";
+                                returninfo.addProperty("msg", message);
+                            }
+                            json = new Gson().toJson(returninfo);
                         } else if (PaymentType.equals("Subscription Fees")) {
                             result = EnginePaymentManager.ComputeSubscriptionFees(UserID, PaymentType, Amount, TransCode, RefereceCode);
                             if (result.equals("success")) {

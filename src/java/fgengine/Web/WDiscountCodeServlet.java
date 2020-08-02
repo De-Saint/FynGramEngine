@@ -160,7 +160,10 @@ public class WDiscountCodeServlet extends HttpServlet {
                     int CustomerUserID = Integer.parseInt(CustomerID);
                     String totalPerCustomer = data[9];
                     int TotalPerCustomer = Integer.parseInt(totalPerCustomer);
-                    result = EngineDiscountManager.ComputeDiscountCode(Name, Description, TypeID, ObjectID, DeductionTypeID, DeductionValue, StartDate, ExpiryDate, CustomerUserID, TotalPerCustomer);
+                    String splitDeductionValue = data[9];
+                    int SplitDeductionValue = Integer.parseInt(splitDeductionValue);
+                    
+                    result = EngineDiscountManager.ComputeDiscountCode(Name, Description, TypeID, ObjectID, DeductionTypeID, DeductionValue, StartDate, ExpiryDate, CustomerUserID, TotalPerCustomer, SplitDeductionValue);
                     JsonObject returninfo = new JsonObject();
                     if (result.equals("success")) {
                         returninfo.addProperty("status", "success");

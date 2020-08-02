@@ -5,8 +5,16 @@
  */
 package fgengine.Web;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import fgengine.Managers.*;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.sql.SQLException;
+import java.text.ParseException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -29,7 +37,7 @@ public class WOrderServlet extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+            throws ServletException, IOException, ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
             HttpSession session = request.getSession(true);
@@ -42,8 +50,24 @@ public class WOrderServlet extends HttpServlet {
             String empty = "none";
             String result = "";
             switch (type) {
-                case "AddNewUserAddress": {
-
+                case "PlaceOrder": {
+                    String[] data = request.getParameterValues("data[]");
+                    String sessionid = data[0].trim();
+                    String PaymentType = data[1].trim();
+                    String Note = data[2].trim();
+                    JsonObject returninfo = new JsonObject();
+                    String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
+                    int UserID = Integer.parseInt(SessionID);
+                    String WalletNumber = EngineWalletManager.GetUserWalletNumber(UserID);
+                    result = EngineOrderManager.ComputePlaceOrder(UserID, PaymentType, Note,WalletNumber);
+                    if (result.equals("success")) {
+                        returninfo.addProperty("status", "success");
+                        returninfo.addProperty("msg", "Your Payment was Successful and your order has been placed.");
+                    } else {
+                        returninfo.addProperty("status", "error");
+                        returninfo.addProperty("msg", "Something went wrong! Please, try again!");
+                    }
+                    json = new Gson().toJson(returninfo);
                     break;
                 }
                 case "EditNewUserAddress": {
@@ -82,7 +106,11 @@ public class WOrderServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        try {
+            processRequest(request, response);
+        } catch (ClassNotFoundException | SQLException | UnsupportedEncodingException | ParseException ex) {
+            Logger.getLogger(WOrderServlet.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
@@ -92,11 +120,16 @@ public class WOrderServlet extends HttpServlet {
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
+     * @throws java.io.UnsupportedEncodingException
      */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        processRequest(request, response);
+            throws ServletException, IOException, UnsupportedEncodingException {
+        try {
+            processRequest(request, response);
+        } catch (ClassNotFoundException | SQLException | ParseException ex) {
+            Logger.getLogger(WOrderServlet.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
