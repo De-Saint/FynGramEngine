@@ -99,9 +99,9 @@ public class EngineShippingManager {
                 String maxCartAmount = DBManager.GetString(Tables.ShippingFeesTable.MaxCartAmount, Tables.ShippingFeesTable.Table, "where " + Tables.ShippingFeesTable.ID + " = " + id);
                 double MaxCartAmount = Double.parseDouble(maxCartAmount);
 
-                if (CartAmount > MinCartAmount && (CartAmount < MaxCartAmount && MaxCartAmount != 0)) {
+                if (CartAmount >= MinCartAmount && (CartAmount <= MaxCartAmount && MaxCartAmount != 0)) {
                     result = DBManager.GetString(Tables.ShippingFeesTable.DeliveryFees, Tables.ShippingFeesTable.Table, "where " + Tables.ShippingFeesTable.ID + " = " + id);
-                } else if (CartAmount > MinCartAmount && MaxCartAmount == 0) {
+                } else if (CartAmount >= MinCartAmount && MaxCartAmount == 0) {
                     result = DBManager.GetString(Tables.ShippingFeesTable.DeliveryFees, Tables.ShippingFeesTable.Table, "where " + Tables.ShippingFeesTable.ID + " = " + id);
                 }
                 shippingfeesid = id;
@@ -184,13 +184,20 @@ public class EngineShippingManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String UpdateShippingMethodEarnings(int ShippingMethodID, double ShippingFeesAmount) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+    public static String UpdateShippingMethodEarnings(int ShippingMethodID, double ShippingFeesAmount, String Option) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         String result = "failed";
         double ExistingEarning = 0.0;
         result = DBManager.GetString(Tables.ShippingTable.TotalEarnings, Tables.ShippingTable.Table, "where " + Tables.ShippingTable.ID + " = " + ShippingMethodID);
-        ExistingEarning = Double.parseDouble(result);
-        ExistingEarning = ExistingEarning + ShippingFeesAmount;
-
+        if (result.equals("none")) {
+            ExistingEarning = ExistingEarning + ShippingFeesAmount;
+        } else {
+            ExistingEarning = Double.parseDouble(result);
+            if (Option.equals("Add")) {
+                ExistingEarning = ExistingEarning + ShippingFeesAmount;
+            } else if (Option.equals("Subtract")) {
+                ExistingEarning = ExistingEarning - ShippingFeesAmount;
+            }
+        }
         result = DBManager.UpdateStringData(Tables.ShippingTable.Table, Tables.ShippingTable.TotalEarnings, "" + ExistingEarning, "where " + Tables.ShippingTable.ID + " = " + ShippingMethodID);
         return result;
     }
@@ -203,16 +210,24 @@ public class EngineShippingManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String UpdateShippingMethodNumberOfDelivery(int ShippingMethodID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+    public static String UpdateShippingMethodNumberOfDelivery(int ShippingMethodID, String Option) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         String result = "failed";
         int ExistingDelivery = DBManager.GetInt(Tables.ShippingTable.NumberOfDelivery, Tables.ShippingTable.Table, "where " + Tables.ShippingTable.ID + " = " + ShippingMethodID);
-        ExistingDelivery = ExistingDelivery + 1;
+        if (ExistingDelivery == 0) {
+            ExistingDelivery = ExistingDelivery + 1;
+        } else {
+            if (Option.equals("Add")) {
+                ExistingDelivery = ExistingDelivery + 1;
+            } else if (Option.equals("Subtract")) {
+                ExistingDelivery = ExistingDelivery - 1;
+            }
+        }
         result = DBManager.UpdateIntData(Tables.ShippingTable.NumberOfDelivery, ExistingDelivery, Tables.ShippingTable.Table, "where " + Tables.ShippingTable.ID + " = " + ShippingMethodID);
         return result;
     }
 
     public static ArrayList<Integer> GetShippingIDs() throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        ArrayList<Integer> IDs = DBManager.GetIntArrayList(Tables.ShippingTable.ID, Tables.ShippingTable.Table, "");
+        ArrayList<Integer> IDs = DBManager.GetIntArrayListDescending(Tables.ShippingTable.ID, Tables.ShippingTable.Table, "order by " + Tables.ShippingTable.Name);
         return IDs;
     }
 

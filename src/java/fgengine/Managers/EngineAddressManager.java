@@ -453,6 +453,28 @@ public class EngineAddressManager {
         String result = DBManager.insertTableData(Tables.PickupStationAddress.Table, tableData, "");
         return result;
     }
+    
+    
+    /**
+     *
+     * @param PickupStationID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static HashMap<String, String> GetPickUpStationData(int PickupStationID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        HashMap<String, String> Data = DBManager.GetTableData(Tables.PickupStationTable.Table, "where " + Tables.PickupStationTable.ID + " = " + PickupStationID);
+        if (!Data.isEmpty()) {
+//            int Addresstypeid = Integer.parseInt(Data.get(Tables.AddressDetailsTable.AddressTypeID));
+//            String addresstypename = GetAddressTypeNameByID(Addresstypeid);
+//            Data.put("addresstypename", addresstypename);
+//            int UserID = Integer.parseInt(Data.get(Tables.AddressDetailsTable.UserID));
+//            Data.put("addressusername", EngineUserManager.GetUserName(UserID));
+        }
+        return Data;
+    }
+    
 
     /**
      *
@@ -609,6 +631,9 @@ public class EngineAddressManager {
         }
         return Data;
     }
+    
+    
+    
 
     /**
      *
@@ -700,7 +725,7 @@ public class EngineAddressManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static int GetUserIDByddressDetailID(int AddressDetailID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+    public static int GetUserIDByAddressDetailID(int AddressDetailID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         int result = DBManager.GetInt(Tables.AddressDetailsTable.UserID, Tables.AddressDetailsTable.Table, "where " + Tables.AddressDetailsTable.ID + " = " + AddressDetailID);
         return result;
     }

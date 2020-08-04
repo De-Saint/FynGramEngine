@@ -147,7 +147,7 @@ public class EngineWalletManager {
      * @throws UnsupportedEncodingException
      * @throws ParseException
      */
-    public static String ComputeWalletRecord(int FromUserID, int ToUserID, int FromWalletTypeID, int ToWalletTypeID, double TransactionAmount, String TransactionTypeName) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
+    public static String ComputeWalletRecord(int FromUserID, int ToUserID, int FromWalletTypeID, int ToWalletTypeID, double TransactionAmount, String TransactionTypeName, String Narration) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
         String result = "failed";
         String Description = "";
         int ToUserOldBalance = 0;
@@ -156,8 +156,8 @@ public class EngineWalletManager {
         int FromUserNewBalance = 0;
         String toBodyMsg = "";
         String fromBodyMsg = "";
-        String FromWalletName= GetWalletNameByID(FromWalletTypeID);
-        String ToWalletName= GetWalletNameByID(ToWalletTypeID);
+        String FromWalletName = GetWalletNameByID(FromWalletTypeID);
+        String ToWalletName = GetWalletNameByID(ToWalletTypeID);
         if (TransactionTypeName.equals("Subscription Fees")) {
             result = EngineWalletManager.InsertWalletRecord(FromUserID, TransactionAmount, FromWalletTypeID, "Credit");
             Description = "Hi " + EngineUserManager.GetUserName(ToUserID) + ", \nYou have successfully transferred " + EngineTransactionManager.FormatNumber(TransactionAmount) + " to FynGram Account as payment for your Subscription";
@@ -179,7 +179,7 @@ public class EngineWalletManager {
                 toBodyMsg = "Hi " + EngineUserManager.GetUserName(ToUserID) + ", \n" + EngineTransactionManager.FormatNumber(TransactionAmount) + " had been credited into your " + ToWalletName + " Wallet.";
                 EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), toBodyMsg, TransactionTypeName, ToUserID);
             }
-            Description = EngineTransactionManager.FormatNumber(TransactionAmount) + " has been transferred from your " + GetWalletNameByID(FromWalletTypeID) + " Wallet to your " + GetWalletNameByID(ToWalletTypeID) + " Wallet. Please, you can also check your messages for details.";
+            Description = EngineTransactionManager.FormatNumber(TransactionAmount) + " has been transferred from your " + GetWalletNameByID(FromWalletTypeID) + " Wallet to your " + GetWalletNameByID(ToWalletTypeID) + " Wallet. - " + Narration + ". Please, you can also check your messages for details.";
         }
         FromUserOldBalance = GetUserBalance(FromUserID, FromWalletTypeID);
         ToUserOldBalance = GetUserBalance(ToUserID, ToWalletTypeID);

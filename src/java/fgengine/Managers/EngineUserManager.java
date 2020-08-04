@@ -1263,7 +1263,7 @@ public class EngineUserManager {
             LoginID = GetGuestSystemIPAddress();
         }
         EngineUserManager.CreateOrUpdateSessionID(OldSessionID, NewSessionID, LoginID, "" + UserID);
-        if((!App.equals("FGManager"))){
+        if((!App.equals("FynGramManager"))){
              EngineCartManager.UpdateCartUserID(LoginID, "" + UserID);
         }
        

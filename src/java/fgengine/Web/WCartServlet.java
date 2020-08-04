@@ -111,7 +111,7 @@ public class WCartServlet extends HttpServlet {
                     json = new Gson().toJson(CartDetails);
                     break;
                 }
-                case "GetAllShopCarts": {
+                case "GetAllShopCarts": {//admin getting all carts
                     HashMap<Integer, HashMap<String, String>> List = new HashMap<>();
                     ArrayList<Integer> IDS = new ArrayList<>();
                     IDS = EngineCartManager.GetCartIDs();
@@ -311,7 +311,11 @@ public class WCartServlet extends HttpServlet {
                         OptionDetails.put("CartDetails", CartDetails);
                     } else {
                         returninfo.addProperty("status", "error");
-                        returninfo.addProperty("msg", "Something went wrong. Please try again.");
+                        if (!result.equals("failed")) {
+                            returninfo.addProperty("msg", result);
+                        } else {
+                            returninfo.addProperty("msg", "Something went wrong. Please try again.");
+                        }
                     }
                     OptionDetails.put("result", returninfo);
                     json = new Gson().toJson(OptionDetails);

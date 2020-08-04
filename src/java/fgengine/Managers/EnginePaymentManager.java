@@ -36,17 +36,17 @@ public class EnginePaymentManager {
         String result = "failed";
         result = EnginePaymentManager.CreatePayment(UserID, PaymentType, Amount, TransactionCode, RefereceCode);
         if (result.equals("success")) {
-            result = EngineWalletManager.ComputeWalletRecord(EngineUserManager.GetAdminUserID(), UserID, EngineWalletManager.GetMainWalletID(), EngineWalletManager.GetPendingWalletID(), Amount, PaymentType);
+            result = EngineWalletManager.ComputeWalletRecord(EngineUserManager.GetAdminUserID(), UserID, EngineWalletManager.GetMainWalletID(), EngineWalletManager.GetPendingWalletID(), Amount, PaymentType, "");
             if (result.equals("success")) {
                 result = EngineSubscriptionManager.CreateSubscription(UserID, Amount);
                 if (result.endsWith("success")) {
                     String msgbdy = "Congratulations!!! \nYou have successfully paid your subscription fees as a Seller of FynGram Online Store. \nYour Account would be activated and updated after your payment has been confirmed. \nThank you for being part of FynGram Onlne Store";
                     EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), msgbdy, "Seller Account Subscription", UserID);
-//                    try {
-//                        String Email = EngineUserManager.GetUserEmail(UserID);
-//                        EngineEmailManager.SendEmail(Email, msgbdy, "Seller Account Activated");
-//                    } catch (UnsupportedEncodingException | ClassNotFoundException | SQLException ex) {
-//                    }
+                    try {
+                        String Email = EngineUserManager.GetUserEmail(UserID);
+                        EngineEmailManager.SendEmail(Email, msgbdy, "Seller Account Activated");
+                    } catch (UnsupportedEncodingException | ClassNotFoundException | SQLException ex) {
+                    }
                 } else {
                     result = "Something went wrong, not able to create subscription";
                 }
@@ -99,17 +99,15 @@ public class EnginePaymentManager {
      */
     public static String ComputePaymentWithCash(int UserID, int TotalAmount, String TransactionCode, String RefereceCode, String PaymentType) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
         String result = "failed";//
-        result = EngineWalletManager.ComputeWalletRecord(EngineUserManager.GetAdminUserID(), UserID, EngineWalletManager.GetMainWalletID(), EngineWalletManager.GetMainWalletID(), TotalAmount, PaymentType);
+        result = CreatePayment(UserID, PaymentType, TotalAmount, TransactionCode, RefereceCode);
         if (result.equals("success")) {
-            result = CreatePayment(UserID, PaymentType, TotalAmount, TransactionCode, RefereceCode);
-            if (PaymentType.equals("Placed Order With Cash")) {
-                EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), "Hi, " + EngineUserManager.GetUserName(UserID) + ", \nThe Wallet equivalent of " + EngineTransactionManager.FormatNumber(TotalAmount) + " - Order Amount, has been transferred into your wallet and had also been used to pay for the order. \nThe order amount would be refunded into your Wallet, if your Order is cancelled.", "Placed Order With Cash", UserID);
+            if (PaymentType.equals("CheckOut Payment")) {
+                result = EngineWalletManager.ComputeWalletRecord(EngineUserManager.GetAdminUserID(), UserID, EngineWalletManager.GetMainWalletID(), EngineWalletManager.GetMainWalletID(), TotalAmount, "Fund Wallet", "For placing an Order.");
+                EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), "Hi, " + EngineUserManager.GetUserName(UserID) + ", \nThe Wallet equivalent of " + EngineTransactionManager.FormatNumber(TotalAmount) + " - Order Amount, has been transferred into your wallet and had also been used to pay for the order. \nThe order amount would be refunded into your Main Wallet, if your Order is cancelled.", "CheckOut Payment With Cash", UserID);
             } else {
+                result = EngineWalletManager.ComputeWalletRecord(EngineUserManager.GetAdminUserID(), UserID, EngineWalletManager.GetMainWalletID(), EngineWalletManager.GetMainWalletID(), TotalAmount, PaymentType, "For placing an Order.");
                 EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), "Hi, " + EngineUserManager.GetUserName(UserID) + ", \nThe Wallet equivalent of " + EngineTransactionManager.FormatNumber(TotalAmount) + ", has been transferred into your wallet ", PaymentType, UserID);
             }
-        } else {
-            result = "Transaction failed.. If your account has been debited, please contact the support team.";
-//            result = "Order Payment count not be completed. If your account has been debited, please contact the support team.";
         }
         return result;//return to the browser
     }
@@ -186,6 +184,7 @@ public class EnginePaymentManager {
         String result = DBManager.DeleteObject(Tables.PaymentsTable.Table, "where " + Tables.PaymentsTable.ID + " = " + PaymentID);
         return result;
     }
+
     /**
      *
      * @param PaymentID

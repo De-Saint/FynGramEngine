@@ -9,11 +9,15 @@ import fgengine.Tables.Tables;
 import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
 import java.text.ParseException;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.json.simple.JSONObject;
 
 /**
  *
@@ -64,11 +68,13 @@ public class EngineOrderManager {
 
                 int UserAcctBalance = EngineWalletManager.GetUserBalance(UserID, EngineWalletManager.GetMainWalletID());
                 if (UserAcctBalance >= TotalAmount) {
-
                     String Reference = ComputeOrderReferenceNumber();
+                    String body = "Hi " + EngineUserManager.GetUserName(UserID) + "," + "\nThe Order with the Reference Number " + Reference + " has been placed and it is awaiting confirmation. You will be notified about the update of your order.";
+                    EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), body, "Placed Order", UserID);
+
                     int PaymentStatusID = GetOrderPaymentStatusID("Awaiting Confirmation");
 
-                    result = EngineWalletManager.ComputeWalletRecord(UserID, UserID, EngineWalletManager.GetMainWalletID(), EngineWalletManager.GetPendingWalletID(), TotalAmount, "Move Fund");
+                    result = EngineWalletManager.ComputeWalletRecord(UserID, UserID, EngineWalletManager.GetMainWalletID(), EngineWalletManager.GetPendingWalletID(), TotalAmount, "Move Fund", "For placing an Order.");
                     if (result.equals("success")) {
                         ArrayList<String> ProductSellerDetails = ComputeSellerAmounts(CartID);
                         int OrderID = 0;
@@ -90,14 +96,9 @@ public class EngineOrderManager {
                                 String InvoiceNumber = ComputeInvoiceNumber();
                                 result = CreateOrderInvoices(OrderID, InvoiceNumber, TotalAmount, ShippingTypeID, ShippingAddressID);
                                 if (result.equals("success")) {
-                                    result = CreateOrderDelivery(OrderID, TotalAmount, ShippingTypeID, ShippingAddressID);
-                                    if (result.equals("success")) {
-                                        result = ComputeOrderHistory(OrderID, CartID, SellerUserID);
-                                        if (!result.equals("success")) {
-                                            result = "Order History could not be completed.";
-                                        }
-                                    } else {
-                                        result = "Order Invoice could not be completed.";
+                                    result = ComputeOrderHistory(OrderID, CartID, SellerUserID);
+                                    if (!result.equals("success")) {
+                                        result = "Order History could not be completed.";
                                     }
                                 } else {
                                     result = "Order Invoice could not be completed.";
@@ -107,11 +108,18 @@ public class EngineOrderManager {
                             }
                         }
                         if (result.equals("success")) {
-                            result = CreateOrderPayment(OrderID, TotalAmount, PaymentMethod, PaymentReference);
+                            result = CreateOrderPayment(Reference, TotalAmount, PaymentMethod, PaymentReference);
                             if (result.equals("success")) {
                                 result = EngineCartManager.UpdateCartStatusByCartID(CartID, "Completed");
-                                if (!result.equals("success")) {
-                                    result = "Cart Status could not be updated.";
+                                if (result.equals("success")) {
+                                    result = EngineCartManager.DeleteOrEmtpyCart(CartID);
+                                    if (result.equals("success")) {
+                                        CreateOrderStatusHistory(OrderID, PaymentStatusID);
+                                    } else {
+                                        result = "Deleting Cart Details after placing order could not be completed.";
+                                    }
+                                } else {
+                                    result = "Order Payment could not be completed.";
                                 }
                             } else {
                                 result = "Order Payment could not be completed.";
@@ -258,10 +266,9 @@ public class EngineOrderManager {
      * @param SellerUserID
      * @param SellerAmount
      * @param ShippingTypeID
-     * @param ShippingID
+     * @param ShippingAddressID
      * @param OrderAmount
      * @param TotalPaid
-     * @param DeliveryID
      * @param DeliveryFees
      * @param DiscountCodeID
      * @param DiscountedAmount
@@ -299,7 +306,7 @@ public class EngineOrderManager {
 
     /**
      *
-     * @param OrderID
+     * @param OrderReference
      * @param Amount
      * @param PaymentMethod
      * @param ReferenceCode
@@ -308,13 +315,33 @@ public class EngineOrderManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String CreateOrderPayment(int OrderID, double Amount, String PaymentMethod, String ReferenceCode) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+    public static String CreateOrderPayment(String OrderReference, double Amount, String PaymentMethod, String ReferenceCode) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         HashMap<String, Object> tableData = new HashMap<>();
-        tableData.put(Tables.OrderPaymentsTable.OrderID, OrderID);
+        tableData.put(Tables.OrderPaymentsTable.OrderReference, OrderReference);
         tableData.put(Tables.OrderPaymentsTable.Amount, Amount);
         tableData.put(Tables.OrderPaymentsTable.PaymentMethod, PaymentMethod);
         tableData.put(Tables.OrderPaymentsTable.ReferenceCode, ReferenceCode);
         String result = DBManager.insertTableData(Tables.OrderPaymentsTable.Table, tableData, "");
+        return result;
+    }
+
+    /**
+     *
+     * @param OrderID
+     * @param StatusID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static String CreateOrderStatusHistory(int OrderID, int StatusID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        HashMap<String, Object> tableData = new HashMap<>();
+        tableData.put(Tables.OrderStatusHistoryTable.OrderID, OrderID);
+        tableData.put(Tables.OrderStatusHistoryTable.StatusID, StatusID);
+        int id = DBManager.insertTableDataReturnID(Tables.OrderStatusHistoryTable.Table, tableData, "");
+        String result = DBManager.UpdateCurrentDate(Tables.OrderStatusHistoryTable.Table, Tables.OrderStatusHistoryTable.Date, "where " + Tables.OrderStatusHistoryTable.ID + " = " + id);
+        DBManager.UpdateCurrentTime(Tables.OrderStatusHistoryTable.Table, Tables.OrderStatusHistoryTable.Time, "where " + Tables.OrderStatusHistoryTable.ID + " = " + id);
+
         return result;
     }
 
@@ -340,29 +367,6 @@ public class EngineOrderManager {
         int InvoiceID = DBManager.insertTableDataReturnID(Tables.OrderInvoicesTable.Table, tableData, "");
         String result = DBManager.UpdateCurrentDate(Tables.OrderInvoicesTable.Table, Tables.OrderInvoicesTable.Date, "where " + Tables.OrderInvoicesTable.ID + " = " + InvoiceID);
         DBManager.UpdateCurrentTime(Tables.OrderInvoicesTable.Table, Tables.OrderInvoicesTable.Time, "where " + Tables.OrderInvoicesTable.ID + " = " + InvoiceID);
-        return result;
-    }
-
-    /**
-     *
-     * @param OrderID
-     * @param Amount
-     * @param ShippingTypeID
-     * @param ShippingAddressID
-     * @return
-     * @throws ClassNotFoundException
-     * @throws SQLException
-     * @throws UnsupportedEncodingException
-     */
-    public static String CreateOrderDelivery(int OrderID, double Amount, int ShippingTypeID, int ShippingAddressID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        HashMap<String, Object> tableData = new HashMap<>();
-        tableData.put(Tables.OrderDeliveryTable.OrderID, OrderID);
-        tableData.put(Tables.OrderDeliveryTable.Amount, Amount);
-        tableData.put(Tables.OrderDeliveryTable.ShippingTypeID, ShippingTypeID);
-        tableData.put(Tables.OrderDeliveryTable.ShippingAddressID, ShippingAddressID);
-        int DeliveryID = DBManager.insertTableDataReturnID(Tables.OrderDeliveryTable.Table, tableData, "");
-        String result = DBManager.UpdateCurrentDate(Tables.OrderDeliveryTable.Table, Tables.OrderDeliveryTable.Date, "where " + Tables.OrderDeliveryTable.ID + " = " + DeliveryID);
-        DBManager.UpdateCurrentTime(Tables.OrderDeliveryTable.Table, Tables.OrderDeliveryTable.Time, "where " + Tables.OrderDeliveryTable.ID + " = " + DeliveryID);
         return result;
     }
 
@@ -694,25 +698,29 @@ public class EngineOrderManager {
      * @throws UnsupportedEncodingException
      * @throws ParseException
      */
-    public static String ComputeCancelOrder(int OrderID, int UserID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
+    public static String ComputeCancelOrder(int OrderID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
         String result = "failed";
         int OrderStatus = GetOrderPaymentStatusID(OrderID);
         int PaymentStatusID = GetOrderPaymentStatusID("Cancelled");
+        String OrderRef = GetOrderReferenceNumber(OrderID);
         if (OrderStatus != PaymentStatusID) {//3
             if (OrderStatus == 4) {//Shipped
                 EngineStockManager.ComputeStockMovement(OrderID, "Increase");
             }
-            String OrderRef = GetOrderReferenceNumber(OrderID);
+            if (OrderStatus == 5) {//
+                UpdateShippingMethodCancelOrder(OrderID, OrderRef);
+            }
+
             int CustomerUserID = GetOrderCustomerUserID(OrderID);
             String CustomerUserName = EngineUserManager.GetUserName(CustomerUserID);
-            String body = "Hi " + CustomerUserName + "," + "\nThe Order with Order Reference Number " + OrderRef + " has been cancelled and your fund had also been refunded into your Main Wallet.";
+            String body = "Hi " + CustomerUserName + "," + "\nThe Order with the Reference Number " + OrderRef + " has been cancelled and your fund had also been refunded into your Main Wallet.";
 
             ArrayList<Integer> OrderIdsByRef = GetOrderIDsByReferenceNumber(OrderRef);
             double SellerAmount = GetOrderSellerAmount(OrderID);
             double DeliveryFees = GetOrderShippingFees(OrderID);
             double DiscountAmount = GetOrderDiscountAmount(OrderID);
             double RefundAmount = (DeliveryFees / OrderIdsByRef.size());
-            String UserType = EngineUserManager.GetUserTypeNameByUserID("" + UserID);
+            String UserType = EngineUserManager.GetUserTypeNameByUserID("" + CustomerUserID);
             boolean enforceCancelFees;
             double CancelFeesPecentage = 0.0;
             if (UserType.equals("Admin")) {
@@ -722,27 +730,28 @@ public class EngineOrderManager {
                 CancelFeesPecentage = GetEnforceCancelFeesPercentage();
             }
 
+            CreateOrderStatusHistory(OrderID, PaymentStatusID);
             double RefundableAmount = SellerAmount + RefundAmount;
             if (DiscountAmount == 0) {
                 if (enforceCancelFees) {
-                    int AdminAmount = EngineDiscountManager.ComputePercentageAmount(CancelFeesPecentage, RefundableAmount);
+                    double AdminAmount = EngineDiscountManager.ComputePercentageAmount(CancelFeesPecentage, RefundableAmount);
                     double CustomerAmount = RefundableAmount - AdminAmount;
-                    result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, CustomerUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), CustomerAmount, "Move Fund");
-                    EngineWalletManager.ComputeWalletRecord(CustomerUserID, EngineUserManager.GetAdminUserID(), EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), AdminAmount, "Move Fund");
+                    result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, CustomerUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), CustomerAmount, "Move Fund", "For cancelled Order.");
+                    EngineWalletManager.ComputeWalletRecord(CustomerUserID, EngineUserManager.GetAdminUserID(), EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), AdminAmount, "Move Fund", "For cancelled Order.");
                 } else {
-                    result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, CustomerUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), RefundableAmount, "Move Fund");
+                    result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, CustomerUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), RefundableAmount, "Move Fund", "For cancelled Order.");
                 }
             } else {
                 double withDiscountAmount = (int) (DiscountAmount / OrderIdsByRef.size());
                 double withDiscountRefundableAmount = RefundableAmount - withDiscountAmount;
                 if (enforceCancelFees) {
-                    int AdminAmount = EngineDiscountManager.ComputePercentageAmount(CancelFeesPecentage, withDiscountRefundableAmount);
+                    double AdminAmount = EngineDiscountManager.ComputePercentageAmount(CancelFeesPecentage, withDiscountRefundableAmount);
                     double CustomerAmount = withDiscountRefundableAmount - AdminAmount;
-                    result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, CustomerUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), CustomerAmount, "Move Fund");
-                    EngineWalletManager.ComputeWalletRecord(CustomerUserID, EngineUserManager.GetAdminUserID(), EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), AdminAmount, "Move Fund");
+                    result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, CustomerUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), CustomerAmount, "Move Fund", "For cancelled Order.");
+                    EngineWalletManager.ComputeWalletRecord(CustomerUserID, EngineUserManager.GetAdminUserID(), EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), AdminAmount, "Move Fund", "For cancelled Order.");
 
                 } else {
-                    result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, CustomerUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), withDiscountRefundableAmount, "Move Fund");
+                    result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, CustomerUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), withDiscountRefundableAmount, "Move Fund", "For cancelled Order.");
                 }
             }
             if (result.equals("success")) {
@@ -751,21 +760,52 @@ public class EngineOrderManager {
 
                 int SellerUserID = GetOrderSellerUserID(OrderID);
                 String SellerUserName = EngineUserManager.GetUserName(SellerUserID);
-                body = "Hi " + SellerUserName + "," + "\nThe Order with Order Reference Number " + OrderRef + " that involves your product(s) has been cancelled.";
+                body = "Hi " + SellerUserName + "," + "\nThe Order with the Reference Number " + OrderRef + " that involves your product(s) has been cancelled.";
                 EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), body, "Order Cancelled", SellerUserID);
-//                try {
-//                String CustomerUserEmail = EngineUserManager.GetUserEmail(CustomerUserID);
-//                    result = EngineEmailManager.SendEmail(CustomerUserEmail, body, "FynGram Order Cancelled");
+                try {
+                    String CustomerUserEmail = EngineUserManager.GetUserEmail(CustomerUserID);
+                    result = EngineEmailManager.SendEmail(CustomerUserEmail, body, "FynGram Order Cancelled");
 
-//                    String SellerUserEmail = EngineUserManager.GetUserEmail(SellerUserID);
-//                    result = EngineEmailManager.SendEmail(SellerUserEmail, body, "FynGram Order Cancelled");
-//                } catch (Exception ex) {
-//                }
+                    String SellerUserEmail = EngineUserManager.GetUserEmail(SellerUserID);
+                    result = EngineEmailManager.SendEmail(SellerUserEmail, body, "FynGram Order Cancelled");
+                } catch (Exception ex) {
+                }
             } else {
                 result = "The cancelling of the order could not be completed.";
             }
         } else {
             result = "The Order has already been cancelled.";
+        }
+        return result;
+    }
+
+    public static String UpdateShippingMethodCancelOrder(int OrderID, String OrderRef) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        String result = "failed";
+        int ShippingMethodID = GetOrderShippingMethodByOrderID(OrderID);
+        int ShippingTypeID = GetOrderShippingTypeID(OrderID);
+        double AdminShippingPercentage = 0;
+
+        if (ShippingTypeID == 1) {//Use my address
+            AdminShippingPercentage = EngineShippingManager.GetAdminShippingPercentage(ShippingMethodID);
+        } else if (ShippingTypeID == 2) {//Use Pickup address
+            int ShippingAddressID = GetOrderShippingAddressID(OrderID);
+            AdminShippingPercentage = EngineAddressManager.GetAdminPickupPercentage(ShippingAddressID);
+        }
+        ArrayList<Integer> OrderIdsByRef = GetOrderIDsByReferenceNumber(OrderRef);
+        double DeliveryFees = GetOrderShippingFees(OrderID);
+        double DeliveryFeesAmount = (DeliveryFees / OrderIdsByRef.size());
+        double AdminShippingAmount = EngineDiscountManager.ComputePercentageAmount(AdminShippingPercentage, DeliveryFeesAmount);
+        double ShippingMethodShippingAmount = DeliveryFeesAmount - AdminShippingAmount;
+        String ShippingMethodName = EngineShippingManager.GetShippingMethodName(ShippingMethodID);
+        String body = "Hi " + ShippingMethodName + "," + "\nThe Order with the Reference Number " + OrderRef + " has been cancelled.";
+        result = EngineShippingManager.UpdateShippingMethodEarnings(ShippingMethodID, ShippingMethodShippingAmount, "Subtract");
+        result = EngineShippingManager.UpdateShippingMethodNumberOfDelivery(ShippingMethodID, "Subtract");
+        try {
+            String ShippingMethodEmail = EngineShippingManager.GetShippingMethodEmail(ShippingMethodID);
+            result = EngineEmailManager.SendEmail(ShippingMethodEmail, body, "FynGram Order Delivered");
+
+        } catch (Exception ex) {
+
         }
         return result;
     }
@@ -789,7 +829,6 @@ public class EngineOrderManager {
     //---------------------------------------------------------  Confirm Order ---------------------------------------------------//
     /**
      *
-     * @param AdminUserID
      * @param OrderID
      * @param ShippingMethodID
      * @return
@@ -798,7 +837,82 @@ public class EngineOrderManager {
      * @throws UnsupportedEncodingException
      * @throws ParseException
      */
-    public static String ComputeConfirmOrder(int AdminUserID, int OrderID, int ShippingMethodID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
+    public static String ComputeAssignShippingMethodToOrder(int OrderID, int ShippingMethodID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
+        String result = "failed";
+        String OrderRef = GetOrderReferenceNumber(OrderID);
+        String body = "";
+        int ExistingShipMeth = DBManager.GetInt(Tables.OrderShippingMethodTable.ID, Tables.OrderShippingMethodTable.Table, "where " + Tables.OrderShippingMethodTable.OrderID + " = " + OrderID);
+        if (ExistingShipMeth == 0) {
+            result = CreateOrderShippingMethod(OrderID, ShippingMethodID);
+        } else {
+            result = UpdateOrderShippingMethod(OrderID, ShippingMethodID);
+        }
+
+        if (result.equals("success")) {
+            try {
+                String ShippingMethodEmail = EngineShippingManager.GetShippingMethodEmail(ShippingMethodID);
+                String ShippingMethodName = EngineShippingManager.GetShippingMethodName(ShippingMethodID);
+                body = "Hi " + ShippingMethodName + "," + "\nThe Order with the Order Reference Number " + OrderRef + " has been confirmed and it's pending delivery. \nPlease, contact FynGram Online Store For Shipping/Delivery Schedules.";
+                EngineEmailManager.SendEmail(ShippingMethodEmail, body, "FynGram Order Confirmation");
+            } catch (Exception ex) {
+            }
+        } else {
+            result = "Updating the shipping method was not successful. Please try again.";
+        }
+
+        return result;
+    }
+
+    /**
+     *
+     * @param SessionID
+     * @param orderID
+     * @param statusID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     * @throws ParseException
+     */
+    public static String ComputeOrderStatus(String SessionID, String orderID, String statusID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
+        String result = "failed";
+        int StatusID = Integer.parseInt(statusID);
+        int OrderID = Integer.parseInt(orderID);
+        switch (StatusID) {
+            case 1:
+                //CONFIRMATION
+                int AdminUserID = Integer.parseInt(SessionID);
+                result = ComputeConfirmOrder(AdminUserID, OrderID);
+                break;
+            case 3:
+                //CANCELLED
+                result = ComputeCancelOrder(OrderID);
+                break;
+            case 4:
+                //SHIPPED
+                result = ComputeShippedOrder(OrderID);
+                break;
+            case 5:
+                //DELIVERED
+                result = ComputeDeliveredOrder(OrderID);
+                break;
+            default:
+                break;
+        }
+        return result;
+    }
+
+    /**
+     *
+     * @param AdminUserID
+     * @param OrderID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     * @throws ParseException
+     */
+    public static String ComputeConfirmOrder(int AdminUserID, int OrderID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
         String result = "failed";
         int OrderStatus = GetOrderPaymentStatusID(OrderID);
         int PaymentStatusID = GetOrderPaymentStatusID("Confirmed");
@@ -807,33 +921,26 @@ public class EngineOrderManager {
             String body = "";
             result = UpdateOrderPaymentStatusID(OrderID, PaymentStatusID);
             if (result.equals("success")) {
-                double ShippingFess = GetOrderShippingFees(OrderID);
                 UpdateOrderApprovedUserID(OrderID, AdminUserID);
-
-                //attached a shipping or delivery method e.g a logistic company
-                CreateOrderShippingMethod(OrderID, ShippingMethodID, ShippingFess);
 
                 int CustomerUserID = GetOrderCustomerUserID(OrderID);
                 String CustomerUserName = EngineUserManager.GetUserName(CustomerUserID);
-                body = "Hi " + CustomerUserName + "," + "\nThe Order with Order Reference Number " + OrderRef + " has been confirmed and payment has been recieved and is BEING PROCESSED. \nYou will receive shipping/delivery message shortly.";
+                body = "Hi " + CustomerUserName + "," + "\nThe Order with the Reference Number " + OrderRef + " has been confirmed and payment has been recieved and is BEING PROCESSED. \nYou will receive shipping/delivery message shortly.";
                 EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), body, "Order Cancelled", CustomerUserID);
 
                 int SellerUserID = GetOrderSellerUserID(OrderID);
                 String SellerUserName = EngineUserManager.GetUserName(SellerUserID);
-                body = "Hi " + SellerUserName + "," + "\nThe Order with Order Reference Number " + OrderRef + " that involves your product(s) has been confirmed. \nPlease, contact FynGram Online Store For Shipping/Delivery Schedules.";
+                body = "Hi " + SellerUserName + "," + "\nThe Order with the Reference Number " + OrderRef + " that involves your product(s) has been confirmed. \nPlease, contact FynGram Online Store For Shipping/Delivery Schedules.";
                 EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), body, "Order Cancelled", SellerUserID);
-//                try {
-//                  String ShippingMethodEmail = EngineShippingManager.GetShippingMethodEmail(ShippingMethodID);
-//                String ShippingMethodName = EngineShippingManager.GetShippingMethodName(ShippingMethodID);
-//                body = "Hi " + ShippingMethodName + "," + "\nThe Order with Order Reference Number " + OrderRef + " has been confirmed and it's waitin for delivery. \nPlease, contact FynGram Online Store For Shipping/Delivery Schedules.";
-////                    result = EngineEmailManager.SendEmail(ShippingMethodEmail, body, "FynGram Order Confirmation");
-//                
-//                String UserEmail = EngineUserManager.GetUserEmail(CustomerUserID);
-//                    result = EngineEmailManager.SendEmail(UserEmail, body, "FynGram Order Confirmation");
-//
-//                    String SellerUserEmail = EngineUserManager.GetUserEmail(SellerUserID);
-//                    result = EngineEmailManager.SendEmail(SellerUserEmail, body, "FynGram Order Confirmation");
-//                } catch (Exception ex) {}
+                CreateOrderStatusHistory(OrderID, PaymentStatusID);
+                try {
+                    String UserEmail = EngineUserManager.GetUserEmail(CustomerUserID);
+                    result = EngineEmailManager.SendEmail(UserEmail, body, "FynGram Order Confirmation");
+
+                    String SellerUserEmail = EngineUserManager.GetUserEmail(SellerUserID);
+                    result = EngineEmailManager.SendEmail(SellerUserEmail, body, "FynGram Order Confirmation");
+                } catch (Exception ex) {
+                }
             } else {
                 result = "The cancelling of the order could not be completed.";
             }
@@ -848,19 +955,31 @@ public class EngineOrderManager {
      *
      * @param OrderID
      * @param ShippingMethodID
-     * @param ShippingFees
      * @return
      * @throws ClassNotFoundException
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String CreateOrderShippingMethod(int OrderID, int ShippingMethodID, double ShippingFees) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+    public static String CreateOrderShippingMethod(int OrderID, int ShippingMethodID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         String result = "failed";
         HashMap<String, Object> tableData = new HashMap<>();
         tableData.put(Tables.OrderShippingMethodTable.OrderID, OrderID);
         tableData.put(Tables.OrderShippingMethodTable.ShippingMethodID, ShippingMethodID);
-        tableData.put(Tables.OrderShippingMethodTable.ShippingFees, ShippingFees);
         result = DBManager.insertTableData(Tables.OrderShippingMethodTable.Table, tableData, "");
+        return result;
+    }
+
+    /**
+     *
+     * @param OrderID
+     * @param ShippingMethodID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static String UpdateOrderShippingMethod(int OrderID, int ShippingMethodID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        String result = DBManager.UpdateIntData(Tables.OrderShippingMethodTable.ShippingMethodID, ShippingMethodID, Tables.OrderShippingMethodTable.Table, "where " + Tables.OrderShippingMethodTable.OrderID + " = " + OrderID);
         return result;
     }
 
@@ -876,31 +995,37 @@ public class EngineOrderManager {
      */
     public static String ComputeShippedOrder(int OrderID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
         String result = "failed";
-        int OrderStatus = GetOrderPaymentStatusID(OrderID);
+        int CurrentOrderStatus = GetOrderPaymentStatusID(OrderID);
         int PaymentStatusID = GetOrderPaymentStatusID("Shipped");
-        if (OrderStatus != PaymentStatusID) {
+        if (CurrentOrderStatus != PaymentStatusID) {
             String OrderRef = GetOrderReferenceNumber(OrderID);
             int CustomerUserID = GetOrderCustomerUserID(OrderID);
             String CustomerUserName = EngineUserManager.GetUserName(CustomerUserID);
-            String body = "Hi " + CustomerUserName + "," + "\nThe Order with Order Reference Number " + OrderRef + " has been processed and shipped . \nYou will be contacted by The Delivery Agent.";
+            String CustomerPhone = EngineUserManager.GetUserPhone(CustomerUserID);
+            int SellerUserID = GetOrderSellerUserID(OrderID);
+            String SellerUserName = EngineUserManager.GetUserName(SellerUserID);
+            String body = "Hi " + CustomerUserName + "," + "\nThe Order with the Reference Number " + OrderRef + " has been processed and shipped . \nYou will be contacted by The Delivery Agent.";
+            String sbody = "Hi " + SellerUserName + "," + "\nThe Order with the Reference Number " + OrderRef + " has been processed and shipped/in-delivery . \nPlease, contact the customer on phone: " + CustomerPhone;
 
             result = UpdateOrderPaymentStatusID(OrderID, PaymentStatusID);
             if (result.equals("success")) {
+                CreateOrderStatusHistory(OrderID, PaymentStatusID);
                 result = EngineStockManager.ComputeStockMovement(OrderID, "Decrease");
                 if (result.equals("success")) {
                     EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), body, "Order Cancelled", CustomerUserID);
-//            try {
-//                    String UserEmail = EngineUserManager.GetUserEmail(CustomerUserID);
-//                    result = EngineEmailManager.SendEmail(UserEmail, body, "FynGram Order Cancelled");F
-//                    String SellerUserEmail = EngineUserManager.GetUserEmail(SellerUserID);
-//                    result = EngineEmailManager.SendEmail(SellerUserEmail, body, "FynGram Order Cancelled");
-//                } catch (Exception ex) {}
+                    try {
+                        String UserEmail = EngineUserManager.GetUserEmail(CustomerUserID);
+                        EngineEmailManager.SendEmail(UserEmail, body, "FynGram Order Cancelled");
+                        String SellerUserEmail = EngineUserManager.GetUserEmail(SellerUserID);
+                        EngineEmailManager.SendEmail(SellerUserEmail, sbody, "FynGram Order Cancelled");
+                    } catch (Exception ex) {
+                    }
                 }
             } else {
-                result = "The cancelling of the order could not be completed.";
+                result = "The shipping of the order could not be completed.";
             }
         } else {
-            result = "The Order has already been confirmed.";
+            result = "The Order has already been shipped.";
         }
         return result;
     }
@@ -934,10 +1059,12 @@ public class EngineOrderManager {
             double AdminTransactionPercent = EngineTransactionManager.GetAdminTransactionPercentageBySellerType(SellerTypeID);
             double AdminShippingPercentage = 0;
             ArrayList<Integer> OrderIdsByRef = GetOrderIDsByReferenceNumber(OrderRef);
-            int ShippingAddressID = GetOrderShippingAddressID(OrderID);
+
             if (ShippingTypeID == 1) {//Use my address
-                AdminShippingPercentage = EngineShippingManager.GetAdminShippingPercentage(ShippingAddressID);
+                int ShippingMethodID = GetOrderShippingMethodByOrderID(OrderID);
+                AdminShippingPercentage = EngineShippingManager.GetAdminShippingPercentage(ShippingMethodID);
             } else if (ShippingTypeID == 2) {//Use Pickup address
+                int ShippingAddressID = GetOrderShippingAddressID(OrderID);
                 AdminShippingPercentage = EngineAddressManager.GetAdminPickupPercentage(ShippingAddressID);
             }
 
@@ -953,28 +1080,30 @@ public class EngineOrderManager {
             int SplitDiscountDeductionValue = EngineDiscountManager.GetDiscountSplitDeductionValue(DiscountCodeID);
 
             int ShippingMethodID = GetOrderShippingMethodByOrderID(OrderID);
-            result = EngineShippingManager.UpdateShippingMethodEarnings(ShippingMethodID, ShippingMethodShippingAmount);
-            result = EngineShippingManager.UpdateShippingMethodNumberOfDelivery(ShippingMethodID);
+            result = EngineShippingManager.UpdateShippingMethodEarnings(ShippingMethodID, ShippingMethodShippingAmount, "Add");
+            result = EngineShippingManager.UpdateShippingMethodNumberOfDelivery(ShippingMethodID, "Add");
             if (DiscountFees == 0) {
-                result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, AdminUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), AdminBalance, "Move Fund");
+                result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, AdminUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), AdminBalance, "Move Fund", "For delivered Order.");
                 if (result.equals("success")) {
-                    result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, SellerUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), SellerBalance, "Move Fund");
+                    result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, SellerUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), SellerBalance, "Move Fund", "For delivered Order.");
                 }
             } else {
                 double withDiscountAmount = (DiscountFees / OrderIdsByRef.size());
                 if (SplitDiscountDeductionValue == 0) {
 //                     do not share discount amount
                     double AdminAmountAfterDiscount = AdminBalance - withDiscountAmount;
-                    result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, AdminUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), AdminAmountAfterDiscount, "Move Fund");
-
+                    result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, AdminUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), AdminAmountAfterDiscount, "Move Fund", "For delivered Order.");
+                    if (result.equals("success")) {
+                        result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, SellerUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), SellerBalance, "Move Fund", "For delivered Order.");
+                    }
                 } else {
                     //share the discount amount
                     double DiscountAmountToRefund = (withDiscountAmount / 2);
                     double SellerAmountAfterDiscount = SellerBalance - DiscountAmountToRefund;
-                    result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, SellerUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), SellerAmountAfterDiscount, "Move Fund");
+                    result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, SellerUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), SellerAmountAfterDiscount, "Move Fund", "For delivered Order.");
                     if (result.equals("success")) {
                         double AdminAmountAfterDiscount = AdminBalance - DiscountAmountToRefund;
-                        result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, AdminUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), AdminAmountAfterDiscount, "Move Fund");
+                        result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, AdminUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), AdminAmountAfterDiscount, "Move Fund", "For delivered Order.");
                     }
                 }
 
@@ -982,29 +1111,30 @@ public class EngineOrderManager {
 
             if (result.equals("success")) {
                 result = UpdateOrderPaymentStatusID(OrderID, PaymentStatusID);
+                CreateOrderStatusHistory(OrderID, PaymentStatusID);
                 if (result.equals("success")) {
                     String CustomerUserName = EngineUserManager.GetUserName(CustomerUserID);
-                    String body = "Hi " + CustomerUserName + "," + "\nThe Order with Order Reference Number " + OrderRef + " has been delivered . \nThank you for being part of FynGram";
+                    String body = "Hi " + CustomerUserName + "," + "\nThe Order with the Reference Number " + OrderRef + " has been delivered . \nThank you for being part of FynGram";
                     EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), body, "Order Cancelled", CustomerUserID);
 
                     String SellerUserName = EngineUserManager.GetUserName(SellerUserID);
-                    body = "Hi " + SellerUserName + "," + "\nThe Order with Order Reference Number " + OrderRef + " that involves your product(s) has been delivered. \nThank you for being part of FynGram.";
+                    body = "Hi " + SellerUserName + "," + "\nThe Order with the Reference Number " + OrderRef + " that involves your product(s) has been delivered. \nThank you for being part of FynGram.";
                     EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), body, "Order Cancelled", SellerUserID);
 
                     String ShippingMethodName = EngineShippingManager.GetShippingMethodName(ShippingMethodID);
-                    body = "Hi " + ShippingMethodName + "," + "\nThe Order with Order Reference Number " + OrderRef + " has been delivered. \nThank you for being part of FynGram.";
+                    body = "Hi " + ShippingMethodName + "," + "\nThe Order with the Reference Number " + OrderRef + " has been delivered. \nThank you for being part of FynGram.";
 
-//                    try {
-//                        String CustomerEmail = EngineUserManager.GetUserEmail(CustomerUserID);
-//                        result = EngineEmailManager.SendEmail(CustomerEmail, body, "FynGram Order Delivered");
-//
-//                        String SellerUserEmail = EngineUserManager.GetUserEmail(SellerUserID);
-//                        result = EngineEmailManager.SendEmail(SellerUserEmail, body, "FynGram Order Delivered");
-//
-//                        String ShippingMethodEmail = EngineShippingManager.GetShippingMethodEmail(ShippingMethodID);
-//                        result = EngineEmailManager.SendEmail(ShippingMethodEmail, body, "FynGram Order Delivered");
-//                    } catch (Exception ex) {
-//                    }
+                    try {
+                        String CustomerEmail = EngineUserManager.GetUserEmail(CustomerUserID);
+                        EngineEmailManager.SendEmail(CustomerEmail, body, "FynGram Order Delivered");
+
+                        String SellerUserEmail = EngineUserManager.GetUserEmail(SellerUserID);
+                        EngineEmailManager.SendEmail(SellerUserEmail, body, "FynGram Order Delivered");
+
+                        String ShippingMethodEmail = EngineShippingManager.GetShippingMethodEmail(ShippingMethodID);
+                        EngineEmailManager.SendEmail(ShippingMethodEmail, body, "FynGram Order Delivered");
+                    } catch (Exception ex) {
+                    }
                 }
                 //update delivery date
                 UpdateOrderDeliveryDate(OrderID);
@@ -1048,12 +1178,34 @@ public class EngineOrderManager {
 
     /**
      *
+     * @param UserID
      * @return @throws ClassNotFoundException
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static ArrayList<Integer> GetOrderIDs() throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        ArrayList<Integer> IDs = DBManager.GetIntArrayList(Tables.OrdersTable.ID, Tables.OrdersTable.Table, "");
+    public static ArrayList<Integer> GetOrderIDs(int UserID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        ArrayList<Integer> IDs = new ArrayList<>();
+        String UserType = EngineUserManager.GetUserTypeNameByUserID("" + UserID);
+        if (UserType.equals("Admin")) {
+            IDs = DBManager.GetIntArrayList(Tables.OrdersTable.ID, Tables.OrdersTable.Table, "");
+        } else if (UserType.equals("Seller")) {
+            IDs = DBManager.GetIntArrayList(Tables.OrdersTable.ID, Tables.OrdersTable.Table, "where " + Tables.OrdersTable.SellerUserID + " = " + UserID);
+        } else if (UserType.equals("Customers")) {
+            IDs = DBManager.GetIntArrayList(Tables.OrdersTable.ID, Tables.OrdersTable.Table, "where " + Tables.OrdersTable.CustomerUserID + " = " + UserID);
+        }
+        return IDs;
+    }
+
+    /**
+     *
+     * @param UserID
+     * @return @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static ArrayList<Integer> GetOrderStatusIDs() throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        ArrayList<Integer> IDs = new ArrayList<>();
+        IDs = DBManager.GetIntArrayListDescending(Tables.OrderStatusTable.ID, Tables.OrderStatusTable.Table, "order by " + Tables.OrderStatusTable.Name);
         return IDs;
     }
 
@@ -1067,6 +1219,453 @@ public class EngineOrderManager {
      */
     public static int GetOrderShippingMethodByOrderID(int OrderID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         int result = DBManager.GetInt(Tables.OrderShippingMethodTable.ShippingMethodID, Tables.OrderShippingMethodTable.Table, "where " + Tables.OrderShippingMethodTable.OrderID + " = " + OrderID);
+        return result;
+    }
+
+    /**
+     *
+     * @param OrderID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static HashMap<String, String> GetOrderData(int OrderID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        HashMap<String, String> result = new HashMap<>();
+        result = DBManager.GetTableData(Tables.OrdersTable.Table, "where " + Tables.OrdersTable.ID + " = " + OrderID);
+        if (!result.isEmpty()) {
+            result.put("OrderID", "" + OrderID);
+            String customerid = result.get(Tables.OrdersTable.CustomerUserID);
+            int CustomerID = Integer.parseInt(customerid);
+            result.put("CustomerName", EngineUserManager.GetUserName(CustomerID));
+
+            String sellerid = result.get(Tables.OrdersTable.SellerUserID);
+            int SellerID = Integer.parseInt(sellerid);
+            //Get Status Details
+            JSONObject SellerDet = new JSONObject();
+            SellerDet.put("SellerDetails", EngineProductManager.GetSellerInfoData(SellerID));
+            if (!SellerDet.isEmpty()) {
+                result.putAll(SellerDet);
+            }
+
+            String statusid = result.get(Tables.OrdersTable.PaymentStatusID);
+            int StatusID = Integer.parseInt(statusid);
+            //Get Status Details
+            JSONObject StatusDet = new JSONObject();
+            StatusDet.put("StatusDetails", GetOrderStatusData(StatusID));
+            if (!StatusDet.isEmpty()) {
+                result.putAll(StatusDet);
+            }
+            //Get Payemnt Details
+            JSONObject PaymentDet = new JSONObject();
+            String OrderReference = result.get(Tables.OrdersTable.Reference);
+            PaymentDet.put("PaymentDetails", GetOrderPaymentData(OrderReference));
+            if (!PaymentDet.isEmpty()) {
+                result.putAll(PaymentDet);
+            }
+
+            String bkdate = result.get(Tables.OrdersTable.BookingDate);
+            String bkDate = DateManager.readDate(bkdate);
+            result.put(Tables.OrdersTable.BookingDate, bkDate);
+
+            String bktime = result.get(Tables.OrdersTable.BookingTime);
+            String bkTime = DateManager.readTime(bktime);
+            result.put(Tables.OrdersTable.BookingTime, bkTime);
+        }
+        return result;
+    }
+
+    /**
+     *
+     * @param OrderID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static HashMap<Integer, HashMap<String, String>> GetOrderHistoryDataByOrderID(int OrderID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        HashMap<Integer, HashMap<String, String>> List = new HashMap<>();
+        HashMap<String, String> orderHistoryList = new HashMap<>();
+        ArrayList<Integer> orderHistIDS = GetOrderHistoryIDs(OrderID);
+        if (!orderHistIDS.isEmpty()) {
+            for (int orderHistID : orderHistIDS) {
+                orderHistoryList = GetOrderHistoryData(orderHistID);
+                if (!orderHistoryList.isEmpty()) {
+                    String productID = orderHistoryList.get(Tables.OrderHistoryTable.ProductID);
+                    int ProductID = Integer.parseInt(productID);
+                    HashMap<String, String> ProductDetails = EngineProductManager.GetProductData(ProductID);
+                    JSONObject ProductDet = new JSONObject();
+                    ProductDet.put("ProductDetails", ProductDetails);
+                    if (!ProductDet.isEmpty()) {
+                        orderHistoryList.putAll(ProductDet);
+                    }
+                    List.put(orderHistID, orderHistoryList);
+                }
+            }
+        }
+        return List;
+    }
+
+    /**
+     *
+     * @param OrderID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static HashMap<String, String> GetOrderInvoiceData(int OrderID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        HashMap<String, String> data = DBManager.GetTableData(Tables.OrderInvoicesTable.Table, "where " + Tables.OrderInvoicesTable.OrderID + " = " + OrderID);
+        if (!data.isEmpty()) {
+            String idate = data.get(Tables.OrderInvoicesTable.Date);
+            String InvoiceDate = DateManager.readDate(idate);
+            data.put("InvoiceDate", InvoiceDate);
+            String itime = data.get(Tables.OrderInvoicesTable.Time);
+            String InvoiceTime = DateManager.readTime(itime);
+            data.put("InvoiceTime", InvoiceTime);
+        }
+
+        return data;
+    }
+
+    /**
+     *
+     * @param OrderReference
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static HashMap<String, String> GetOrderPaymentData(String OrderReference) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        HashMap<String, String> data = DBManager.GetTableData(Tables.OrderPaymentsTable.Table, "where " + Tables.OrderPaymentsTable.OrderReference + " = '" + OrderReference + "'");
+        return data;
+    }
+
+    /**
+     *
+     * @param OrderID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static HashMap<String, String> GetOrderStatusData(int StatusID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        HashMap<String, String> data = DBManager.GetTableData(Tables.OrderStatusTable.Table, "where " + Tables.OrderStatusTable.ID + " = " + StatusID);
+        return data;
+    }
+
+    /**
+     *
+     * @param OrderID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static HashMap<String, String> GetOrderShippingMethodData(int OrderID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        HashMap<String, String> data = DBManager.GetTableData(Tables.OrderShippingMethodTable.Table, "where " + Tables.OrderShippingMethodTable.OrderID + " = " + OrderID);
+        if (!data.isEmpty()) {
+            String shippingmethodid = data.get(Tables.OrderShippingMethodTable.ShippingMethodID);
+            int ShippingMethodID = Integer.parseInt(shippingmethodid);
+            data.putAll(GetShippingMethodData(ShippingMethodID));
+        }
+
+        return data;
+    }
+
+    public static HashMap<String, String> GetShippingMethodData(int ShippingID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        HashMap<String, String> Data = new HashMap<>();
+        Data = DBManager.GetTableData(Tables.ShippingTable.Table, "where " + Tables.ShippingTable.ID + " = " + ShippingID);
+        if (!Data.isEmpty()) {
+            String Name = Data.get(Tables.ShippingTable.Name);
+            Data.put("ShippingMethodName", Name);
+            String Email = Data.get(Tables.ShippingTable.Email);
+            Data.put("ShippingMethodEmail", Email);
+            String Interval = Data.get(Tables.ShippingTable.DeliveryInterval);
+            Data.put("ShippingMethodDelInterval", Interval);
+        }
+        return Data;
+    }
+
+    /**
+     *
+     * @param OrderID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static HashMap<String, String> GetOrderFullData(int OrderID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        HashMap<String, String> result = new HashMap<>();
+        result = DBManager.GetTableData(Tables.OrdersTable.Table, "where " + Tables.OrdersTable.ID + " = " + OrderID);
+        if (!result.isEmpty()) {
+            result.put("OrderID", "" + OrderID);
+
+            String customerid = result.get(Tables.OrdersTable.CustomerUserID);
+            int CustomerID = Integer.parseInt(customerid);
+            //Get Status Details
+            JSONObject CustomerDet = new JSONObject();
+            CustomerDet.put("CustomerDetails", GetCustomerInfoData(CustomerID));
+            if (!CustomerDet.isEmpty()) {
+                result.putAll(CustomerDet);
+            }
+            String sellerid = result.get(Tables.OrdersTable.SellerUserID);
+            int SellerID = Integer.parseInt(sellerid);
+            //Get Status Details
+            JSONObject SellerDet = new JSONObject();
+            SellerDet.put("SellerDetails", EngineProductManager.GetSellerInfoData(SellerID));
+            if (!SellerDet.isEmpty()) {
+                result.putAll(SellerDet);
+            }
+            String Shippingtypeid = result.get(Tables.OrdersTable.ShippingTypeID);
+            int ShippingTypeID = Integer.parseInt(Shippingtypeid);
+            String ShippingTypeName = EngineShippingManager.GetShippingTypeNameByID(ShippingTypeID);
+            result.put("ShippingTypeName", ShippingTypeName);
+            String Shippingaddressid = result.get(Tables.OrdersTable.ShippingAddressID);
+            int ShippingAddressID = Integer.parseInt(Shippingaddressid);
+            JSONObject ShippingAddressDet = new JSONObject();
+            if (ShippingTypeID == 1) {
+                ShippingAddressDet.put("ShippingAddressDetails", EngineAddressManager.GetAddressData(ShippingAddressID));
+            } else if (ShippingTypeID == 2) {
+                ShippingAddressDet.put("ShippingAddressDetails", EngineAddressManager.GetPickUpStationData(ShippingAddressID));
+            }
+            if (!ShippingAddressDet.isEmpty()) {
+                result.putAll(ShippingAddressDet);
+            }
+
+            String statusid = result.get(Tables.OrdersTable.PaymentStatusID);
+            int StatusID = Integer.parseInt(statusid);
+
+            //Get Status Details
+            JSONObject StatusDet = new JSONObject();
+            StatusDet.put("StatusDetails", GetOrderStatusData(StatusID));
+            if (!StatusDet.isEmpty()) {
+                result.putAll(StatusDet);
+            }
+
+            HashMap<Integer, HashMap<String, String>> OrderHistoryDetList = GetOrderHistoryDataByOrderID(OrderID);
+            JSONObject OrderHistoryDet = new JSONObject();
+            OrderHistoryDet.put("HistoryDetails", OrderHistoryDetList);
+            if (!OrderHistoryDet.isEmpty()) {
+                result.putAll(OrderHistoryDet);
+            }
+
+            HashMap<Integer, HashMap<String, String>> OrderStatusHistoryDetList = GetOrderStatusHistoryDataByOrderID(OrderID);
+            JSONObject StatusHistoryDet = new JSONObject();
+            StatusHistoryDet.put("StatusHistoryDetails", OrderStatusHistoryDetList);
+            if (!StatusHistoryDet.isEmpty()) {
+                result.putAll(StatusHistoryDet);
+            }
+
+            //Get Invoice Details
+            JSONObject InvoiceDet = new JSONObject();
+            InvoiceDet.put("InvoiceDetails", GetOrderInvoiceData(OrderID));
+            if (!InvoiceDet.isEmpty()) {
+                result.putAll(InvoiceDet);
+            }
+            //Get Payemnt Details
+            JSONObject PaymentDet = new JSONObject();
+            String OrderReference = result.get(Tables.OrdersTable.Reference);
+            PaymentDet.put("PaymentDetails", GetOrderPaymentData(OrderReference));
+            if (!PaymentDet.isEmpty()) {
+                result.putAll(PaymentDet);
+            }
+            //Get ShippingMethod Details
+            JSONObject ShippingMethodDet = new JSONObject();
+            ShippingMethodDet.put("ShippingMethodDetails", GetOrderShippingMethodData(OrderID));
+            if (!ShippingMethodDet.isEmpty()) {
+                result.putAll(ShippingMethodDet);
+            }
+
+            String dCodeID = result.get(Tables.OrdersTable.DiscountCodeID);
+            if (!dCodeID.equals("") && dCodeID != null) {
+                int DiscountCodeID = Integer.parseInt(dCodeID);
+                String DiscountCode = EngineDiscountManager.GetDiscountCodeByDiscounCodeID(DiscountCodeID);
+                result.put("DiscountCode", DiscountCode);
+                int DiscountDeductionTypeID = EngineDiscountManager.GetDiscountCodeDeductionTypeByDiscounCodeID(DiscountCodeID);
+                String DiscountDeductionType = EngineDiscountManager.GetDiscountCodeDeductionTypeNameByID(DiscountDeductionTypeID);
+                result.put("DiscountDeductionType", DiscountDeductionType);
+            }
+
+            String bkdate = result.get(Tables.OrdersTable.BookingDate);
+            String bkDate = DateManager.readDate(bkdate);
+            result.put(Tables.OrdersTable.BookingDate, bkDate);
+
+            String bktime = result.get(Tables.OrdersTable.BookingTime);
+            String bkTime = DateManager.readTime(bktime);
+            result.put(Tables.OrdersTable.BookingTime, bkTime);
+
+            String dldate = result.get(Tables.OrdersTable.DeliveryDate);
+            if (!dldate.equals("") && !dldate.equals("null")) {
+                String dlDate = DateManager.readDate(dldate);
+                result.put(Tables.OrdersTable.DeliveryDate, dlDate);
+            }
+
+            String dltime = result.get(Tables.OrdersTable.DeliveryTime);
+            if (!dltime.equals("") && !dltime.equals("null")) {
+                String dlTime = DateManager.readTime(dltime);
+                result.put(Tables.OrdersTable.DeliveryTime, dlTime);
+            }
+
+        }
+        return result;
+    }
+
+    /**
+     *
+     * @param CustomerUserID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static HashMap<String, String> GetCustomerInfoData(int CustomerUserID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        HashMap<String, String> Data = new HashMap<>();
+        Data = DBManager.GetTableData(Tables.CustomersTable.Table, "where " + Tables.CustomersTable.UserID + " = " + CustomerUserID);
+        if (!Data.isEmpty()) {
+            String date = DBManager.GetString(Tables.UsersTable.Date, Tables.UsersTable.Table, "where " + Tables.UsersTable.ID + " = " + CustomerUserID);
+            String dateJoined = DateManager.readDate(date);
+            Data.put("CustEmail", EngineUserManager.GetUserEmail(CustomerUserID));
+            Data.put("CustPhone", EngineUserManager.GetUserPhone(CustomerUserID));
+            Data.put("CustName", EngineUserManager.GetUserName(CustomerUserID));
+            Data.put("CustDateReg", dateJoined);
+        }
+        return Data;
+    }
+
+    /**
+     *
+     * @param OrderID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static HashMap<String, String> GetOrderStatusHistoryData(int OrderStatusHistoryID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        HashMap<String, String> Data = new HashMap<>();
+        Data = DBManager.GetTableData(Tables.OrderStatusHistoryTable.Table, "where " + Tables.OrderStatusHistoryTable.ID + " = " + OrderStatusHistoryID);
+        if (!Data.isEmpty()) {
+            String statusid = Data.get(Tables.OrderStatusHistoryTable.StatusID);
+            int StatusID = Integer.parseInt(statusid);
+            HashMap<String, String> res = GetOrderStatusData(StatusID);
+            String tm = Data.get(Tables.OrderStatusHistoryTable.Time);
+            String time = DateManager.readTime(tm);
+            Data.put(Tables.OrderStatusHistoryTable.Time, time);
+
+            String dt = Data.get(Tables.OrderStatusHistoryTable.Date);
+            String date = DateManager.readDate(dt);
+            Data.put(Tables.OrderStatusHistoryTable.Date, date);
+            Data.putAll(res);
+        }
+        return Data;
+    }
+
+    public static HashMap<Integer, HashMap<String, String>> GetOrderStatusHistoryDataByOrderID(int OrderID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        HashMap<Integer, HashMap<String, String>> List = new HashMap<>();
+        HashMap<String, String> orderHistoryList = new HashMap<>();
+        ArrayList<Integer> orderHistIDS = GetOrderStatusHistoryIDs(OrderID);
+        if (!orderHistIDS.isEmpty()) {
+            for (int orderHistID : orderHistIDS) {
+                orderHistoryList = GetOrderStatusHistoryData(orderHistID);
+                if (!orderHistoryList.isEmpty()) {
+                    List.put(orderHistID, orderHistoryList);
+                }
+            }
+        }
+        return List;
+    }
+
+    /**
+     *
+     * @param OrderID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static ArrayList<Integer> GetOrderStatusHistoryIDs(int OrderID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        ArrayList<Integer> IDs = new ArrayList<>();
+        IDs = DBManager.GetIntArrayList(Tables.OrderStatusHistoryTable.ID, Tables.OrderStatusHistoryTable.Table, "where " + Tables.OrderStatusHistoryTable.OrderID + " = " + OrderID);
+        return IDs;
+    }
+
+    public static String UpdateSellerPayment() throws ParseException {
+        String result = "failed";
+        LocalTime TimeNow = LocalTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+        String TimeNowString = TimeNow.format(formatter);
+        try {
+            String savedIntervalCheckTime = DBManager.GetTime(Tables.SellerPaymentIntervalTable.Time, Tables.SellerPaymentIntervalTable.Table, "where " + Tables.SellerPaymentIntervalTable.ID + " = " + 1);
+            if (!savedIntervalCheckTime.equals("none")) {
+                int interval = DBManager.GetInt(Tables.SellerPaymentIntervalTable.HourIntervalCheck, Tables.SellerPaymentIntervalTable.Table, "where " + Tables.SellerPaymentIntervalTable.ID + " = " + 1);
+                String NextIntervalCheckTime = "" + LocalTime.parse(savedIntervalCheckTime).plusHours(interval);
+                boolean isAfter = LocalTime.parse(TimeNowString).isAfter(LocalTime.parse(NextIntervalCheckTime));
+                if (isAfter) {
+                    result = ProcessSellerPayment();
+                }
+            } else {
+                result = CreateSellerPaymentInterval(2);
+                result = ProcessSellerPayment();
+            }
+        } catch (Exception ex) {
+
+        }
+        return result;
+    }
+
+    public static String CreateSellerPaymentInterval(int IntervalInHours) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
+        HashMap<String, Object> tableData = new HashMap<>();
+        tableData.put(Tables.SellerPaymentIntervalTable.HourIntervalCheck, IntervalInHours);
+        int id = DBManager.insertTableDataReturnID(Tables.SellerPaymentIntervalTable.Table, tableData, "");
+        String result = DBManager.UpdateCurrentTime(Tables.SellerPaymentIntervalTable.Table, Tables.SellerPaymentIntervalTable.Time, "where " + Tables.SellerPaymentIntervalTable.ID + " = " + id);
+        return result;
+    }
+
+    public static String ProcessSellerPayment() throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
+        String result = "failed";
+        ArrayList<Integer> IDs = DBManager.GetIntArrayList(Tables.OrdersTable.ID, Tables.OrdersTable.Table, "where " + Tables.OrdersTable.PaymentStatusID + " = " + 5);//Delivered
+        LocalDate CurrentDate = LocalDate.now();
+        LocalTime TimeNow = LocalTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+        String CurrentTimeString = TimeNow.format(formatter);
+        LocalTime CurrentTime = LocalTime.parse(CurrentTimeString);
+        if (!IDs.isEmpty()) {
+            for (int id : IDs) {
+                String orderDate = DBManager.GetString(Tables.OrdersTable.DeliveryDate, Tables.OrdersTable.Table, "where " + Tables.OrdersTable.ID + " = " + id);
+                String orderTime = DBManager.GetString(Tables.OrdersTable.DeliveryTime, Tables.OrdersTable.Table, "where " + Tables.OrdersTable.ID + " = " + id);
+                try {
+                    LocalDate TxnDate = LocalDate.parse(orderDate);
+                    LocalDate DateToPay = TxnDate.plusDays(1);
+                    LocalTime TxnTime = LocalTime.parse(orderTime);
+                    LocalTime TimeToPay = TxnTime.plusHours(24);
+                    if (CurrentDate.isAfter(DateToPay) || CurrentDate.equals(DateToPay)) {
+                        boolean isTimeAfter = CurrentTime.isAfter(TimeToPay);
+                        if (isTimeAfter) {
+//                            int SellerUserID = DBManager.GetInt(Tables.PaymentGatewayTable.SellerUserID, Tables.PaymentGatewayTable.Table, "where " + Tables.PaymentGatewayTable.ID + " = " + id);
+//                            int AmountToPaySeller = DBManager.GetInt(Tables.PaymentGatewayTable.SellerAmountPayable, Tables.PaymentGatewayTable.Table, "where " + Tables.PaymentGatewayTable.ID + " = " + id);
+//                            String Comment = "The Order with an issue has been settled. Thanks for being part of the WealthMarket.";
+//                            String TransactionName = "Move Market Instrument";
+//                            //transfer from the buyer escrow to the seller direct
+//                            result = GeneralAccountManager.Transfer(SellerUserID, SellerUserID, 1, 3, 1, AmountToPaySeller, "To-Online", Comment, TransactionName, 0);
+//                            if (result.equals("success")) {
+//                                result = UpdateWMPayGatewayStatusByID(id, "WM Payment Settled");
+//                                String Comment2 = "Order Amount of " + GeneralAccountManager.FormatNumber(AmountToPaySeller) + " has been transferred into your Warrants Account.";
+//                                GeneralMessageManager.sendMemberMessage(GeneralAccountManager.WealthMarketUserID, Comment2, "Payment Settled", SellerUserID);
+//                                DBManager.UpdateCurrentTime(Tables.OrderUpdateTable.Table, Tables.OrderUpdateTable.Time, "where " + Tables.OrderUpdateTable.ID + " = " + 1);
+//                            }
+                        } else {
+                            result = "Not yet time or it has been completed";
+                        }
+                    } else {
+                        result = "Not yet date or it has been completed";
+                    }
+                } catch (Exception ex) {
+                    ex.getMessage();
+                }
+            }
+        } else {
+            result = "No Orders to process";
+        }
         return result;
     }
 }

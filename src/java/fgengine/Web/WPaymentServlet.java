@@ -101,7 +101,7 @@ public class WPaymentServlet extends HttpServlet {
                                 returninfo.addProperty("msg", "Something went wrong! Please, try again!");
                             }
                             datares.put("result", returninfo);
-                            json = new Gson().toJson(returninfo);
+                            json = new Gson().toJson(datares);
                         } else if (PaymentType.equals("CheckOut Payment")) {
                             result = EnginePaymentManager.ComputePaymentWithCash(UserID, Amount, TransCode, RefereceCode, PaymentType);
                             if (result.equals("success")) {

@@ -762,6 +762,11 @@ public class EngineCartManager {
         } else {
             result = "Cart Product Count could not be updated";
         }
+        if (NewCartProductCount == 0) {
+            result = DBManager.DeleteObject(Tables.CartTable.Table, "where " + Tables.CartTable.ID + " = " + CartID);
+
+        }
+
         return result;
     }
 
@@ -974,9 +979,9 @@ public class EngineCartManager {
                 int DiscountDeductionTypeID = EngineDiscountManager.GetDiscountCodeDeductionTypeByDiscounCodeID(DiscountCodeID);
                 int DiscountDeductionValue = EngineDiscountManager.GetDiscountCodeDeductionValueByDiscounCodeID(DiscountCodeID);
                 if (DiscountDeductionTypeID == 1) {//percentage
-                    int DiscountAmt = EngineDiscountManager.ComputePercentageAmount(DiscountDeductionValue, CartAmount);
+                    double DiscountAmt = EngineDiscountManager.ComputePercentageAmount(DiscountDeductionValue, CartAmount);
                     CartDiscountedAmount = CartAmount - DiscountAmt;
-                    result = DBManager.UpdateIntData(Tables.CartTable.DiscountAmount, DiscountAmt, Tables.CartTable.Table, "where " + Tables.CartTable.ID + " = " + CartID);
+                    result = DBManager.UpdateStringData(Tables.CartTable.Table, Tables.CartTable.DiscountAmount, "" + DiscountAmt, "where " + Tables.CartTable.ID + " = " + CartID);
                 } else if (DiscountDeductionTypeID == 2) {//amount
                     CartDiscountedAmount = CartAmount - DiscountDeductionValue;
                     result = DBManager.UpdateIntData(Tables.CartTable.DiscountAmount, DiscountDeductionValue, Tables.CartTable.Table, "where " + Tables.CartTable.ID + " = " + CartID);
@@ -1109,8 +1114,8 @@ public class EngineCartManager {
         String result = DBManager.UpdateStringData(Tables.CartTable.Table, Tables.CartTable.Fees, Fees, "Where " + Tables.CartTable.ID + " = " + CartID);
         return result;
     }
-    
-      /**
+
+    /**
      *
      * @param CartID
      * @param Fees

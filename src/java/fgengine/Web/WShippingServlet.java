@@ -106,20 +106,22 @@ public class WShippingServlet extends HttpServlet {
                     String shippingoption = data[4];
                     String Phone = data[5];
                     String Email = data[6];
+                    String optiontext = "";
                     int AdminPercent = Integer.parseInt(admin_percent);
                     int ShipMethodPercent = Integer.parseInt(shipping_method_percent);
                     if (shippingoption.equals("add")) {
                         result = EngineShippingManager.CreateShipping(Name, Interval, AdminPercent, ShipMethodPercent, Phone, Email);
-
+                        optiontext = "added";
                     } else if (shippingoption.equals("edit")) {
                         String shippingid = data[7];
                         int ShippingID = Integer.parseInt(shippingid);
                         result = EngineShippingManager.EditShipping(ShippingID, Name, Interval, AdminPercent, ShipMethodPercent, Phone, Email);
+                        optiontext = "edited";
                     }
                     JsonObject returninfo = new JsonObject();
                     if (result.equals("success")) {
                         returninfo.addProperty("status", "success");
-                        returninfo.addProperty("msg", "New Shipping Method has been added successfully");
+                        returninfo.addProperty("msg", "New Shipping Method has been " + optiontext + " successfully");
                     } else {
                         if (!result.equals("failed")) {
                             returninfo.addProperty("msg", result);

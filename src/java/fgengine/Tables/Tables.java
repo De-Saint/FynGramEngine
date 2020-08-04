@@ -1305,7 +1305,7 @@ public class Tables {
         /**
          *
          */
-        public static String OrderID = "orderid";
+        public static String OrderReference = "order_reference";
 
         /**
          *
@@ -1342,52 +1342,6 @@ public class Tables {
          *
          */
         public static String InvoiceNumber = "number";
-
-        /**
-         *
-         */
-        public static String OrderID = "orderid";
-
-        /**
-         *
-         */
-        public static String Amount = "amount";
-
-        /**
-         *
-         */
-        public static String ShippingTypeID = "shipping_type_id";
-
-        /**
-         *
-         */
-        public static String ShippingAddressID = "shipping_address_id";
-
-        /**
-         *
-         */
-        public static String Date = "date";
-
-        /**
-         *
-         */
-        public static String Time = "time";
-    }
-
-    /**
-     *
-     */
-    public static class OrderDeliveryTable {
-
-        /**
-         *
-         */
-        public static String Table = "fg_order_delivery";
-
-        /**
-         *
-         */
-        public static String ID = "id";
 
         /**
          *
@@ -1507,10 +1461,6 @@ public class Tables {
          *
          */
         public static String ShippingMethodID = "shipping_method_id";
-        /**
-         *
-         */
-        public static String ShippingFees = "shipping_fees";
 
     }
 
@@ -3331,6 +3281,68 @@ public class Tables {
          *
          */
         public static String DeliveryFees = "delivery_fees";
+
+    }
+    /**
+     *
+     */
+    public static class OrderStatusHistoryTable {
+
+        /**
+         *
+         */
+        public static String Table = "fg_order_status_history";
+
+        /**
+         *
+         */
+        public static String ID = "id";
+
+        /**
+         *
+         */
+        public static String OrderID = "orderid";
+        /**
+         *
+         */
+        public static String StatusID = "statusid";
+        /**
+         *
+         */
+        public static String Date = "date";
+        /**
+         *
+         */
+        public static String Time = "time";
+
+    }
+    /**
+     *
+     */
+    public static class SellerPaymentIntervalTable {
+
+        /**
+         *
+         */
+        public static String Table = "fg_seller_payment_interval";
+
+        /**
+         *
+         */
+        public static String ID = "id";
+
+        /**
+         *
+         */
+        public static String HourIntervalCheck = "hour_interval_check";
+        /**
+         *
+         */
+        public static String Time = "time";
+         /**
+         *
+         */
+        public static String HourPaymentDelay = "hour_payment_delay";
 
     }
 

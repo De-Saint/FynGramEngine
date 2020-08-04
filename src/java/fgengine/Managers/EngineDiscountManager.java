@@ -328,6 +328,19 @@ public class EngineDiscountManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
+    public static String GetDiscountCodeByDiscounCodeID(int DiscountCodeID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        String result = DBManager.GetString(Tables.DiscountCodesTable.Code, Tables.DiscountCodesTable.Table, "where " + Tables.DiscountCodesTable.ID + " = " + DiscountCodeID);
+        return result;
+    }
+
+    /**
+     *
+     * @param DiscountCodeID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
     public static int GetDiscountCodeDeductionTypeByDiscounCodeID(int DiscountCodeID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         int result = DBManager.GetInt(Tables.DiscountCodesTable.DiscountDeductionTypeID, Tables.DiscountCodesTable.Table, "where " + Tables.DiscountCodesTable.ID + " = " + DiscountCodeID);
         return result;
@@ -365,13 +378,12 @@ public class EngineDiscountManager {
      * @param TotalAmount
      * @return
      */
-    public static int ComputePercentageAmount(double PecertageValue, double TotalAmount) {
-        int result = 0;
+    public static double ComputePercentageAmount(double PecertageValue, double TotalAmount) {
         double amt;
         double newamt;
         newamt = (PecertageValue * TotalAmount);
         amt = (newamt / 100);
-        return result;
+        return amt;
     }
 
     /**

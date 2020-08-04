@@ -89,13 +89,26 @@ public class WUserServlet extends HttpServlet {
                                 default:
                                     break;
                             }
-                            EngineUserManager.UpdateUserSessionDetails(OldSessionID, NewSessionID, "" + UserID, App);
-                            JsonObject dataobject = new JsonObject();
-                            dataobject.addProperty("sessionid", NewSessionID);
-                            dataobject.addProperty("sessiontype", usertype);
-                            returninfo.add("data", dataobject);
-                            returninfo.addProperty("status", "success");
-                            returninfo.addProperty("msg", "Successful Login");
+                            if (App.equals("FynGramManager") & !usertype.equals("Customer")) {
+                                EngineUserManager.UpdateUserSessionDetails(OldSessionID, NewSessionID, "" + UserID, App);
+                                JsonObject dataobject = new JsonObject();
+                                dataobject.addProperty("sessionid", NewSessionID);
+                                dataobject.addProperty("sessiontype", usertype);
+                                returninfo.add("data", dataobject);
+                                returninfo.addProperty("status", "success");
+                                returninfo.addProperty("msg", "Successful Login");
+                            } else if (App.equals("FynGramShop") & usertype.equals("Customer")) {
+                                EngineUserManager.UpdateUserSessionDetails(OldSessionID, NewSessionID, "" + UserID, App);
+                                JsonObject dataobject = new JsonObject();
+                                dataobject.addProperty("sessionid", NewSessionID);
+                                dataobject.addProperty("sessiontype", usertype);
+                                returninfo.add("data", dataobject);
+                                returninfo.addProperty("status", "success");
+                                returninfo.addProperty("msg", "Successful Login");
+                            } else {
+                                returninfo.addProperty("status", "error");
+                                returninfo.addProperty("msg", "Incorrect Login Details.");
+                            }
                         } else {
                             returninfo.addProperty("status", "error");
                             returninfo.addProperty("msg", "Incorrect Login Details.");
@@ -179,7 +192,7 @@ public class WUserServlet extends HttpServlet {
                                     if (result.equals("success")) {
                                         String msgbdy = "Congratulations!!! \nYou have been successfully registered as a member of FynGram Online Store.";
                                         EngineMessageManager.sendMessage(1, msgbdy, "Customer Account Created", CustomerUserID);
-//                                        EngineEmailManager.SendEmail(EmailAddress, msgbdy, "Customer Account Created");
+                                        EngineEmailManager.SendEmail(EmailAddress, msgbdy, "Customer Account Created");
                                         session.invalidate();
                                         session = request.getSession(true);
                                         String LoginID = EngineUserManager.GetLoginIDBySessionID(OldSessionID);
@@ -355,7 +368,7 @@ public class WUserServlet extends HttpServlet {
                                         if (result.equals("success")) {
                                             String msgbdy = "Congratulations!!! \nYou have been successfully registered as a Seller on FynGram Online Store.";
                                             EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), msgbdy, "Seller Account Created", SellerUserID);
-//                                              EngineEmailManager.SendEmail(EmailAddress, msgbdy, "Admin Account Created");
+                                            EngineEmailManager.SendEmail(EmailAddress, msgbdy, "Admin Account Created");
 
                                             String sessionid = session.getId() + "#S";
                                             String usertype = "Seller";

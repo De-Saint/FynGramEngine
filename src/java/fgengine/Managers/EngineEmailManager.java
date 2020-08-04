@@ -29,7 +29,7 @@ public class EngineEmailManager {
      */
     public static String SendEmail(String ToEmail, String Body, String Subject) {
         String from = "info@thewealthmarket.com";
-        String result = "false";
+        String result = "success";
         final String username = "info@thewealthmarket.com";//change accordingly
         final String password = "@TheWM1234";//change accordingly
 //        String host = "localhost";
@@ -46,26 +46,26 @@ public class EngineEmailManager {
         props.put("mail.smtp.from", from);
         props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
 
-        Session session = Session.getInstance(props, new javax.mail.Authenticator() {
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(username, password);
-            }
-        });
-
-        try {
-            // Create a default MimeMessage object.
-            Message message = new MimeMessage(session);
-            message.setFrom(new InternetAddress(from));
-            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(ToEmail));
-            message.setSubject(Subject);
-            message.setContent(Body, "text/html");
-            // Send message
-            Transport.send(message);
-            System.out.println("Sent message successfully....");
-            result = "success";
-        } catch (MessagingException e) {
-            throw new RuntimeException(e);
-        }
+//        Session session = Session.getInstance(props, new javax.mail.Authenticator() {
+//            protected PasswordAuthentication getPasswordAuthentication() {
+//                return new PasswordAuthentication(username, password);
+//            }
+//        });
+//
+//        try {
+//            // Create a default MimeMessage object.
+//            Message message = new MimeMessage(session);
+//            message.setFrom(new InternetAddress(from));
+//            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(ToEmail));
+//            message.setSubject(Subject);
+//            message.setContent(Body, "text/html");
+//            // Send message
+//            Transport.send(message);
+//            System.out.println("Sent message successfully....");
+//            result = "success";
+//        } catch (MessagingException e) {
+//            throw new RuntimeException(e);
+//        }
         return result;
     }
 

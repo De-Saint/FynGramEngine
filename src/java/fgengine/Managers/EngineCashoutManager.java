@@ -96,7 +96,7 @@ public class EngineCashoutManager {
         int BankDetialID = GetBankDetailsIDByUserID(UserID);
         if (UserAmount >= Amount) {
             if (BankDetialID != 0) {
-                result = EngineWalletManager.ComputeWalletRecord(UserID, UserID, EngineWalletManager.GetMainWalletID(), EngineWalletManager.GetPendingWalletID(), Amount, "Move Fund");
+                result = EngineWalletManager.ComputeWalletRecord(UserID, UserID, EngineWalletManager.GetMainWalletID(), EngineWalletManager.GetPendingWalletID(), Amount, "Move Fund", "For cashout/payout request.");
                 if (result.equals("success")) {
                     result = CreateCashOut(UserID, Amount, BankDetialID);
                 }
@@ -160,13 +160,13 @@ public class EngineCashoutManager {
         String Amt = GetAmountByCashOutID(CashOutID);
         int Amount = Integer.parseInt(Amt);
         if (Option.equals("Approved")) {
-            result = EngineWalletManager.ComputeWalletRecord(UserID, EngineUserManager.GetAdminUserID(), EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), Amount, "Move Fund");
+            result = EngineWalletManager.ComputeWalletRecord(UserID, EngineUserManager.GetAdminUserID(), EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), Amount, "Move Fund", "For cashout/payout request.");
             String msg = "Hi " + EngineUserManager.GetUserName(UserID) + ", \nYour cashout request has been succesfully approved. For further assistance, please contact the support team";
             EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), msg, "Move Fund", UserID);
             DBManager.UpdateStringData(Tables.CashoutTable.Table, Tables.CashoutTable.Status, Option, "where " + Tables.CashoutTable.ID + " = " + CashOutID);
             //create paystack fund transfer to the user's bank account here.
         } else if (Option.equals("Rejected")) {
-            result = EngineWalletManager.ComputeWalletRecord(UserID, UserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), Amount, "Move Fund");
+            result = EngineWalletManager.ComputeWalletRecord(UserID, UserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), Amount, "Move Fund", "For cashout/payout request.");
             String msg = "Hi " + EngineUserManager.GetUserName(UserID) + ", \nYour cashout request was rejected. For further assistance, please contact the support team";
             EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), msg, "Move Fund", UserID);
             DBManager.UpdateStringData(Tables.CashoutTable.Table, Tables.CashoutTable.Status, Option, "where " + Tables.CashoutTable.ID + " = " + CashOutID);
@@ -275,7 +275,7 @@ public class EngineCashoutManager {
             int UserID = Integer.parseInt(userid);
             String UserName = EngineUserManager.GetUserName(UserID);
             Details.put("cashUserName", UserName);
-            Details.put("CashOutID", ""+CashOutID);
+            Details.put("CashOutID", "" + CashOutID);
 
             String rdate = Details.get(Tables.CashoutTable.RequestDate);
             String Rdate = DateManager.readDate(rdate);
