@@ -803,6 +803,10 @@ public class EngineCartManager {
         } else {
             result = "WishList Product Count could not be updated";
         }
+         if (NewWishListProductCount == 0) {
+            result = DBManager.DeleteObject(Tables.WishlistTable.Table, "where " + Tables.WishlistTable.ID + " = " + WishlistID);
+
+        }
         return result;
     }
 

@@ -74,7 +74,7 @@ public class EngineStockManager {
                     int NewProductTotalQuantity = 0;
                     if (Option.equals("Increase")) {//Refund
                         NewProductTotalQuantity = PreviousProductQuantity + OrderedProductQuantity;
-                        MovementName = "Product Refunded";
+                        MovementName = "Product Returned";
                     } else if (Option.equals("Decrease")) { //Order 
                         NewProductTotalQuantity = PreviousProductQuantity - OrderedProductQuantity;
                         int minimumQty = EngineProductManager.GetProductMinimumQuantityByProductID(ProductID);
@@ -119,7 +119,7 @@ public class EngineStockManager {
                 //Email Only
                 case 1:
                     try {
-                    result = EngineEmailManager.SendEmail(EngineUserManager.GetUserEmail(SellerUserID), BodyMsg, Subject);
+                    EngineEmailManager.SendEmail(EngineUserManager.GetUserEmail(SellerUserID), BodyMsg, Subject);
                 } catch (UnsupportedEncodingException | ClassNotFoundException | SQLException Ex) {
                     System.out.println(Ex.getMessage());
                 }
@@ -133,7 +133,7 @@ public class EngineStockManager {
                     result = EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), BodyMsg, Subject, SellerUserID);
                     if (result.equals("success")) {
                         try {
-                            result = EngineEmailManager.SendEmail(EngineUserManager.GetUserEmail(SellerUserID), BodyMsg, Subject);
+                            EngineEmailManager.SendEmail(EngineUserManager.GetUserEmail(SellerUserID), BodyMsg, Subject);
                         } catch (UnsupportedEncodingException | ClassNotFoundException | SQLException Ex) {
                             System.out.println(Ex.getMessage());
                         }
@@ -175,4 +175,63 @@ public class EngineStockManager {
         String result = DBManager.UpdateIntData(Tables.ProductQuantityTable.TotalQuantity, NewQuantity, Tables.ProductQuantityTable.Table, "where " + Tables.ProductQuantityTable.ProductID + " = " + ProductID);
         return result;
     }
+    
+     /**
+     *
+     * @param UserID
+     * @return @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static ArrayList<Integer> GetStockIDs(int UserID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        ArrayList<Integer> IDs = new ArrayList<>();
+        String UserType = EngineUserManager.GetUserTypeNameByUserID("" + UserID);
+        if (UserType.equals("Admin")) {
+            IDs = DBManager.GetIntArrayList(Tables.StockMovementTable.ID, Tables.StockMovementTable.Table, "");
+        } else if (UserType.equals("Seller")) {
+            IDs = DBManager.GetIntArrayList(Tables.StockMovementTable.ID, Tables.StockMovementTable.Table, "where " + Tables.StockMovementTable.SellerUserID + " = " + UserID);
+        } else if (UserType.equals("Customer")) {
+            IDs = DBManager.GetIntArrayList(Tables.StockMovementTable.ID, Tables.StockMovementTable.Table, "where " + Tables.StockMovementTable.CustomerUserID + " = " + UserID + " and " +  Tables.StockMovementTable.Name + " = 'Product Returned'");
+        }
+        return IDs;
+    }
+    
+      /**
+     *
+     * @param OrderID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static HashMap<String, String> GetStockMovementData(int StockID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        HashMap<String, String> result = new HashMap<>();
+        result = DBManager.GetTableData(Tables.StockMovementTable.Table, "where " + Tables.StockMovementTable.ID + " = " + StockID);
+        if (!result.isEmpty()) {
+            result.put("StockID", "" + StockID);
+            String customerid = result.get(Tables.StockMovementTable.CustomerUserID);
+            int CustomerUserID = Integer.parseInt(customerid);
+            result.put("CustomerName", EngineUserManager.GetUserName(CustomerUserID));
+
+            String sellerid = result.get(Tables.StockMovementTable.SellerUserID);
+            int SellerUserID = Integer.parseInt(sellerid);
+            String SellerName = DBManager.GetString(Tables.SellerInfoTable.BusinessName, Tables.SellerInfoTable.Table, "where " + Tables.SellerInfoTable.SellerUserID + " = " + SellerUserID);
+            result.put("SellerName", SellerName);
+            
+            String productid = result.get(Tables.StockMovementTable.ProductID);
+            int ProductID = Integer.parseInt(productid);
+            String ProductName = DBManager.GetString(Tables.ProductInfoTable.Name, Tables.ProductInfoTable.Table, "where " + Tables.ProductInfoTable.ProductID + " = " + ProductID);
+            result.put("ProductName", ProductName);
+
+            String bkdate = result.get(Tables.StockMovementTable.Date);
+            String bkDate = DateManager.readDate(bkdate);
+            result.put(Tables.StockMovementTable.Date, bkDate);
+
+            String bktime = result.get(Tables.StockMovementTable.Time);
+            String bkTime = DateManager.readTime(bktime);
+            result.put(Tables.StockMovementTable.Time, bkTime);
+        }
+        return result;
+    }
+
 }

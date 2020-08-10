@@ -272,7 +272,7 @@ public class WCategoryServlet extends HttpServlet {
                     JsonObject returninfo = new JsonObject();
                     if (result.equals("success")) {
                         returninfo.addProperty("status", "success");
-                        returninfo.addProperty("msg", "The category has been created successfully.");
+                        returninfo.addProperty("msg", "The category has been deleted successfully.");
                     } else {
                         returninfo.addProperty("status", "error");
                         returninfo.addProperty("msg", "Something went wrong. Please try again.");
@@ -316,7 +316,7 @@ public class WCategoryServlet extends HttpServlet {
                     JsonObject returninfo = new JsonObject();
                     if (result.equals("success")) {
                         returninfo.addProperty("status", "success");
-                        returninfo.addProperty("msg", "The property has been created successfully.");
+                        returninfo.addProperty("msg", "The property has been deleted successfully.");
                     } else {
                         returninfo.addProperty("status", "error");
                         returninfo.addProperty("msg", "Something went wrong. Please try again.");

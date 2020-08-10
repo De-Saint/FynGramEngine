@@ -785,9 +785,9 @@ public class EngineProductManager {
         LocalDate CurrentDate = LocalDate.now();
         LocalDate startDate = CurrentDate.plusDays(shipmin);
         LocalDate endDate = CurrentDate.plusDays(shipmax);
-        String sdate = DateManager.readDate(""+startDate);
+        String sdate = DateManager.readDate("" + startDate);
         Details.put("shipStartDate", sdate);
-        String eDate = DateManager.readDate(""+endDate);
+        String eDate = DateManager.readDate("" + endDate);
         Details.put("shipEndDate", eDate);
         return Details;
     }
@@ -819,6 +819,7 @@ public class EngineProductManager {
      * @throws UnsupportedEncodingException
      */
     public static HashMap<String, String> GetProductData(int ProductID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+
         HashMap<String, String> Details = DBManager.GetTableData(Tables.ProductsTable.Table, "where " + Tables.ProductsTable.ID + " = " + ProductID);
         if (!Details.isEmpty()) {
             int CondtionID = Integer.parseInt(Details.get(Tables.ProductsTable.ProductConditionID));
@@ -1629,7 +1630,71 @@ public class EngineProductManager {
      * @throws UnsupportedEncodingException
      */
     public static ArrayList<Integer> GetProductsByCategoryID(int CatID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        ArrayList<Integer> IDs = DBManager.GetIntArrayListDescending(Tables.ProductCategoriesTable.ProductID, Tables.ProductCategoriesTable.Table, "where " + Tables.ProductCategoriesTable.CategoryID + " = " + CatID + " ORDER BY id DESC");
+        ArrayList<Integer> IDs = new ArrayList<>();
+        ArrayList<Integer> ProdIDs = DBManager.GetIntArrayListDescending(Tables.ProductCategoriesTable.ProductID, Tables.ProductCategoriesTable.Table, "where " + Tables.ProductCategoriesTable.CategoryID + " = " + CatID + " ORDER BY id DESC");
+        for (int id : ProdIDs) {
+            int active = DBManager.GetInt(Tables.ProductsTable.Active, Tables.ProductsTable.Table, "where " + Tables.ProductsTable.ID + " = " + id);
+            if (active == 1) {
+                IDs.add(id);
+            }
+        }
+        return IDs;
+    }
+
+    /**
+     *
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static ArrayList<Integer> GetRecentlyAddedProducts() throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        ArrayList<Integer> IDs = DBManager.GetIntArrayListDescending(Tables.ProductsTable.ID, Tables.ProductsTable.Table, "where " + Tables.ProductsTable.Active + " = " + 1 + " ORDER BY " + Tables.ProductsTable.ID + " DESC LIMIT " + 6);
+        return IDs;
+    }
+    /**
+     *
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static ArrayList<Integer> GetTopSellingProducts() throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        ArrayList<Integer> IDs = DBManager.GetIntArrayListDescending(Tables.ProductsTable.ID, Tables.ProductsTable.Table, "where " + Tables.ProductsTable.Active + " = " + 1 + " ORDER BY " + Tables.ProductsTable.ID + " DESC LIMIT " + 5);
+        return IDs;
+    }
+    /**
+     *
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static ArrayList<Integer> GetBestSellersProducts() throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        ArrayList<Integer> IDs = DBManager.GetIntArrayListDescending(Tables.ProductsTable.ID, Tables.ProductsTable.Table, "where " + Tables.ProductsTable.Active + " = " + 1 + " ORDER BY " + Tables.ProductsTable.ID + " LIMIT " + 6);
+        return IDs;
+    }
+ 
+    /**
+     *
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static ArrayList<Integer> GetMostViewed() throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        ArrayList<Integer> IDs = DBManager.GetIntArrayListDescending(Tables.ProductsTable.ID, Tables.ProductsTable.Table, "where " + Tables.ProductsTable.Active + " = " + 1 + " ORDER BY " + Tables.ProductsTable.ID + " LIMIT " + 0 + ", " + 5);
+        return IDs;
+    }
+    /**
+     *
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static ArrayList<Integer> GetFeaturedProducts() throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        ArrayList<Integer> IDs = DBManager.GetIntArrayListDescending(Tables.ProductsTable.ID, Tables.ProductsTable.Table, "where " + Tables.ProductsTable.Active + " = " + 1 + " ORDER BY " + Tables.ProductsTable.ID + " LIMIT " + 0 + ", " + 9);
         return IDs;
     }
 
@@ -1834,11 +1899,20 @@ public class EngineProductManager {
         if (ProductUnitID != 0) {
             result = DBManager.UpdateIntData(Tables.ProductUnitsTable.UnitID, ProductUnitID, Tables.ProductUnitsTable.Table, "where " + Tables.ProductUnitsTable.ID + " = " + ProductID);
         }
+        String[] Tags = ProductTags.split(",");
+        if (Tags.length > 0) {
+            result = ComputeObjectTags(ProductTags, ProductID, "Product");
+        }
 
-        result = ComputeObjectTags(ProductTags, ProductID, "Product");
+        String[] PropIDs = PropertyIDs.split(",");
+        if (PropIDs.length > 0) {
+            result = ComputeProductProperties(PropertyIDs, ProductID);
+        }
+        String[] catids = CategoryIDs.split(",");
+        if (catids.length > 0) {
+            result = ComputeProductCategory(CategoryIDs, ProductID);
+        }
 
-        result = ComputeProductProperties(PropertyIDs, ProductID);
-        result = ComputeProductCategory(CategoryIDs, ProductID);
         return ProductID;
 
     }
@@ -1918,6 +1992,27 @@ public class EngineProductManager {
                 if (price >= MinPrice && price <= MaxPrice) {
                     IDs.add(id);
                 }
+            }
+        }
+        return IDs;
+    }
+ 
+     /**
+     *
+     * @param ProductID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static ArrayList<Integer> GetRelatedProductsByCategoryID(int ProductID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        ArrayList<Integer> IDs = new ArrayList<>();
+        int CatID = GetProductFirstRootCatID(ProductID);
+        ArrayList<Integer> ProdIDs = DBManager.GetIntArrayListDescending(Tables.ProductCategoriesTable.ProductID, Tables.ProductCategoriesTable.Table, "where " + Tables.ProductCategoriesTable.CategoryID + " = " + CatID + " ORDER BY " + Tables.ProductCategoriesTable.ID + " LIMIT " + 0 + ", " + 4);
+        for (int id : ProdIDs) {
+            int active = DBManager.GetInt(Tables.ProductsTable.Active, Tables.ProductsTable.Table, "where " + Tables.ProductsTable.ID + " = " + id);
+            if (active == 1) {
+                IDs.add(id);
             }
         }
         return IDs;

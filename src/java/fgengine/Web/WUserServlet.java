@@ -71,20 +71,23 @@ public class WUserServlet extends HttpServlet {
                             String NewSessionID = "";
                             int usertypeid = EngineUserManager.GetUserTypeIDByUserID("" + UserID);
                             String usertype = "";
-                            session.invalidate();
+
                             session = request.getSession(true);
                             switch (usertypeid) {
                                 case 1:
                                     NewSessionID = session.getId() + "#A";
                                     usertype = "Admin";
+                                    session.invalidate();
                                     break;
                                 case 2:
                                     NewSessionID = session.getId() + "#S";
                                     usertype = "Seller";
+                                    session.invalidate();
                                     break;
                                 case 3:
                                     NewSessionID = session.getId() + "#C";
                                     usertype = "Customer";
+                                    session.invalidate();
                                     break;
                                 default:
                                     break;
@@ -145,6 +148,42 @@ public class WUserServlet extends HttpServlet {
                     String sessionid = session.getId() + "#G";
                     EngineUserManager.ComputeGuest(sessionid, Location, IPaddress);
                     json = new Gson().toJson(sessionid);
+                    break;
+                }
+                case "SaveComplaints": {
+                    String[] data = request.getParameterValues("data[]");
+                    String sessionid = data[0].trim();
+                    String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
+                    int UserID = Integer.parseInt(SessionID);
+                    String Subject = data[1].trim();
+                    String Description = data[2].trim();
+                    result = EngineUserManager.CreateComplaint(UserID, Subject, Description);
+                    JsonObject returninfo = new JsonObject();
+                    if (result.equals("success")) {
+                        returninfo.addProperty("status", "success");
+                        returninfo.addProperty("msg", "Your complaint has been logged and will be looked into. Thank you...");
+                    } else {
+                        returninfo.addProperty("status", "error");
+                        returninfo.addProperty("msg", "Oh No! An error has occured. Please try again.");
+                    }
+                    json = new Gson().toJson((JsonElement) returninfo);
+                    break;
+                }
+                case "NewFeatureRequest": {
+                    String[] data = request.getParameterValues("data[]");
+                    String Name = data[0].trim();
+                    String Email = data[1].trim();
+                    String Description = data[2].trim();
+                    result = EngineUserManager.CreateNewFeatureRequest(Name, Email, Description);
+                    JsonObject returninfo = new JsonObject();
+                    if (result.equals("success")) {
+                        returninfo.addProperty("status", "success");
+                        returninfo.addProperty("msg", "Your new feature suggestion has been logged and will be looked into. Thank you...");
+                    } else {
+                        returninfo.addProperty("status", "error");
+                        returninfo.addProperty("msg", "Oh No! An error has occured. Please try again.");
+                    }
+                    json = new Gson().toJson((JsonElement) returninfo);
                     break;
                 }
                 case "SubcribeNewletter": {
@@ -407,6 +446,126 @@ public class WUserServlet extends HttpServlet {
 
                     }
                     json = new Gson().toJson((JsonElement) returninfo);
+                    break;
+                }
+                case "GetComplaints": {
+                    ArrayList<Integer> IDs = EngineUserManager.GetComplaintIDs();
+                    HashMap<Integer, HashMap<String, String>> DetailsList = new HashMap<>();
+                    HashMap<String, String> details = new HashMap<>();
+                    if (!IDs.isEmpty()) {
+                        for (int tID : IDs) {
+                            details = EngineUserManager.GetComplaintData(tID);
+                            DetailsList.put(tID, details);
+                        }
+                        json1 = new Gson().toJson(IDs);
+                        json2 = new Gson().toJson(DetailsList);
+                        json3 = new Gson().toJson(IDs.size());
+                        json = "[" + json1 + "," + json2 + "," + json3 + "]";
+                    } else {
+                        json = new Gson().toJson(empty);
+                    }
+                    break;
+                }
+                case "GetNewFeatureSuggestions": {
+                    ArrayList<Integer> IDs = EngineUserManager.GetNewFeatureSuggestionIDs();
+                    HashMap<Integer, HashMap<String, String>> DetailsList = new HashMap<>();
+                    HashMap<String, String> details = new HashMap<>();
+                    if (!IDs.isEmpty()) {
+                        for (int tID : IDs) {
+                            details = EngineUserManager.GetNewfeatureSuggestionData(tID);
+                            DetailsList.put(tID, details);
+                        }
+                        json1 = new Gson().toJson(IDs);
+                        json2 = new Gson().toJson(DetailsList);
+                        json3 = new Gson().toJson(IDs.size());
+                        json = "[" + json1 + "," + json2 + "," + json3 + "]";
+                    } else {
+                        json = new Gson().toJson(empty);
+                    }
+                    break;
+                }
+                case "ComplaintOption": {
+                    String[] data = request.getParameterValues("data[]");
+                    String Option = data[0].trim();
+                    String complaintid = data[1].trim();
+                    int ComplaintID = Integer.parseInt(complaintid);
+                    String optiontext = "";
+                    if (Option.equals("Delete")) {
+                        result = EngineUserManager.DeleteComplaint(ComplaintID);
+                        optiontext = "deleted";
+                    } else {
+                        result = EngineUserManager.ResolveComplaint(ComplaintID);
+                        optiontext = "resolved";
+                    }
+                    ArrayList<Integer> IDs = EngineUserManager.GetComplaintIDs();
+                    HashMap<Integer, HashMap<String, String>> DetailsList = new HashMap<>();
+                    JsonObject returninfo = new JsonObject();
+                    if (result.equals("success")) {
+                        returninfo.addProperty("status", "success");
+                        returninfo.addProperty("msg", "The complaint has been " + optiontext + " successfully.");
+                        if (!IDs.isEmpty()) {
+                            for (int ID : IDs) {
+                                HashMap<String, String> details = EngineUserManager.GetComplaintData(ID);
+                                if (!details.isEmpty()) {
+                                    DetailsList.put(ID, details);
+                                }
+                            }
+                        }
+                    } else {
+                        if (!result.equals("failed")) {
+                            returninfo.addProperty("msg", result);
+                        } else {
+                            returninfo.addProperty("msg", "Something went wrong! Please, try again!");
+                        }
+                        returninfo.addProperty("status", "error");
+                    }
+                    json1 = new Gson().toJson(IDs);
+                    json2 = new Gson().toJson(DetailsList);
+                    json3 = new Gson().toJson(IDs.size());
+                    String json4 = new Gson().toJson(returninfo);
+                    json = "[" + json1 + "," + json2 + "," + json3 + "," + json4 + "]";
+                    break;
+                }
+                case "NewFeatureOption": {
+                    String[] data = request.getParameterValues("data[]");
+                    String Option = data[0].trim();
+                    String newfeatureid = data[1].trim();
+                    int NewFeatureID = Integer.parseInt(newfeatureid);
+                    String optiontext = "";
+                    if (Option.equals("Delete")) {
+                        result = EngineUserManager.DeleteNewFeature(NewFeatureID);
+                        optiontext = "deleted";
+                    } else {
+                        result = EngineUserManager.ImplementedNewFeature(NewFeatureID);
+                        optiontext = "implemented";
+                    }
+                    ArrayList<Integer> IDs = EngineUserManager.GetNewFeatureSuggestionIDs();
+                    HashMap<Integer, HashMap<String, String>> DetailsList = new HashMap<>();
+                    JsonObject returninfo = new JsonObject();
+                    if (result.equals("success")) {
+                        returninfo.addProperty("status", "success");
+                        returninfo.addProperty("msg", "The new feature has been " + optiontext + " successfully.");
+                        if (!IDs.isEmpty()) {
+                            for (int ID : IDs) {
+                                HashMap<String, String> details = EngineUserManager.GetNewfeatureSuggestionData(ID);
+                                if (!details.isEmpty()) {
+                                    DetailsList.put(ID, details);
+                                }
+                            }
+                        }
+                    } else {
+                        if (!result.equals("failed")) {
+                            returninfo.addProperty("msg", result);
+                        } else {
+                            returninfo.addProperty("msg", "Something went wrong! Please, try again!");
+                        }
+                        returninfo.addProperty("status", "error");
+                    }
+                    json1 = new Gson().toJson(IDs);
+                    json2 = new Gson().toJson(DetailsList);
+                    json3 = new Gson().toJson(IDs.size());
+                    String json4 = new Gson().toJson(returninfo);
+                    json = "[" + json1 + "," + json2 + "," + json3 + "," + json4 + "]";
                     break;
                 }
 

@@ -790,27 +790,12 @@ public class Tables {
         /**
          *
          */
-        public static String ObjectID = "objectid";
-
-        /**
-         *
-         */
-        public static String ObjectType = "objecttype";
-
-        /**
-         *
-         */
         public static String Date = "date";
 
         /**
          *
          */
         public static String Time = "time";
-
-        /**
-         *
-         */
-        public static String Deleted = "deleted";
     }
 
     /**
@@ -1194,16 +1179,6 @@ public class Tables {
         /**
          *
          */
-        public static String UserID = "userid";
-
-        /**
-         *
-         */
-        public static String GuestID = "guestid";
-
-        /**
-         *
-         */
         public static String Name = "name";
 
         /**
@@ -1225,11 +1200,10 @@ public class Tables {
          *
          */
         public static String Time = "time";
-
         /**
          *
          */
-        public static String Deleted = "deleted";
+        public static String Status = "status";
     }
 
     /**

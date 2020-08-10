@@ -5,8 +5,16 @@
  */
 package fgengine.Web;
 
+import com.google.gson.Gson;
+import fgengine.Managers.EngineStockManager;
+import fgengine.Managers.EngineUserManager;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -29,10 +37,10 @@ public class WStockServlet extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+            throws ServletException, IOException, ClassNotFoundException, SQLException, SQLException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-             HttpSession session = request.getSession(true);
+            HttpSession session = request.getSession(true);
             String temp = "" + session.getAttribute("Id");
             String json = "";
             String json1 = "";
@@ -42,8 +50,27 @@ public class WStockServlet extends HttpServlet {
             String empty = "none";
             String result = "";
             switch (type) {
-                case "AddNewUserAddress": {
-
+                case "GetStockMovement": {
+                    String sessionid = request.getParameter("data");
+                    String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
+                    int UserID = Integer.parseInt(SessionID);
+                    HashMap<Integer, HashMap<String, String>> List = new HashMap<>();
+                    ArrayList<Integer> IDS = new ArrayList<>();
+                    IDS = EngineStockManager.GetStockIDs(UserID);
+                    if (!IDS.isEmpty()) {
+                        for (int id : IDS) {
+                            HashMap<String, String> Details =EngineStockManager.GetStockMovementData(id);
+                            if (!Details.isEmpty()) {
+                                List.put(id, Details);
+                            }
+                        }
+                        json1 = new Gson().toJson(IDS);
+                        json2 = new Gson().toJson(List);
+                        json3 = new Gson().toJson(IDS.size());
+                        json = "[" + json1 + "," + json2 + "," + json3 + "]";
+                    } else {
+                        json = new Gson().toJson(empty);
+                    }
                     break;
                 }
                 case "EditNewUserAddress": {
@@ -82,7 +109,13 @@ public class WStockServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        try {
+            processRequest(request, response);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(WStockServlet.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(WStockServlet.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
@@ -96,7 +129,13 @@ public class WStockServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        try {
+            processRequest(request, response);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(WStockServlet.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(WStockServlet.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**

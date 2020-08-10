@@ -184,7 +184,7 @@ public class WProductServlet extends HttpServlet {
                                 MinimumStockLevel, NotificationTypeID, ProductUnitValue, ProductTags);
                         optionText = "Created";
                     } else if (option.equals("editproduct")) {
-                        String prodid = data[20];
+                        String prodid = data[21];
                         int ProductID = Integer.parseInt(prodid);
                         productid = EngineProductManager.EditProduct(SellerUserID, ProductName, ProductConditionID, ProductUnitID, ReferenceCode,
                                 UPCBarcode, Description, CategoryIDs, PropertyIDs, CostPrice, SellingPrice,
@@ -561,8 +561,155 @@ public class WProductServlet extends HttpServlet {
                     }
                     break;
                 }
-                
-
+                case "ProductRestock": {
+                    String[] data = request.getParameterValues("data[]");
+                    String productid = data[0];
+                    int ProductID = Integer.parseInt(productid);
+                    String newQuantity = data[1]; //create edit delete
+                    int NewQuantity = Integer.parseInt(newQuantity);
+                    String sessionid = data[2];
+                    String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
+                    int UserID = Integer.parseInt(SessionID);
+                    result = EngineStockManager.ProductRestock(ProductID, NewQuantity);
+                    HashMap<Integer, HashMap<String, String>> DetailsList = new HashMap<>();
+                    JsonObject returninfo = new JsonObject();
+                    ArrayList<Integer> IDs = EngineProductManager.GetProductIDs(UserID);
+                    if (result.equals("success")) {
+                        returninfo.addProperty("status", "success");
+                        returninfo.addProperty("msg", "The product quantity has been updated successfully.");
+                        if (!IDs.isEmpty()) {
+                            for (int ID : IDs) {
+                                HashMap<String, String> details = EngineProductManager.GetProductData(ID);
+                                if (!details.isEmpty()) {
+                                    DetailsList.put(ID, details);
+                                }
+                            }
+                        }
+                    } else {
+                        if (!result.equals("failed")) {
+                            returninfo.addProperty("msg", result);
+                        } else {
+                            returninfo.addProperty("msg", "Something went wrong! Please, try again!");
+                        }
+                        returninfo.addProperty("status", "error");
+                    }
+                    json1 = new Gson().toJson(IDs);
+                    json2 = new Gson().toJson(DetailsList);
+                    json3 = new Gson().toJson(returninfo);
+                    json = "[" + json1 + "," + json2 + "," + json3 + "]";
+                    break;
+                }
+                case "GetRecentlyAddedProducts": {//[idmin, idmax, sessionid];
+                    HashMap<Integer, HashMap<String, String>> List = new HashMap<>();
+                    ArrayList<Integer> IDS = EngineProductManager.GetRecentlyAddedProducts();
+                    if (!IDS.isEmpty()) {
+                        for (int id : IDS) {
+                            HashMap<String, String> details = EngineProductManager.GetProductData(id);
+                            if (!details.isEmpty()) {
+                                List.put(id, details);
+                            }
+                        }
+                        json1 = new Gson().toJson(IDS);
+                        json2 = new Gson().toJson(List);
+                        json = "[" + json1 + "," + json2 + "]";
+                    } else {
+                        json = new Gson().toJson(empty);
+                    }
+                    break;
+                }
+                case "GetTopSellingProducts": {//[idmin, idmax, sessionid];
+                    HashMap<Integer, HashMap<String, String>> List = new HashMap<>();
+                    ArrayList<Integer> IDS = EngineProductManager.GetTopSellingProducts();
+                    if (!IDS.isEmpty()) {
+                        for (int id : IDS) {
+                            HashMap<String, String> details = EngineProductManager.GetProductData(id);
+                            if (!details.isEmpty()) {
+                                List.put(id, details);
+                            }
+                        }
+                        json1 = new Gson().toJson(IDS);
+                        json2 = new Gson().toJson(List);
+                        json = "[" + json1 + "," + json2 + "]";
+                    } else {
+                        json = new Gson().toJson(empty);
+                    }
+                    break;
+                }
+                case "GetRelatedProducts": {//[idmin, idmax, sessionid];
+                    String productid = request.getParameter("data");
+                    int ProductID = Integer.parseInt(productid);
+                    HashMap<Integer, HashMap<String, String>> List = new HashMap<>();
+                    ArrayList<Integer> IDS = EngineProductManager.GetRelatedProductsByCategoryID(ProductID);
+                    if (!IDS.isEmpty()) {
+                        for (int id : IDS) {
+                            HashMap<String, String> details = EngineProductManager.GetProductData(id);
+                            if (!details.isEmpty()) {
+                                List.put(id, details);
+                            }
+                        }
+                        json1 = new Gson().toJson(IDS);
+                        json2 = new Gson().toJson(List);
+                        json = "[" + json1 + "," + json2 + "]";
+                    } else {
+                        json = new Gson().toJson(empty);
+                    }
+                    break;
+                }
+                case "GetBestSellersProducts": {//[idmin, idmax, sessionid];
+                    HashMap<Integer, HashMap<String, String>> List = new HashMap<>();
+                    ArrayList<Integer> IDS = EngineProductManager.GetBestSellersProducts();
+                    if (!IDS.isEmpty()) {
+                        for (int id : IDS) {
+                            HashMap<String, String> details = EngineProductManager.GetProductData(id);
+                            if (!details.isEmpty()) {
+                                List.put(id, details);
+                            }
+                        }
+                        json1 = new Gson().toJson(IDS);
+                        json2 = new Gson().toJson(List);
+                        json = "[" + json1 + "," + json2 + "]";
+                    } else {
+                        json = new Gson().toJson(empty);
+                    }
+                    break;
+                }
+                case "GetFeaturedProducts": {//[idmin, idmax, sessionid];
+                    HashMap<Integer, HashMap<String, String>> List = new HashMap<>();
+                    ArrayList<Integer> IDS = EngineProductManager.GetFeaturedProducts();
+                    if (!IDS.isEmpty()) {
+                        for (int id : IDS) {
+                            HashMap<String, String> details = EngineProductManager.GetProductData(id);
+                            if (!details.isEmpty()) {
+                                List.put(id, details);
+                            }
+                        }
+                        json1 = new Gson().toJson(IDS);
+                        json2 = new Gson().toJson(List);
+                        json = "[" + json1 + "," + json2 + "]";
+                    } else {
+                        json = new Gson().toJson(empty);
+                    }
+                    break;
+                }
+                case "GetMostViewed": {//[idmin, idmax, sessionid];
+                    HashMap<Integer, HashMap<String, String>> List = new HashMap<>();
+                    ArrayList<Integer> IDS = EngineProductManager.GetMostViewed();
+                    if (!IDS.isEmpty()) {
+                        for (int id : IDS) {
+                            HashMap<String, String> details = EngineProductManager.GetProductData(id);
+                            if (!details.isEmpty()) {
+                                List.put(id, details);
+                            }
+                        }
+                        json1 = new Gson().toJson(IDS);
+                        json2 = new Gson().toJson(List);
+                        json = "[" + json1 + "," + json2 + "]";
+                    } else {
+                        json = new Gson().toJson(empty);
+                    }
+                    break;
+                }
+//
             }
 
             response.setContentType("application/json");

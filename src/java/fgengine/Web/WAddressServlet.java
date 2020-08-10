@@ -7,9 +7,7 @@ package fgengine.Web;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import fgengine.Managers.EngineAddressManager;
-import fgengine.Managers.EngineCartManager;
-import fgengine.Managers.EngineShippingManager;
+import fgengine.Managers.*;
 import fgengine.Managers.EngineUserManager;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -24,7 +22,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import org.json.simple.JSONObject;
 
 /**
  *
@@ -56,6 +53,24 @@ public class WAddressServlet extends HttpServlet {
             String empty = "none";
             String result = "";
             switch (type) {
+                case "GetAddresses": {
+                    HashMap<Integer, HashMap<String, String>> List = new HashMap<>();
+                    ArrayList<Integer> IDS = EngineAddressManager.GetAddressIDs(1);
+                    if (!IDS.isEmpty()) {
+                        for (int id : IDS) {
+                            HashMap<String, String> details = EngineAddressManager.GetAddressData(id);
+                            if (!details.isEmpty()) {
+                                List.put(id, details);
+                            }
+                        }
+                        json1 = new Gson().toJson(IDS);
+                        json2 = new Gson().toJson(List);
+                        json = "[" + json1 + "," + json2 + "]";
+                    } else {
+                        json = new Gson().toJson(empty);
+                    }
+                    break;
+                }
                 case "GetAddressTypes": {
                     HashMap<Integer, HashMap<String, String>> List = new HashMap<>();
                     ArrayList<Integer> IDS = EngineAddressManager.GetAddressTypeIDs();
@@ -72,6 +87,77 @@ public class WAddressServlet extends HttpServlet {
                     } else {
                         json = new Gson().toJson(empty);
                     }
+                    break;
+                }
+                case "DeleteAddressType": {
+                    String addresstypeid = request.getParameter("data");
+                    int AddressTypeID = Integer.parseInt(addresstypeid);
+                    result = EngineAddressManager.DeleteAddressType(AddressTypeID);
+                    JsonObject returninfo = new JsonObject();
+                    HashMap<Integer, HashMap<String, String>> List = new HashMap<>();
+                    ArrayList<Integer> IDS = new ArrayList<>();
+                    if (result.equals("success")) {
+                        returninfo.addProperty("status", "success");
+                        returninfo.addProperty("msg", "You have successfully deleted the address type.");
+                        IDS = EngineAddressManager.GetAddressTypeIDs();
+                        for (int id : IDS) {
+                            HashMap<String, String> details = EngineAddressManager.GetAddressTypeData(id);
+                            if (!details.isEmpty()) {
+                                List.put(id, details);
+                            }
+                        }
+                    } else {
+                        if (!result.equals("failed")) {
+                            returninfo.addProperty("msg", result);
+                        } else {
+                            returninfo.addProperty("msg", "Something went wrong. Please try again.");
+                        }
+                        returninfo.addProperty("status", "error");
+                    }
+                    json1 = new Gson().toJson(IDS);
+                    json2 = new Gson().toJson(List);
+                    json3 = new Gson().toJson(returninfo);
+                    json = "[" + json1 + "," + json2 + "," + json3 + "]";
+                    break;
+                }
+                case "NewAddressType": {
+                    String[] data = request.getParameterValues("data[]");
+                    String Name = data[0].trim();
+                    String addtypeid = data[1].trim();
+                    int AddressTypeID = Integer.parseInt(addtypeid);
+                    String optiontext = "";
+                    if (AddressTypeID == 0) {
+                        optiontext = "added";
+                        result = EngineAddressManager.CreateAddressType(Name);
+                    } else {
+                        optiontext = "edited";
+                        result = EngineAddressManager.EditAddressType(AddressTypeID, Name);
+                    }
+                    JsonObject returninfo = new JsonObject();
+                    HashMap<Integer, HashMap<String, String>> List = new HashMap<>();
+                    ArrayList<Integer> IDS = new ArrayList<>();
+                    if (result.equals("success")) {
+                        returninfo.addProperty("status", "success");
+                        returninfo.addProperty("msg", "You have successfully " + optiontext + " a new address type.");
+                        IDS = EngineAddressManager.GetAddressTypeIDs();
+                        for (int id : IDS) {
+                            HashMap<String, String> details = EngineAddressManager.GetAddressTypeData(id);
+                            if (!details.isEmpty()) {
+                                List.put(id, details);
+                            }
+                        }
+                    } else {
+                        if (!result.equals("failed")) {
+                            returninfo.addProperty("msg", result);
+                        } else {
+                            returninfo.addProperty("msg", "Something went wrong. Please try again.");
+                        }
+                        returninfo.addProperty("status", "error");
+                    }
+                    json1 = new Gson().toJson(IDS);
+                    json2 = new Gson().toJson(List);
+                    json3 = new Gson().toJson(returninfo);
+                    json = "[" + json1 + "," + json2 + "," + json3 + "]";
                     break;
                 }
                 case "GetStates": {
@@ -173,8 +259,6 @@ public class WAddressServlet extends HttpServlet {
                     break;
                 }
                 case "AddNewAddress": {
-//                    sessionid, addresstypes, states, lgas, towns, busstops, 
-//                    streets, add_closeto, add_postal_code, add_addressline, add_makedefault, add_phone_line
                     String[] data = request.getParameterValues("data[]");
                     String sessionid = data[0].trim();
                     String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
@@ -329,10 +413,7 @@ public class WAddressServlet extends HttpServlet {
                     json = "[" + json1 + "," + json2 + "," + json3 + "]";
                     break;
                 }
-               
-              
-                
-                
+
             }
 
             response.setContentType("application/json");

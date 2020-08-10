@@ -453,8 +453,7 @@ public class EngineAddressManager {
         String result = DBManager.insertTableData(Tables.PickupStationAddress.Table, tableData, "");
         return result;
     }
-    
-    
+
     /**
      *
      * @param PickupStationID
@@ -474,7 +473,6 @@ public class EngineAddressManager {
         }
         return Data;
     }
-    
 
     /**
      *
@@ -608,7 +606,12 @@ public class EngineAddressManager {
      * @throws UnsupportedEncodingException
      */
     public static ArrayList<Integer> GetAddressIDs(int UserID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        ArrayList<Integer> IDs = DBManager.GetIntArrayList(Tables.AddressDetailsTable.ID, Tables.AddressDetailsTable.Table, "where " + Tables.AddressDetailsTable.UserID + " = " + UserID);
+        ArrayList<Integer> IDs = new ArrayList();
+        if (UserID == 1) {
+            IDs = DBManager.GetIntArrayListDescending(Tables.AddressDetailsTable.ID, Tables.AddressDetailsTable.Table, "Order by " + Tables.AddressDetailsTable.ID);
+        } else {
+            IDs = DBManager.GetIntArrayListDescending(Tables.AddressDetailsTable.ID, Tables.AddressDetailsTable.Table, "where " + Tables.AddressDetailsTable.UserID + " = " + UserID);
+        }
         return IDs;
     }
 
@@ -628,12 +631,17 @@ public class EngineAddressManager {
             Data.put("addresstypename", addresstypename);
             int UserID = Integer.parseInt(Data.get(Tables.AddressDetailsTable.UserID));
             Data.put("addressusername", EngineUserManager.GetUserName(UserID));
+
+            String dt = Data.get(Tables.AddressDetailsTable.Date);
+            String date = DateManager.readDate(dt);
+            Data.put(Tables.AddressDetailsTable.Date, date);
+            String tm = Data.get(Tables.AddressDetailsTable.Time);
+            String time = DateManager.readTime(tm);
+            Data.put(Tables.AddressDetailsTable.Time, time);
+
         }
         return Data;
     }
-    
-    
-    
 
     /**
      *
@@ -729,4 +737,50 @@ public class EngineAddressManager {
         int result = DBManager.GetInt(Tables.AddressDetailsTable.UserID, Tables.AddressDetailsTable.Table, "where " + Tables.AddressDetailsTable.ID + " = " + AddressDetailID);
         return result;
     }
+
+    /**
+     *
+     * @param AddressTypeID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static String DeleteAddressType(int AddressTypeID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        String result = "failed";
+        result = DBManager.DeleteObject(Tables.AddressTypeTable.Table, "where " + Tables.AddressTypeTable.ID + " = " + AddressTypeID);
+        return result;
+    }
+
+    /**
+     *
+     * @param Name
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static String CreateAddressType(String Name) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        HashMap<String, Object> tableData = new HashMap<>();
+        tableData.put(Tables.AddressTypeTable.Name, Name);
+        String result = DBManager.insertTableData(Tables.AddressTypeTable.Table, tableData, "");
+        return result;
+    }
+
+    /**
+     *
+     * @param Name
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static String EditAddressType(int ID, String Name) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        String result = "failed";
+        if (!Name.equals("")) {
+            result = DBManager.UpdateStringData(Tables.AddressTypeTable.Table, Tables.AddressTypeTable.Name, Name, "where " + Tables.AddressTypeTable.ID + " = " + ID);
+        }
+        return result;
+    }
+
 }

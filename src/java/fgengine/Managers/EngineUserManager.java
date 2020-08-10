@@ -433,13 +433,11 @@ public class EngineUserManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String CreateComplaint(int UserID, String Subject, String Description, int ObjectID, String ObjectType) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+    public static String CreateComplaint(int UserID, String Subject, String Description) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         HashMap<String, Object> tableData = new HashMap<>();
         tableData.put(Tables.ComplaintTable.UserID, UserID);
         tableData.put(Tables.ComplaintTable.Subject, Subject);
         tableData.put(Tables.ComplaintTable.Description, Description);
-        tableData.put(Tables.ComplaintTable.ObjectID, ObjectID);
-        tableData.put(Tables.ComplaintTable.ObjectType, ObjectType);
         int compID = DBManager.insertTableDataReturnID(Tables.ComplaintTable.Table, tableData, "");
         DBManager.UpdateCurrentDate(Tables.ComplaintTable.Table, Tables.ComplaintTable.Date, "where " + Tables.ComplaintTable.ID + " = " + compID);
         String result = DBManager.UpdateCurrentTime(Tables.ComplaintTable.Table, Tables.ComplaintTable.Time, "where " + Tables.ComplaintTable.ID + " = " + compID);
@@ -551,35 +549,6 @@ public class EngineUserManager {
         return result;
 
     }
-
-    /**
-     *
-     * @param UserID
-     * @param IpAddress
-     * @param Name
-     * @param Email
-     * @param Description
-     * @return
-     * @throws ClassNotFoundException
-     * @throws SQLException
-     * @throws UnsupportedEncodingException
-     */
-    public static String ComputeNewFeatureRequest(int UserID, String IpAddress, String Name, String Email, String Description) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        String result = "failed";
-        if (Name.equals("")) {
-            Name = GetUserName(UserID);
-        }
-        if (Email.equals("")) {
-            Email = GetUserEmail(UserID);
-        }
-        int GuestID = GetGuestIDByIPAddress(IpAddress);
-        if (IpAddress.equals("")) {
-//            UpdateGuestEmail(IpAddress, Email);
-        }
-        result = CreateNewFeatureRequest(UserID, GuestID, Name, Email, Description);
-        return result;
-    }
-
     /**
      *
      * @param UserID
@@ -592,10 +561,8 @@ public class EngineUserManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String CreateNewFeatureRequest(int UserID, int GuestID, String Name, String Email, String Description) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+    public static String CreateNewFeatureRequest(String Name, String Email, String Description) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         HashMap<String, Object> tableData = new HashMap<>();
-        tableData.put(Tables.NewFeatureRequestTable.UserID, UserID);
-        tableData.put(Tables.NewFeatureRequestTable.GuestID, GuestID);
         tableData.put(Tables.NewFeatureRequestTable.Name, Name);
         tableData.put(Tables.NewFeatureRequestTable.Email, Email);
         tableData.put(Tables.NewFeatureRequestTable.Description, Description);
@@ -824,11 +791,11 @@ public class EngineUserManager {
     public static String GetLoginIDBySessionID(String SessionID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         String userid = "";
         userid = DBManager.GetString(Tables.SessionTable.LoginID, Tables.SessionTable.Table, "where " + Tables.SessionTable.SessionID + " = '" + SessionID + "'");
-        if(userid.equals("none")){
+        if (userid.equals("none")) {
             String IPAddress = GetGuestSystemIPAddress();
             userid = GetLoginIDByIPAddress(IPAddress);
         }
-        
+
         return userid;
     }
 
@@ -1263,11 +1230,142 @@ public class EngineUserManager {
             LoginID = GetGuestSystemIPAddress();
         }
         EngineUserManager.CreateOrUpdateSessionID(OldSessionID, NewSessionID, LoginID, "" + UserID);
-        if((!App.equals("FynGramManager"))){
-             EngineCartManager.UpdateCartUserID(LoginID, "" + UserID);
+        if ((!App.equals("FynGramManager"))) {
+            EngineCartManager.UpdateCartUserID(LoginID, "" + UserID);
         }
-       
 
+        return result;
+    }
+
+    /**
+     *
+     * @return @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static ArrayList<Integer> GetComplaintIDs() throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        ArrayList<Integer> ids = DBManager.GetIntArrayListDescending(Tables.ComplaintTable.ID, Tables.ComplaintTable.Table, "ORDER BY id DESC");
+        return ids;
+    }
+
+    
+     /**
+     *
+     * @return @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static ArrayList<Integer> GetNewFeatureSuggestionIDs() throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        ArrayList<Integer> ids = DBManager.GetIntArrayListDescending(Tables.NewFeatureRequestTable.ID, Tables.NewFeatureRequestTable.Table, "ORDER BY id DESC");
+        return ids;
+    }
+    /**
+     *
+     * @param ComplaintID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static HashMap<String, String> GetComplaintData(int ComplaintID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        HashMap<String, String> Details = DBManager.GetTableData(Tables.ComplaintTable.Table, "where " + Tables.ComplaintTable.ID + " = " + ComplaintID);
+        if (!Details.isEmpty()) {
+            String userid = Details.get(Tables.ComplaintTable.UserID);
+            int ComplaintUserID = Integer.parseInt(userid);
+            Details.put("complaintUserName", GetUserName(ComplaintUserID));
+            String dt = Details.get(Tables.ComplaintTable.Date);
+            String date = DateManager.readDate(dt);
+            Details.put(Tables.ComplaintTable.Date, date);
+
+            String tm = Details.get(Tables.ComplaintTable.Time);
+            String time = DateManager.readTime(tm);
+            Details.put(Tables.ComplaintTable.Time, time);
+        }
+        return Details;
+    }
+
+    
+    /**
+     *
+     * @param ComplaintID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static HashMap<String, String> GetNewfeatureSuggestionData(int NewFeatureID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        HashMap<String, String> Details = DBManager.GetTableData(Tables.NewFeatureRequestTable.Table, "where " + Tables.NewFeatureRequestTable.ID + " = " + NewFeatureID);
+        if (!Details.isEmpty()) {
+           
+            String dt = Details.get(Tables.NewFeatureRequestTable.Date);
+            String date = DateManager.readDate(dt);
+            Details.put(Tables.NewFeatureRequestTable.Date, date);
+
+            String tm = Details.get(Tables.NewFeatureRequestTable.Time);
+            String time = DateManager.readTime(tm);
+            Details.put(Tables.NewFeatureRequestTable.Time, time);
+        }
+        return Details;
+    }
+    /**
+     *
+     * @param ComplaintID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static String DeleteComplaint(int ComplaintID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        String result = DBManager.DeleteObject(Tables.ComplaintTable.Table, "where " + Tables.ComplaintTable.ID + " = " + ComplaintID);
+        return result;
+    }
+
+    /**
+     *
+     * @param ComplaintID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static String ResolveComplaint(int ComplaintID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        int userid = DBManager.GetInt(Tables.ComplaintTable.UserID, Tables.ComplaintTable.Table, "where " + Tables.ComplaintTable.ID + " = " + ComplaintID);
+        String result = "failed";
+        String dt = DBManager.GetString(Tables.ComplaintTable.Date, Tables.ComplaintTable.Table, "where " + Tables.ComplaintTable.ID + " = " + ComplaintID);
+        String date = DateManager.readDate(dt);
+        String body = "Your complaint that was logged on " + date + " has been resolved. Thank you for being part of fyngram.";
+        EngineMessageManager.sendMessage(GetAdminUserID(), body, "Complaint Revolved - Fyngram", userid);
+        result = DBManager.UpdateStringData(Tables.ComplaintTable.Table, Tables.ComplaintTable.Status, "Resolved", "where " + Tables.ComplaintTable.ID + " = " + ComplaintID);
+        return result;
+    }
+    /**
+     *
+     * @param NewFeatureID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static String ImplementedNewFeature(int NewFeatureID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        String email = DBManager.GetString(Tables.NewFeatureRequestTable.Email, Tables.NewFeatureRequestTable.Table, "where " + Tables.NewFeatureRequestTable.ID + " = " + NewFeatureID);
+        String result = "failed";
+        String dt = DBManager.GetString(Tables.NewFeatureRequestTable.Date, Tables.NewFeatureRequestTable.Table, "where " + Tables.NewFeatureRequestTable.ID + " = " + NewFeatureID);
+        String date = DateManager.readDate(dt);
+        String body = "Your suggestion for new feature that was logged on " + date + " has been implemented. Thank you for being part of fyngram.";
+        EngineEmailManager.SendEmail(email, body, "New Feature Suggestion Implementation - Fyngram");
+        result = DBManager.UpdateStringData(Tables.NewFeatureRequestTable.Table, Tables.NewFeatureRequestTable.Status, "Implemented", "where " + Tables.NewFeatureRequestTable.ID + " = " + NewFeatureID);
+        return result;
+    }
+     /**
+     *
+     * @param NewFeatureID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static String DeleteNewFeature(int NewFeatureID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        String result = DBManager.DeleteObject(Tables.NewFeatureRequestTable.Table, "where " + Tables.NewFeatureRequestTable.ID + " = " + NewFeatureID);
         return result;
     }
 }
