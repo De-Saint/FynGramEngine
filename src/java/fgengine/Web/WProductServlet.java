@@ -21,6 +21,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.json.simple.JSONObject;
 
 /**
@@ -224,6 +225,20 @@ public class WProductServlet extends HttpServlet {
                     } else {
                         json = new Gson().toJson(empty);
                     }
+                    break;
+                }
+                case "ComputeUserProductViewed": {
+                    String[] data = request.getParameterValues("data[]");
+                    String sessionid = data[0];
+                    String productid = data[1];
+                    int ProductID = Integer.parseInt(productid);
+                    String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
+                    int UserID = 0;
+                    if (NumberUtils.isNumber(SessionID)) {
+                        UserID = Integer.parseInt(SessionID);
+                    }
+                    result = EngineProductManager.ComputeUserProductViewed(UserID, ProductID, SessionID);
+                    json = new Gson().toJson(result);
                     break;
                 }
                 case "GetProductDetails": {
@@ -709,7 +724,48 @@ public class WProductServlet extends HttpServlet {
                     }
                     break;
                 }
-//
+                case "GetRecentlyViewed": {
+                    String sessionid = request.getParameter("data");
+                    String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
+                    int UserID = 0;
+                    if (NumberUtils.isNumber(SessionID)) {
+                        UserID = Integer.parseInt(SessionID);
+                    }
+                    HashMap<Integer, HashMap<String, String>> List = new HashMap<>();
+                    ArrayList<Integer> IDS = EngineProductManager.GetRecentlyViewedProductIDs(UserID, SessionID);
+                    if (!IDS.isEmpty()) {
+                        for (int id : IDS) {
+                            HashMap<String, String> details = EngineProductManager.GetProductData(id);
+                            if (!details.isEmpty()) {
+                                List.put(id, details);
+                            }
+                        }
+                        json1 = new Gson().toJson(IDS);
+                        json2 = new Gson().toJson(List);
+                        json = "[" + json1 + "," + json2 + "]";
+                    } else {
+                        json = new Gson().toJson(empty);
+                    }
+                    break;
+                }
+                case "GetDetailedFeaturedProducts": {//[idmin, idmax, sessionid];
+                    HashMap<Integer, HashMap<String, String>> List = new HashMap<>();
+                    ArrayList<Integer> IDS = EngineProductManager.GetDetailedFeaturedProducts();
+                    if (!IDS.isEmpty()) {
+                        for (int id : IDS) {
+                            HashMap<String, String> details = EngineProductManager.GetProductData(id);
+                            if (!details.isEmpty()) {
+                                List.put(id, details);
+                            }
+                        }
+                        json1 = new Gson().toJson(IDS);
+                        json2 = new Gson().toJson(List);
+                        json = "[" + json1 + "," + json2 + "]";
+                    } else {
+                        json = new Gson().toJson(empty);
+                    }
+                    break;
+                }
             }
 
             response.setContentType("application/json");

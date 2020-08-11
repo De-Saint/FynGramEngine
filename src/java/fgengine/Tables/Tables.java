@@ -3319,5 +3319,35 @@ public class Tables {
         public static String HourPaymentDelay = "hour_payment_delay";
 
     }
+      /**
+     *
+     */
+    public static class ProductViewedTable {
+
+        /**
+         *
+         */
+        public static String Table = "fg_product_viewed";
+
+        /**
+         *
+         */
+        public static String ID = "id";
+
+        /**
+         *
+         */
+        public static String ProductID = "productid";
+
+        /**
+         *
+         */
+        public static String UserID = "userid";
+        /**
+         *
+         */
+        public static String IpAddress = "ipaddress";
+
+    }
 
 }

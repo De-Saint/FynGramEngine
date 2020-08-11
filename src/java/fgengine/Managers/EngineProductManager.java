@@ -1643,8 +1643,7 @@ public class EngineProductManager {
 
     /**
      *
-     * @return
-     * @throws ClassNotFoundException
+     * @return @throws ClassNotFoundException
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
@@ -1652,10 +1651,10 @@ public class EngineProductManager {
         ArrayList<Integer> IDs = DBManager.GetIntArrayListDescending(Tables.ProductsTable.ID, Tables.ProductsTable.Table, "where " + Tables.ProductsTable.Active + " = " + 1 + " ORDER BY " + Tables.ProductsTable.ID + " DESC LIMIT " + 6);
         return IDs;
     }
+
     /**
      *
-     * @return
-     * @throws ClassNotFoundException
+     * @return @throws ClassNotFoundException
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
@@ -1663,10 +1662,10 @@ public class EngineProductManager {
         ArrayList<Integer> IDs = DBManager.GetIntArrayListDescending(Tables.ProductsTable.ID, Tables.ProductsTable.Table, "where " + Tables.ProductsTable.Active + " = " + 1 + " ORDER BY " + Tables.ProductsTable.ID + " DESC LIMIT " + 5);
         return IDs;
     }
+
     /**
      *
-     * @return
-     * @throws ClassNotFoundException
+     * @return @throws ClassNotFoundException
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
@@ -1674,11 +1673,10 @@ public class EngineProductManager {
         ArrayList<Integer> IDs = DBManager.GetIntArrayListDescending(Tables.ProductsTable.ID, Tables.ProductsTable.Table, "where " + Tables.ProductsTable.Active + " = " + 1 + " ORDER BY " + Tables.ProductsTable.ID + " LIMIT " + 6);
         return IDs;
     }
- 
+
     /**
      *
-     * @return
-     * @throws ClassNotFoundException
+     * @return @throws ClassNotFoundException
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
@@ -1686,10 +1684,11 @@ public class EngineProductManager {
         ArrayList<Integer> IDs = DBManager.GetIntArrayListDescending(Tables.ProductsTable.ID, Tables.ProductsTable.Table, "where " + Tables.ProductsTable.Active + " = " + 1 + " ORDER BY " + Tables.ProductsTable.ID + " LIMIT " + 0 + ", " + 5);
         return IDs;
     }
+   
+
     /**
      *
-     * @return
-     * @throws ClassNotFoundException
+     * @return @throws ClassNotFoundException
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
@@ -1996,8 +1995,8 @@ public class EngineProductManager {
         }
         return IDs;
     }
- 
-     /**
+
+    /**
      *
      * @param ProductID
      * @return
@@ -2015,6 +2014,67 @@ public class EngineProductManager {
                 IDs.add(id);
             }
         }
+        return IDs;
+    }
+
+    /**
+     *
+     * @param UserID
+     * @param ProductID
+     * @param IpAddress
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static String ComputeUserProductViewed(int UserID, int ProductID, String IpAddress) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        String result = "failed";
+        ArrayList<Integer> ViewIDs = DBManager.GetIntArrayList(Tables.ProductViewedTable.ID, Tables.ProductViewedTable.Table, "where " + Tables.ProductViewedTable.UserID + " = " + UserID + " or " + Tables.ProductViewedTable.IpAddress + " = '" + IpAddress + "'");
+        if (ViewIDs.size() >= 4) {
+            int id = DBManager.GetFirstInt(Tables.ProductViewedTable.ID, Tables.ProductViewedTable.Table, "where " + Tables.ProductViewedTable.UserID + " = " + UserID + " or " + Tables.ProductViewedTable.IpAddress + " = '" + IpAddress + "'");
+            DBManager.DeleteObject(Tables.ProductViewedTable.Table, "where " + Tables.ProductViewedTable.ID + " = " + id);
+            CreateUserProductViewed(UserID, ProductID, IpAddress);
+        } else {
+            CreateUserProductViewed(UserID, ProductID, IpAddress);
+        }
+        return result;
+    }
+
+    public static String CreateUserProductViewed(int UserID, int ProductID, String IpAddress) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        String result = "failed";
+        int exitingid = DBManager.GetInt(Tables.ProductViewedTable.ID, Tables.ProductViewedTable.Table, "where " + Tables.ProductViewedTable.UserID + " = " + UserID + " and " + Tables.ProductViewedTable.ProductID + " = " + ProductID);
+        exitingid = DBManager.GetInt(Tables.ProductViewedTable.ID, Tables.ProductViewedTable.Table, "where " + Tables.ProductViewedTable.IpAddress + " = '" + IpAddress + "' and " + Tables.ProductViewedTable.ProductID + " = " + ProductID);
+        if (exitingid == 0) {
+            HashMap<String, Object> tableData = new HashMap<>();
+            tableData.put(Tables.ProductViewedTable.UserID, UserID);
+            tableData.put(Tables.ProductViewedTable.ProductID, ProductID);
+            tableData.put(Tables.ProductViewedTable.IpAddress, IpAddress);
+            DBManager.insertTableData(Tables.ProductViewedTable.Table, tableData, "");
+        }
+        return result;
+    }
+    
+     /**
+     *
+     * @param UserID
+     * @param IpAddress
+     * @return @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static ArrayList<Integer> GetRecentlyViewedProductIDs(int UserID, String IpAddress) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        ArrayList<Integer> IDs = DBManager.GetIntArrayListDescending(Tables.ProductViewedTable.ID, Tables.ProductViewedTable.Table, "where " + Tables.ProductViewedTable.UserID + " = " + UserID + " or " + Tables.ProductViewedTable.IpAddress + " = '" + IpAddress + "'");
+        return IDs;
+    }
+    
+     /**
+     *
+     * @return @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static ArrayList<Integer> GetDetailedFeaturedProducts() throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        ArrayList<Integer> IDs = DBManager.GetIntArrayListDescending(Tables.ProductsTable.ID, Tables.ProductsTable.Table, "where " + Tables.ProductsTable.Active + " = " + 1 + " ORDER BY " + Tables.ProductsTable.ID + " LIMIT " + 5 + ", " + 9);
         return IDs;
     }
 

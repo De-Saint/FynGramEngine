@@ -97,8 +97,8 @@ public class EngineOrderManager {
                                 result = CreateOrderInvoices(OrderID, InvoiceNumber, TotalAmount, ShippingTypeID, ShippingAddressID);
                                 if (result.equals("success")) {
                                     result = ComputeOrderHistory(OrderID, CartID, SellerUserID);
-                                    if (!result.equals("success")) {
-                                        result = "Order History could not be completed.";
+                                    if (result.equals("success")) {
+                                         CreateOrderStatusHistory(OrderID, PaymentStatusID);
                                     }
                                 } else {
                                     result = "Order Invoice could not be completed.";
@@ -114,7 +114,7 @@ public class EngineOrderManager {
                                 if (result.equals("success")) {
                                     result = EngineCartManager.DeleteOrEmtpyCart(CartID);
                                     if (result.equals("success")) {
-                                        CreateOrderStatusHistory(OrderID, PaymentStatusID);
+                                       
                                     } else {
                                         result = "Deleting Cart Details after placing order could not be completed.";
                                     }
