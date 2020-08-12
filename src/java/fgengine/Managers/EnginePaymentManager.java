@@ -32,7 +32,7 @@ public class EnginePaymentManager {
      * @throws UnsupportedEncodingException
      * @throws java.text.ParseException
      */
-    public static String ComputeSubscriptionFees(int UserID, String PaymentType, int Amount, String TransactionCode, String RefereceCode) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
+    public static String ComputeSubscriptionFees(int UserID, String PaymentType, double Amount, String TransactionCode, String RefereceCode) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
         String result = "failed";
         result = EnginePaymentManager.CreatePayment(UserID, PaymentType, Amount, TransactionCode, RefereceCode);
         if (result.equals("success")) {
@@ -71,7 +71,7 @@ public class EnginePaymentManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String CreatePayment(int UserID, String PaymentType, int Amount, String TransactionCode, String RefereceCode) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+    public static String CreatePayment(int UserID, String PaymentType, double Amount, String TransactionCode, String RefereceCode) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         HashMap<String, Object> tableData = new HashMap<>();
         tableData.put(Tables.PaymentsTable.UserID, UserID);
         tableData.put(Tables.PaymentsTable.PaymentType, PaymentType);
@@ -97,7 +97,7 @@ public class EnginePaymentManager {
      * @throws UnsupportedEncodingException
      * @throws ParseException
      */
-    public static String ComputePaymentWithCash(int UserID, int TotalAmount, String TransactionCode, String RefereceCode, String PaymentType) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
+    public static String ComputePaymentWithCash(int UserID, double TotalAmount, String TransactionCode, String RefereceCode, String PaymentType) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
         String result = "failed";//
         result = CreatePayment(UserID, PaymentType, TotalAmount, TransactionCode, RefereceCode);
         if (result.equals("success")) {

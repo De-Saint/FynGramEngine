@@ -2280,7 +2280,7 @@ public class Tables {
         /**
          *
          */
-        public static String Deleted = "deleted";
+        public static String ShowActualPrice = "show_actual_price";
     }
 
     /**

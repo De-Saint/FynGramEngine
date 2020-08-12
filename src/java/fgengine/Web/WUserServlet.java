@@ -365,7 +365,7 @@ public class WUserServlet extends HttpServlet {
                     JsonObject returninfo = new JsonObject();
                     if (result.equals("success")) {
                         returninfo.addProperty("status", "success");
-                        returninfo.addProperty("msg", "Your Email address has been added to the list. You will receive an Email from us shortly. Thank you for subscribing to our Newsletter...");
+                        returninfo.addProperty("msg", "Congratulations!!! \nYour account has been successfully activated. \nThank you for being part of FynGram Onlne Store");
                     } else {
                         returninfo.addProperty("status", "error");
                         returninfo.addProperty("msg", "Oh No! It's our problem not yours. Please try again.");

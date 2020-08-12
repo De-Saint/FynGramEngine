@@ -10,6 +10,7 @@ import java.io.UnsupportedEncodingException;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.text.ParseException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -29,7 +30,7 @@ public class EngineSubscriptionManager {
      * @throws ParseException
      * @throws UnsupportedEncodingException
      */
-    public static String UpdateSellerSubscriptionAmount(int SubscriptionAmountID, int NewAmount) throws ClassNotFoundException, SQLException, ParseException, UnsupportedEncodingException {
+    public static String UpdateSellerSubscriptionAmount(int SubscriptionAmountID, double NewAmount) throws ClassNotFoundException, SQLException, ParseException, UnsupportedEncodingException {
         String result = "failed";
         result = DBManager.UpdateStringData(Tables.SellerSubscriptionAmountTable.Table, Tables.SellerSubscriptionAmountTable.Amount, "" + NewAmount, "where " + Tables.SellerSubscriptionAmountTable.ID + " = " + SubscriptionAmountID);
         return result;
@@ -45,7 +46,7 @@ public class EngineSubscriptionManager {
      * @throws UnsupportedEncodingException
      * @throws ParseException
      */
-    public static String CreateSubscription(int SellerUserID, int Amount) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
+    public static String CreateSubscription(int SellerUserID, double Amount) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
 
         int SellerTypeID = GetSellerTypeIDBySellerUserID(SellerUserID);
         int SubscriptionTypeID = GetSellerSubscriptionTypeIDBySellerUserID(SellerUserID);
@@ -70,10 +71,9 @@ public class EngineSubscriptionManager {
      * @throws UnsupportedEncodingException
      * @throws ParseException
      */
-    public static Date GetSubscriptionStartDate(int SubscriptionID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
+    public static String GetSubscriptionStartDate(int SubscriptionID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
         String result = DBManager.GetString(Tables.SellerSubscriptionTable.StartDate, Tables.SellerSubscriptionTable.Table, "where " + Tables.SellerSubscriptionTable.ID + " = " + SubscriptionID);
-        Date date = UtilityManager.getSqlDateFromString(result);
-        return date;
+        return result;
     }
 
     /**
@@ -105,18 +105,21 @@ public class EngineSubscriptionManager {
         int SellerTypeID = GetSellerTypeIDBySellerUserID(SellerUserID);
         int SubscriptionID = GetSellerSubscriptionIDBySellerUserIDAndSellerTypeIDAndSubscriptionTypeID(SellerUserID, SellerTypeID, SubscriptionTypeID);
 
-        Date startDate = GetSubscriptionStartDate(SubscriptionID);
-        int Duration = GetSubscriptionDuration(SubscriptionTypeID);
-        Date endDate = DateManager.rollMonths(startDate, Duration);
+//        LocalDate date = LocalDate.now();
+        String startDate = GetSubscriptionStartDate(SubscriptionID);
+        LocalDate StartDateDate = LocalDate.parse(startDate);
 
-        DBManager.UpdateStringData(Tables.SellerSubscriptionTable.Table, Tables.SellerSubscriptionTable.EndDate, "" + endDate, "where " + Tables.SellerSubscriptionTable.ID + " = " + SubscriptionID);
+        int Duration = GetSubscriptionDuration(SubscriptionTypeID);
+        LocalDate EndDate = StartDateDate.plusMonths(Duration);
+
+        DBManager.UpdateStringData(Tables.SellerSubscriptionTable.Table, Tables.SellerSubscriptionTable.EndDate, "" + EndDate, "where " + Tables.SellerSubscriptionTable.ID + " = " + SubscriptionID);
         EngineUserManager.UpdateSellerStatus(SellerUserID, "Activated");
         EngineUserManager.UpdateSellerActive(SellerUserID, 1);
         String SubscriptionAmount = GetSellerSubscriptionAmountBySellerTypeIDAndSubscriptionTypeID(SellerTypeID, SubscriptionTypeID);
         int AdminUserID = EngineUserManager.GetAdminUserID();
-        int SubsAmount = Integer.parseInt(SubscriptionAmount);
+        double SubsAmount = Double.parseDouble(SubscriptionAmount);
         result = EngineWalletManager.ComputeWalletRecord(SellerUserID, AdminUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), SubsAmount, "Activate Supplier Account", "");
-        String msgbdy = "Congratulations!!! \nYour account has been have successfully activated. \nThank you for being part of FynGram Onlne Store";
+        String msgbdy = "Congratulations!!! \nYour account has been successfully activated. \nThank you for being part of FynGram Onlne Store";
         EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), msgbdy, "Seller Account Activated", SellerUserID);
         try {
             String Email = EngineUserManager.GetUserEmail(SellerUserID);
@@ -152,7 +155,7 @@ public class EngineSubscriptionManager {
      */
     public static int GetSellerSubscriptionIDBySellerUserIDAndSellerTypeIDAndSubscriptionTypeID(int SellerUserID, int SellerTypeID, int SubscriptionTypeID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         int result = 0;
-        result = DBManager.GetInt(Tables.SellerSubscriptionTable.ID, Tables.SellerSubscriptionTable.Table, "where " + Tables.SellerSubscriptionTable.SellerUserID + " = " + SellerUserID + " And " + Tables.SellerSubscriptionTable.SellerTypeID + " = " + SellerTypeID + " = " + Tables.SellerSubscriptionTable.SubscriptionTypeID + " = " + SubscriptionTypeID);
+        result = DBManager.GetInt(Tables.SellerSubscriptionTable.ID, Tables.SellerSubscriptionTable.Table, "where " + Tables.SellerSubscriptionTable.SellerUserID + " = " + SellerUserID + " And " + Tables.SellerSubscriptionTable.SellerTypeID + " = " + SellerTypeID + " And " + Tables.SellerSubscriptionTable.SubscriptionTypeID + " = " + SubscriptionTypeID);
         return result;
     }
 
@@ -167,7 +170,7 @@ public class EngineSubscriptionManager {
      */
     public static String GetSellerSubscriptionAmountBySellerTypeIDAndSubscriptionTypeID(int SellerTypeID, int SubscriptionTypeID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         String result = "failed";
-        result = DBManager.GetString(Tables.SellerSubscriptionAmountTable.Amount, Tables.SellerSubscriptionAmountTable.Table, "where " + Tables.SellerSubscriptionTable.SellerTypeID + " = " + SellerTypeID + " = " + Tables.SellerSubscriptionAmountTable.SellerSubscriptionTypeID + " = " + SubscriptionTypeID);
+        result = DBManager.GetString(Tables.SellerSubscriptionAmountTable.Amount, Tables.SellerSubscriptionAmountTable.Table, "where " + Tables.SellerSubscriptionAmountTable.SellerTypeID + " = " + SellerTypeID + " And " + Tables.SellerSubscriptionAmountTable.SellerSubscriptionTypeID + " = " + SubscriptionTypeID);
         return result;
     }
 

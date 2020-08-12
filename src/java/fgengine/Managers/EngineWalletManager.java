@@ -164,7 +164,7 @@ public class EngineWalletManager {
             EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), Description, TransactionTypeName, ToUserID);
         } else if (TransactionTypeName.equals("Activate Supplier Account")) {
             Description = "Seller's Account Activation for " + EngineUserManager.GetUserName(FromUserID);
-            fromBodyMsg = "Hi " + EngineUserManager.GetUserName(FromUserID) + ", \nYour Seller's Account has been successfully activated, and your Subscription Fees has been recieved.";
+            toBodyMsg = "Hi " + EngineUserManager.GetUserName(FromUserID) + ", \nYour Seller's Account has been successfully activated, and your Subscription Fees recieved.";
             EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), toBodyMsg, TransactionTypeName, FromUserID);
         } else if (TransactionTypeName.equals("Fund Wallet")) {
             result = EngineWalletManager.InsertWalletRecord(FromUserID, TransactionAmount, FromWalletTypeID, "Credit");
@@ -316,12 +316,22 @@ public class EngineWalletManager {
             data.put("PendingBalance", "" + UserPendingBalance);
             int usertype = EngineUserManager.GetUserTypeIDByUserID("" + UserID);
             if (usertype == 1) {
-                int TotalSellerBalance = GetAllSellersBalance();
+                int TotalSellerBalance = GetAllSellersMainBalance();
                 data.put("TotalSellerBalance", "" + TotalSellerBalance);
+                
+                int TotalSellersPendingBalance = GetAllSellersPendingBalance();
+                
                 int TotalCustomerBalance = GetAllCustomersBalance();
                 data.put("TotalCustomerBalance", "" + TotalCustomerBalance);
-                int TotalAmountInAllAccounts = UserBalance + TotalSellerBalance + TotalCustomerBalance;
-                data.put("TotalAmountInAllAccounts", "" + TotalAmountInAllAccounts);
+                
+                int TotalCustomersPendingBalance = GetAllCustomersPendingBalance();
+                
+                int TotalMainWallets = UserBalance + TotalSellerBalance + TotalCustomerBalance;
+                data.put("TotalMainWallets", "" + TotalMainWallets);
+                
+                int TotalPendingWallets = UserPendingBalance + TotalSellersPendingBalance + TotalCustomersPendingBalance;
+                data.put("TotalPendingWallets", "" + TotalPendingWallets);
+                
             }
         }
 
@@ -347,7 +357,7 @@ public class EngineWalletManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static int GetAllSellersBalance() throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+    public static int GetAllSellersMainBalance() throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         int result = 0;
         ArrayList<Integer> SellerIDs = EngineUserManager.GetAllSellerUsers();
         if (!SellerIDs.isEmpty()) {
@@ -358,7 +368,24 @@ public class EngineWalletManager {
         }
         return result;
     }
-
+ /**
+     *
+     * @return @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static int GetAllSellersPendingBalance() throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        int result = 0;
+        ArrayList<Integer> SellerIDs = EngineUserManager.GetAllSellerUsers();
+        if (!SellerIDs.isEmpty()) {
+            for (int sellerid : SellerIDs) {
+                int sellerbal = GetUserBalance(sellerid, GetPendingWalletID());
+                result = result + sellerbal;
+            }
+        }
+        return result;
+    }
+    
     /**
      *
      * @return @throws ClassNotFoundException
@@ -376,6 +403,25 @@ public class EngineWalletManager {
         }
         return result;
     }
+    
+    /**
+     *
+     * @return @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static int GetAllCustomersPendingBalance() throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        int result = 0;
+        ArrayList<Integer> CustomerIDs = EngineUserManager.GetAllCustomerUsers();
+        if (!CustomerIDs.isEmpty()) {
+            for (int sellerid : CustomerIDs) {
+                int customerbal = GetUserBalance(sellerid, GetPendingWalletID());
+                result = result + customerbal;
+            }
+        }
+        return result;
+    }
+
 
     /**
      *

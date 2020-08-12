@@ -81,6 +81,8 @@ public class EngineStockManager {
                         result = ComputeStockEvaluation(minimumQty, NewProductTotalQuantity, ProductID, SellerUserID);
                         MovementName = "Product Ordered";
                     }
+                    int ShippingMethodID = EngineOrderManager.GetOrderShippingMethodByOrderID(OrderID);
+                    result = EngineShippingManager.UpdateShippingMethodNumberOfDelivery(ShippingMethodID, "Subtract");
                     result = EngineProductManager.UpdateProductQuantityByProductID(ProductID, NewProductTotalQuantity);
                     if (result.equals("success")) {
                         result = CreateStockMovement(MovementName, OrderID, ProductID, PreviousProductQuantity, OrderedProductQuantity, NewProductTotalQuantity, SellerUserID, CustomerUserID);
@@ -175,8 +177,8 @@ public class EngineStockManager {
         String result = DBManager.UpdateIntData(Tables.ProductQuantityTable.TotalQuantity, NewQuantity, Tables.ProductQuantityTable.Table, "where " + Tables.ProductQuantityTable.ProductID + " = " + ProductID);
         return result;
     }
-    
-     /**
+
+    /**
      *
      * @param UserID
      * @return @throws ClassNotFoundException
@@ -191,12 +193,12 @@ public class EngineStockManager {
         } else if (UserType.equals("Seller")) {
             IDs = DBManager.GetIntArrayList(Tables.StockMovementTable.ID, Tables.StockMovementTable.Table, "where " + Tables.StockMovementTable.SellerUserID + " = " + UserID);
         } else if (UserType.equals("Customer")) {
-            IDs = DBManager.GetIntArrayList(Tables.StockMovementTable.ID, Tables.StockMovementTable.Table, "where " + Tables.StockMovementTable.CustomerUserID + " = " + UserID + " and " +  Tables.StockMovementTable.Name + " = 'Product Returned'");
+            IDs = DBManager.GetIntArrayList(Tables.StockMovementTable.ID, Tables.StockMovementTable.Table, "where " + Tables.StockMovementTable.CustomerUserID + " = " + UserID + " and " + Tables.StockMovementTable.Name + " = 'Product Returned'");
         }
         return IDs;
     }
-    
-      /**
+
+    /**
      *
      * @param OrderID
      * @return
@@ -217,7 +219,7 @@ public class EngineStockManager {
             int SellerUserID = Integer.parseInt(sellerid);
             String SellerName = DBManager.GetString(Tables.SellerInfoTable.BusinessName, Tables.SellerInfoTable.Table, "where " + Tables.SellerInfoTable.SellerUserID + " = " + SellerUserID);
             result.put("SellerName", SellerName);
-            
+
             String productid = result.get(Tables.StockMovementTable.ProductID);
             int ProductID = Integer.parseInt(productid);
             String ProductName = DBManager.GetString(Tables.ProductInfoTable.Name, Tables.ProductInfoTable.Table, "where " + Tables.ProductInfoTable.ProductID + " = " + ProductID);

@@ -66,7 +66,7 @@ public class WPaymentServlet extends HttpServlet {
 
                     String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
                     int UserID = Integer.parseInt(SessionID);
-                    int Amount = Integer.parseInt(actualamount);
+                    double Amount = Double.parseDouble(actualamount);
                     String message = "";
                     String payresult = EnginePaystackManager.getInstance().PayStackPay(RefereceCode);
                     JSONParser parser = new JSONParser();
@@ -136,7 +136,6 @@ public class WPaymentServlet extends HttpServlet {
                                 returninfo.addProperty("status", "error");
                             }
                             datares.put("result", returninfo);
-
                             json = new Gson().toJson(datares);
                         }
                     }

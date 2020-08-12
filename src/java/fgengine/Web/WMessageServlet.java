@@ -53,8 +53,8 @@ public class WMessageServlet extends HttpServlet {
             String type = request.getParameter("type").trim();
             String empty = "none";
             String result = "";
-
             switch (type) {
+
                 case "GetMessages": {
                     String[] data = request.getParameterValues("data[]");
                     String sessionid = data[0].trim();
@@ -106,40 +106,19 @@ public class WMessageServlet extends HttpServlet {
                     break;
                 }
                 case "DeleteMessage": {
-                    String[] data = request.getParameterValues("data[]");
-                    String sessionid = data[0].trim();
-                    String messageid = data[1].trim();
-                    String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
-                    int UserID = Integer.parseInt(SessionID);
+                    String messageid = request.getParameter("data");
                     int msgid = Integer.parseInt(messageid);
                     result = EngineMessageManager.DeleteMessage(msgid);
                     JsonObject returninfo = new JsonObject();
-                    HashMap<Integer, HashMap<String, String>> List = new HashMap<>();
                     ArrayList<Integer> IDS = new ArrayList<>();
                     if (result.equals("success")) {
                         returninfo.addProperty("status", "success");
                         returninfo.addProperty("msg", "The message has been deleted");
-                        if (UserID == 1) {
-                            IDS = EngineMessageManager.GetAllMessagesTable();
-                        } else {
-                            IDS = EngineMessageManager.GetInboxMessageIDs(UserID);
-                        }
-                        if (!IDS.isEmpty()) {
-                            for (int id : IDS) {
-                                HashMap<String, String> details = EngineMessageManager.GetMessageDetails(id);
-                                if (!details.isEmpty()) {
-                                    List.put(id, details);
-                                }
-                            }
-                        }
                     } else {
                         returninfo.addProperty("status", "error");
                         returninfo.addProperty("msg", "Something went wrong! Please, try again!");
                     }
-                    json1 = new Gson().toJson(IDS);
-                    json2 = new Gson().toJson(List);
-                    json3 = new Gson().toJson(returninfo);
-                    json = "[" + json1 + "," + json2 + "," + json3 + "]";
+                    json = new Gson().toJson(returninfo);
 
                     break;
                 }

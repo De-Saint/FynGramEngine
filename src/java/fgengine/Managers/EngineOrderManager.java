@@ -1195,7 +1195,14 @@ public class EngineOrderManager {
             double AdminShippingAmount = EngineDiscountManager.ComputePercentageAmount(AdminShippingPercentage, DeliveryFeesAmount);
             double ShippingMethodShippingAmount = DeliveryFeesAmount - AdminShippingAmount;
 
-            double AdminBalance = AdminTransactionShare + AdminShippingAmount;
+            //admin actual balance in the transactions. 
+//            double AdminBalance = AdminTransactionShare + AdminShippingAmount;
+            
+            //but since the shipping company does not have account on the system
+            //all the amount will be given to the admin the admin would settle the delivery company off the system.
+            double AdminBalanceAndShippingMethodBalance = AdminTransactionShare + AdminShippingAmount + ShippingMethodShippingAmount;
+            
+            
             double SellerBalance = SellerTransactionShare;
             int SplitDiscountDeductionValue = EngineDiscountManager.GetDiscountSplitDeductionValue(DiscountCodeID);
 
@@ -1203,27 +1210,29 @@ public class EngineOrderManager {
             result = EngineShippingManager.UpdateShippingMethodEarnings(ShippingMethodID, ShippingMethodShippingAmount, "Add");
             result = EngineShippingManager.UpdateShippingMethodNumberOfDelivery(ShippingMethodID, "Add");
             if (DiscountFees == 0) {
-                result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, AdminUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), AdminBalance, "Move Fund", "For delivered Order.");
+                result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, AdminUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetPendingWalletID(), AdminBalanceAndShippingMethodBalance, "Move Fund", "For delivered Order.");
                 if (result.equals("success")) {
-                    result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, SellerUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), SellerBalance, "Move Fund", "For delivered Order.");
+                    result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, SellerUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetPendingWalletID(), SellerBalance, "Move Fund", "For delivered Order.");
                 }
             } else {
                 double withDiscountAmount = (DiscountFees / OrderIdsByRef.size());
                 if (SplitDiscountDeductionValue == 0) {
 //                     do not share discount amount
-                    double AdminAmountAfterDiscount = AdminBalance - withDiscountAmount;
-                    result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, AdminUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), AdminAmountAfterDiscount, "Move Fund", "For delivered Order.");
+//                    double AdminAmountAfterDiscount = AdminBalance - withDiscountAmount;
+                    double AdminAmountAfterDiscountwithShippingMethodShare = AdminBalanceAndShippingMethodBalance - withDiscountAmount;
+                    result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, AdminUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetPendingWalletID(), AdminAmountAfterDiscountwithShippingMethodShare, "Move Fund", "For delivered Order.");
                     if (result.equals("success")) {
-                        result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, SellerUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), SellerBalance, "Move Fund", "For delivered Order.");
+                        result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, SellerUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetPendingWalletID(), SellerBalance, "Move Fund", "For delivered Order.");
                     }
                 } else {
                     //share the discount amount
                     double DiscountAmountToRefund = (withDiscountAmount / 2);
                     double SellerAmountAfterDiscount = SellerBalance - DiscountAmountToRefund;
-                    result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, SellerUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), SellerAmountAfterDiscount, "Move Fund", "For delivered Order.");
+                    result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, SellerUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetPendingWalletID(), SellerAmountAfterDiscount, "Move Fund", "For delivered Order.");
                     if (result.equals("success")) {
-                        double AdminAmountAfterDiscount = AdminBalance - DiscountAmountToRefund;
-                        result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, AdminUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), AdminAmountAfterDiscount, "Move Fund", "For delivered Order.");
+//                        double AdminAmountAfterDiscount = AdminBalance - DiscountAmountToRefund;
+                        double AdminAmountAfterDiscountwithShippingMethodBalance = AdminBalanceAndShippingMethodBalance - DiscountAmountToRefund;
+                        result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, AdminUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetPendingWalletID(), AdminAmountAfterDiscountwithShippingMethodBalance, "Move Fund", "For delivered Order.");
                     }
                 }
 
