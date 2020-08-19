@@ -30,7 +30,7 @@ public class EngineReviewManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String CreateReview(int UserID, int RateValue, int ObjectID, String ObjectType, String Comment) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+    public static String CreateReview(int UserID, double RateValue, int ObjectID, String ObjectType, String Comment) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         HashMap<String, Object> tableData = new HashMap<>();
         tableData.put(Tables.ReviewsTable.UserID, UserID);
         tableData.put(Tables.ReviewsTable.RateValue, RateValue);
@@ -51,22 +51,22 @@ public class EngineReviewManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String ComputeObjectAverageReview(int ObjectID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+    public static double ComputeObjectAverageReview(int ObjectID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         String result = "failed";
-        int totalratevalue = 0;
+        double totalratevalue = 0.0;
         double averageValue = 0.0;
-        int ratevalue = 0;
+        String ratevalue = "";
         ArrayList<Integer> UserRatingIDs = GetObjectRatingIDs(ObjectID);
         if (!UserRatingIDs.isEmpty()) {
             for (int rateid : UserRatingIDs) {
                 ratevalue = GetRateValueByReviewID(rateid);
-                totalratevalue += ratevalue;
+                double RateValue = Double.parseDouble(ratevalue);
+                totalratevalue += RateValue;
             }
 
             averageValue = totalratevalue / UserRatingIDs.size();
         }
-        result = "" + averageValue;
-        return result;
+        return averageValue;
     }
 
     /**
@@ -79,7 +79,7 @@ public class EngineReviewManager {
      */
     public static ArrayList<Integer> GetUserRatingIDsByUserID(int UserID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         ArrayList<Integer> ids = new ArrayList<>();
-        ids = DBManager.GetIntArrayList(Tables.ReviewsTable.ID, Tables.ReviewsTable.Table, "where " + Tables.ReviewsTable.UserID + " = " + UserID);
+        ids = DBManager.GetIntArrayList(Tables.ReviewsTable.ID, Tables.ReviewsTable.Table, "where " + Tables.ReviewsTable.UserID + " = " + UserID + " Order by " + Tables.ReviewsTable.ID);
         return ids;
     }
 
@@ -93,7 +93,21 @@ public class EngineReviewManager {
      */
     public static ArrayList<Integer> GetObjectRatingIDs(int ObjectID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         ArrayList<Integer> ids = new ArrayList<>();
-        ids = DBManager.GetIntArrayList(Tables.ReviewsTable.ID, Tables.ReviewsTable.Table, "where " + Tables.ReviewsTable.ObjectID + " = " + ObjectID);
+        ids = DBManager.GetIntArrayList(Tables.ReviewsTable.ID, Tables.ReviewsTable.Table, "where " + Tables.ReviewsTable.ObjectID + " = " + ObjectID + " Order by " + Tables.ReviewsTable.ID);
+        return ids;
+    }
+    
+    /**
+     *
+     * @param ObjectID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static ArrayList<Integer> GetRatingIDs() throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        ArrayList<Integer> ids = new ArrayList<>();
+        ids = DBManager.GetIntArrayList(Tables.ReviewsTable.ID, Tables.ReviewsTable.Table, " Order by " + Tables.ReviewsTable.ID);
         return ids;
     }
 
@@ -105,9 +119,111 @@ public class EngineReviewManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static int GetRateValueByReviewID(int ReviewID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        int result = 0;
-        result = DBManager.GetInt(Tables.ReviewsTable.RateValue, Tables.ReviewsTable.Table, "where " + Tables.ReviewsTable.ID + " = " + ReviewID);
+    public static String GetRateValueByReviewID(int ReviewID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        String result = DBManager.GetString(Tables.ReviewsTable.RateValue, Tables.ReviewsTable.Table, "where " + Tables.ReviewsTable.ID + " = " + ReviewID);
         return result;
     }
+
+    /**
+     *
+     * @param ObjectID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static HashMap<String, String> ObjectReviews(int ObjectID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        HashMap<String, String> data = new HashMap<>();
+        double averageRatings = ComputeObjectAverageReview(ObjectID);
+        int ratings = GetObjectRatingIDs(ObjectID).size();
+        data.put("AverageRatings", "" + averageRatings);
+        data.put("NumberOfRatings", "" + ratings);
+        return data;
+    }
+
+    /**
+     *
+     * @param ObjectID
+     * @param ObectType
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static HashMap<Integer, HashMap<String, String>> GetObjectReviewList(int ObjectID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        HashMap<Integer, HashMap<String, String>> ReviewList = new HashMap<>();
+        HashMap<String, String> List = new HashMap<>();
+        ArrayList<Integer> RatingIDS = GetObjectRatingIDs(ObjectID);
+        if (!RatingIDS.isEmpty()) {
+            for (int ratingID : RatingIDS) {
+                List = ReviewData(ratingID);
+                if (!List.isEmpty()) {
+                    ReviewList.put(ratingID, List);
+                }
+            }
+        }
+        return ReviewList;
+    }
+
+    /**
+     *
+     * @param ReviewID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static HashMap<String, String> ReviewData(int ReviewID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        HashMap<String, String> data = DBManager.GetTableData(Tables.ReviewsTable.Table, "where " + Tables.ReviewsTable.ID + " = " + ReviewID);
+        if (!data.isEmpty()) {
+            
+            String userid = data.get(Tables.ReviewsTable.UserID);
+            int userID = Integer.parseInt(userid);
+            String UserName = EngineUserManager.GetUserName(userID);
+            data.put("reviewUsername", UserName);
+            String prodid = data.get(Tables.ReviewsTable.ObjectID);
+            int ProductID  = Integer.parseInt(prodid);
+            String productName = EngineProductManager.GetProductNameByProductID(ProductID);
+            data.put("reviewProductName", productName);
+            String dt = data.get(Tables.ReviewsTable.Date);
+            String date = DateManager.readDate(dt);
+            data.put(Tables.ReviewsTable.Date, date);
+
+            String tm = data.get(Tables.ReviewsTable.Time);
+            String time = DateManager.readTime(tm);
+            data.put(Tables.ReviewsTable.Time, time);
+        }
+        return data;
+    }
+    
+      /**
+     *
+     * @param ObjectID
+     * @param ObectType
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static HashMap<Integer, HashMap<String, String>> GetUserReviewList(int UserID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        HashMap<Integer, HashMap<String, String>> ReviewList = new HashMap<>();
+        HashMap<String, String> List = new HashMap<>();
+        ArrayList<Integer> RatingIDS = new ArrayList<>();
+        if(UserID == 1 ){
+            RatingIDS = GetRatingIDs();
+        }else{
+             RatingIDS = GetUserRatingIDsByUserID(UserID);
+        }
+       
+        if (!RatingIDS.isEmpty()) {
+            for (int ratingID : RatingIDS) {
+                List = ReviewData(ratingID);
+                if (!List.isEmpty()) {
+                    ReviewList.put(ratingID, List);
+                }
+            }
+        }
+        return ReviewList;
+    }
+
 }

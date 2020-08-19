@@ -148,31 +148,6 @@ public class EngineProductManager {
         }
         return result;
     }
-//
-//    /**
-//     *
-//     * @param ProductTags
-//     * @param ProductID
-//     * @return
-//     * @throws ClassNotFoundException
-//     * @throws SQLException
-//     * @throws UnsupportedEncodingException
-//     */
-//    public static String ComputeProductTags(String ProductTags, int ProductID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-//        String result = "failed";
-//        if (!ProductTags.isEmpty()) {
-//            String[] Tags = ProductTags.split(",");
-//            for (String tagname : Tags) {
-//                if (!tagname.isEmpty()) {
-//                    int existingTag = EngineCategoryManager.SearchTag(ProductID, "Product", tagname);
-//                    if (existingTag == 0) {
-//                        result = CreateTags(ProductID, "Product", tagname);
-//                    }
-//                }
-//            }
-//        }
-//        return result;
-//    }
 
     /**
      *
@@ -854,7 +829,20 @@ public class EngineProductManager {
             if (!CategoryDet.isEmpty()) {
                 Details.putAll(CategoryDet);
             }
+            
+            //Get avarage ratings Details
+            JSONObject RatingsDet = new JSONObject();
+            RatingsDet.put("RatingDetails", EngineReviewManager.ObjectReviews(ProductID));
+            Details.putAll(RatingsDet);
 
+             //Get Rating Details
+            HashMap<Integer, HashMap<String, String>> ReviewList = EngineReviewManager.GetObjectReviewList(ProductID);
+            JSONObject ReviewDet = new JSONObject();
+            ReviewDet.put("ReviewDetails", ReviewList);
+            if (!ReviewDet.isEmpty()) {
+                Details.putAll(ReviewDet);
+            }
+            
             int FirstCatID = GetProductFirstRootCatID(ProductID);
             int FirstCatRootID = EngineCategoryManager.GetCategoryRootIDByCategoryID(FirstCatID);
             if (FirstCatID != 0 || FirstCatRootID != 0) {
@@ -1659,7 +1647,7 @@ public class EngineProductManager {
      * @throws UnsupportedEncodingException
      */
     public static ArrayList<Integer> GetTopSellingProducts() throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        ArrayList<Integer> IDs = DBManager.GetIntArrayListDescending(Tables.ProductsTable.ID, Tables.ProductsTable.Table, "where " + Tables.ProductsTable.Active + " = " + 1 + " ORDER BY " + Tables.ProductsTable.ID + " DESC LIMIT " + 5);
+        ArrayList<Integer> IDs = DBManager.GetIntArrayListDescending(Tables.ProductsTable.ID, Tables.ProductsTable.Table, "where " + Tables.ProductsTable.Active + " = " + 1 + " ORDER BY " + Tables.ProductsTable.ID + " DESC LIMIT " + 6);
         return IDs;
     }
 
@@ -1681,7 +1669,7 @@ public class EngineProductManager {
      * @throws UnsupportedEncodingException
      */
     public static ArrayList<Integer> GetMostViewed() throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        ArrayList<Integer> IDs = DBManager.GetIntArrayListDescending(Tables.ProductsTable.ID, Tables.ProductsTable.Table, "where " + Tables.ProductsTable.Active + " = " + 1 + " ORDER BY " + Tables.ProductsTable.ID + " LIMIT " + 0 + ", " + 5);
+        ArrayList<Integer> IDs = DBManager.GetIntArrayListDescending(Tables.ProductsTable.ID, Tables.ProductsTable.Table, "where " + Tables.ProductsTable.Active + " = " + 1 + " ORDER BY " + Tables.ProductsTable.ID + " LIMIT " + 0 + ", " + 6);
         return IDs;
     }
    
@@ -2063,7 +2051,7 @@ public class EngineProductManager {
      * @throws UnsupportedEncodingException
      */
     public static ArrayList<Integer> GetRecentlyViewedProductIDs(int UserID, String IpAddress) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        ArrayList<Integer> IDs = DBManager.GetIntArrayListDescending(Tables.ProductViewedTable.ID, Tables.ProductViewedTable.Table, "where " + Tables.ProductViewedTable.UserID + " = " + UserID + " or " + Tables.ProductViewedTable.IpAddress + " = '" + IpAddress + "'");
+        ArrayList<Integer> IDs = DBManager.GetIntArrayListDescending(Tables.ProductViewedTable.ProductID, Tables.ProductViewedTable.Table, "where " + Tables.ProductViewedTable.UserID + " = " + UserID + " or " + Tables.ProductViewedTable.IpAddress + " = '" + IpAddress + "'");
         return IDs;
     }
     

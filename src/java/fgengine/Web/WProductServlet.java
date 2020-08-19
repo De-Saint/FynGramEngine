@@ -576,6 +576,7 @@ public class WProductServlet extends HttpServlet {
                     }
                     break;
                 }
+               
                 case "ProductRestock": {
                     String[] data = request.getParameterValues("data[]");
                     String productid = data[0];

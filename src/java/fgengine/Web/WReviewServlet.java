@@ -5,13 +5,23 @@
  */
 package fgengine.Web;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import fgengine.Managers.*;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import org.json.simple.JSONObject;
 
 /**
  *
@@ -29,10 +39,10 @@ public class WReviewServlet extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+            throws ServletException, IOException, ClassNotFoundException, SQLException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-             HttpSession session = request.getSession(true);
+            HttpSession session = request.getSession(true);
             String temp = "" + session.getAttribute("Id");
             String json = "";
             String json1 = "";
@@ -41,13 +51,41 @@ public class WReviewServlet extends HttpServlet {
             String type = request.getParameter("type").trim();
             String empty = "none";
             String result = "";
-            switch (type) {
-                case "AddNewUserAddress": {
-
+            switch (type) {//[productid, ratevalue, shopsessionid, comment];
+                case "ReviewProduct": {
+                    String[] data = request.getParameterValues("data[]");
+                    String productid = data[0];
+                    int ProductID = Integer.parseInt(productid);
+                    String ratevalue = data[1];
+                    double RateValue = Double.parseDouble(ratevalue);
+                    String sessionid = data[2];
+                    String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
+                    int UserID = Integer.parseInt(SessionID);
+                    String Comment = data[3];
+                    result = EngineReviewManager.CreateReview(UserID, RateValue, ProductID, "Product", Comment);
+                    JsonObject returninfo = new JsonObject();
+                    if (result.equals("success")) {
+                        returninfo.addProperty("status", "success");
+                        returninfo.addProperty("msg", "Your review has been logged successfully.");
+                    } else {
+                        if (!result.equals("failed")) {
+                            returninfo.addProperty("msg", result);
+                        } else {
+                            returninfo.addProperty("msg", "Something went wrong. Please try again.");
+                        }
+                        returninfo.addProperty("status", "error");
+                    }
+                    json = new Gson().toJson((JsonElement) returninfo);
                     break;
                 }
-                case "EditNewUserAddress": {
-
+                case "GetUserReviewList": {
+                    String sessionid = request.getParameter("data");
+                    String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
+                    int UserID = Integer.parseInt(SessionID);
+                    HashMap<Integer, HashMap<String, String>> List = EngineReviewManager.GetUserReviewList(UserID);
+                    JSONObject datares = new JSONObject();
+                    datares.putAll(List);
+                    json = new Gson().toJson(datares);
                     break;
                 }
                 case "DeleteUserAddress": {
@@ -82,7 +120,13 @@ public class WReviewServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        try {
+            processRequest(request, response);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(WReviewServlet.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(WReviewServlet.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
@@ -96,7 +140,13 @@ public class WReviewServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        try {
+            processRequest(request, response);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(WReviewServlet.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(WReviewServlet.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
