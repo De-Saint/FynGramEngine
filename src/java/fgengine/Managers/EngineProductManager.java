@@ -359,7 +359,7 @@ public class EngineProductManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String CreateProductPrices(int ProductID, int CostPrice, int SellingPrice) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+    public static String CreateProductPrices(int ProductID, double CostPrice, double SellingPrice) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         String result = "failed";
         HashMap<String, Object> tableData = new HashMap<>();
         tableData.put(Tables.ProductPriceTable.ProductID, ProductID);
@@ -829,20 +829,20 @@ public class EngineProductManager {
             if (!CategoryDet.isEmpty()) {
                 Details.putAll(CategoryDet);
             }
-            
+
             //Get avarage ratings Details
             JSONObject RatingsDet = new JSONObject();
             RatingsDet.put("RatingDetails", EngineReviewManager.ObjectReviews(ProductID));
             Details.putAll(RatingsDet);
 
-             //Get Rating Details
+            //Get Rating Details
             HashMap<Integer, HashMap<String, String>> ReviewList = EngineReviewManager.GetObjectReviewList(ProductID);
             JSONObject ReviewDet = new JSONObject();
             ReviewDet.put("ReviewDetails", ReviewList);
             if (!ReviewDet.isEmpty()) {
                 Details.putAll(ReviewDet);
             }
-            
+
             int FirstCatID = GetProductFirstRootCatID(ProductID);
             int FirstCatRootID = EngineCategoryManager.GetCategoryRootIDByCategoryID(FirstCatID);
             if (FirstCatID != 0 || FirstCatRootID != 0) {
@@ -1560,7 +1560,7 @@ public class EngineProductManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static ArrayList<Integer> GetProductIDsByPrice(int UserID, int MinPrice, int MaxPrice) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+    public static ArrayList<Integer> GetProductIDsByPrice(int UserID, double MinPrice, double MaxPrice) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         ArrayList<Integer> IDs = DBManager.GetIntArrayListDescending(Tables.ProductPriceTable.ProductID, Tables.ProductPriceTable.Table, "where " + Tables.ProductPriceTable.SellingPrice + " BETWEEN " + MinPrice + " AND " + MaxPrice + " ORDER BY id DESC");
         if (!IDs.isEmpty()) {
             if (UserID != 1) {
@@ -1580,7 +1580,7 @@ public class EngineProductManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static ArrayList<Integer> GetProductIDsByQuantity(int UserID, int MinQty, int MaxQty) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+    public static ArrayList<Integer> GetProductIDsByQuantity(int UserID, double MinQty, double MaxQty) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         ArrayList<Integer> IDs = DBManager.GetIntArrayListDescending(Tables.ProductQuantityTable.ProductID, Tables.ProductQuantityTable.Table, "where " + Tables.ProductQuantityTable.TotalQuantity + " BETWEEN " + MinQty + " AND " + MaxQty + " ORDER BY id DESC");
         if (!IDs.isEmpty()) {
             if (UserID != 1) {
@@ -1672,7 +1672,6 @@ public class EngineProductManager {
         ArrayList<Integer> IDs = DBManager.GetIntArrayListDescending(Tables.ProductsTable.ID, Tables.ProductsTable.Table, "where " + Tables.ProductsTable.Active + " = " + 1 + " ORDER BY " + Tables.ProductsTable.ID + " LIMIT " + 0 + ", " + 6);
         return IDs;
     }
-   
 
     /**
      *
@@ -1833,7 +1832,7 @@ public class EngineProductManager {
      */
     public static int EditProduct(int SellerUserID, String ProductName, int ProductConditionID, int ProductUnitID, String ReferenceCode,
             String UPCBarcode, String Description, String CategoryIDs, String PropertyIDs,
-            int CostPrice, int SellingPrice,
+            double CostPrice, double SellingPrice,
             int MimimumQuantity, int TotalQuantity,
             int PackageHeight, int PackageWidth, int PackageDepth,
             int MinimumStockLevel, int NotificationTypeID,
@@ -1857,13 +1856,13 @@ public class EngineProductManager {
         if (TotalQuantity != 0) {
             result = DBManager.UpdateIntData(Tables.ProductQuantityTable.TotalQuantity, TotalQuantity, Tables.ProductQuantityTable.Table, "where " + Tables.ProductQuantityTable.ProductID + " = " + ProductID);
         }
-        if (CostPrice != 0) {
-            result = DBManager.UpdateIntData(Tables.ProductPriceTable.CostPrice, CostPrice, Tables.ProductPriceTable.Table, "where " + Tables.ProductPriceTable.ProductID + " = " + ProductID);
+        if (CostPrice != 0.) {
+            DBManager.UpdateDoubleData(Tables.ProductPriceTable.Table, Tables.ProductPriceTable.CostPrice, CostPrice, "where " + Tables.ProductPriceTable.ProductID + " = " + ProductID);
         }
 
         if (SellingPrice != 0) {
-            result = DBManager.UpdateIntData(Tables.ProductPriceTable.SellingPrice, SellingPrice, Tables.ProductPriceTable.Table, "where " + Tables.ProductPriceTable.ProductID + " = " + ProductID);
-            result = DBManager.UpdateIntData(Tables.ProductPriceTable.BasePrice, SellingPrice, Tables.ProductPriceTable.Table, "where " + Tables.ProductPriceTable.ProductID + " = " + ProductID);
+            result = DBManager.UpdateDoubleData(Tables.ProductPriceTable.Table, Tables.ProductPriceTable.SellingPrice, SellingPrice, "where " + Tables.ProductPriceTable.ProductID + " = " + ProductID);
+            result = DBManager.UpdateDoubleData(Tables.ProductPriceTable.Table, Tables.ProductPriceTable.BasePrice, SellingPrice, "where " + Tables.ProductPriceTable.ProductID + " = " + ProductID);
         }
         if (!ProductName.equals("")) {
             result = DBManager.UpdateStringData(Tables.ProductInfoTable.Table, Tables.ProductInfoTable.Name, ProductName, "where " + Tables.ProductInfoTable.ProductID + " = " + ProductID);
@@ -1907,12 +1906,12 @@ public class EngineProductManager {
     public static String GetCategoryMinAndMaxPrice(int CatID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         String result = "";
         ArrayList<Integer> ProdIDs = EngineProductManager.GetProductsByCategoryID(CatID);
-        int minAmount = 0;
-        int maxAmount = 0;
-        ArrayList<Integer> Prices = new ArrayList<>();
+        double minAmount = 0;
+        double maxAmount = 0;
+        ArrayList<Double> Prices = new ArrayList<>();
         if (!ProdIDs.isEmpty()) {
             for (int ProdID : ProdIDs) {
-                int price = GetProductSellingPrice(ProdID);
+                double price = GetProductSellingPrice(ProdID);
                 if (price != 0) {
                     Prices.add(price);
                 }
@@ -1934,7 +1933,7 @@ public class EngineProductManager {
      * @param list
      * @return
      */
-    public static Integer findMin(ArrayList<Integer> list) {
+    public static Double findMin(ArrayList<Double> list) {
         return Collections.min(list);
     }
 
@@ -1943,7 +1942,7 @@ public class EngineProductManager {
      * @param list
      * @return
      */
-    public static Integer findMax(ArrayList<Integer> list) {
+    public static Double findMax(ArrayList<Double> list) {
         return Collections.max(list);
     }
 
@@ -1955,8 +1954,8 @@ public class EngineProductManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static int GetProductSellingPrice(int ProductID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        int result = DBManager.GetInt(Tables.ProductPriceTable.SellingPrice, Tables.ProductPriceTable.Table, "where " + Tables.ProductPriceTable.ProductID + " = " + ProductID);
+    public static double GetProductSellingPrice(int ProductID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        double result = DBManager.GetDouble(Tables.ProductPriceTable.SellingPrice, Tables.ProductPriceTable.Table, "where " + Tables.ProductPriceTable.ProductID + " = " + ProductID);
         return result;
     }
 
@@ -1975,7 +1974,7 @@ public class EngineProductManager {
         ArrayList<Integer> ProdIDs = DBManager.GetIntArrayListDescending(Tables.ProductCategoriesTable.ProductID, Tables.ProductCategoriesTable.Table, "where " + Tables.ProductCategoriesTable.CategoryID + " = " + CatID + " ORDER BY id DESC");
         if (!ProdIDs.isEmpty()) {
             for (int id : ProdIDs) {
-                int price = GetProductSellingPrice(id);
+                double price = GetProductSellingPrice(id);
                 if (price >= MinPrice && price <= MaxPrice) {
                     IDs.add(id);
                 }
@@ -2041,8 +2040,8 @@ public class EngineProductManager {
         }
         return result;
     }
-    
-     /**
+
+    /**
      *
      * @param UserID
      * @param IpAddress
@@ -2054,8 +2053,8 @@ public class EngineProductManager {
         ArrayList<Integer> IDs = DBManager.GetIntArrayListDescending(Tables.ProductViewedTable.ProductID, Tables.ProductViewedTable.Table, "where " + Tables.ProductViewedTable.UserID + " = " + UserID + " or " + Tables.ProductViewedTable.IpAddress + " = '" + IpAddress + "'");
         return IDs;
     }
-    
-     /**
+
+    /**
      *
      * @return @throws ClassNotFoundException
      * @throws SQLException

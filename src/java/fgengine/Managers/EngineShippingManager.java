@@ -94,14 +94,11 @@ public class EngineShippingManager {
         ArrayList<Integer> IDs = DBManager.GetIntArrayList(Tables.ShippingFeesTable.ID, Tables.ShippingFeesTable.Table, "");
         if (!IDs.isEmpty()) {
             for (int id : IDs) {
-                String minCartAmount = DBManager.GetString(Tables.ShippingFeesTable.MinCartAmount, Tables.ShippingFeesTable.Table, "where " + Tables.ShippingFeesTable.ID + " = " + id);
-                double MinCartAmount = Double.parseDouble(minCartAmount);
-                String maxCartAmount = DBManager.GetString(Tables.ShippingFeesTable.MaxCartAmount, Tables.ShippingFeesTable.Table, "where " + Tables.ShippingFeesTable.ID + " = " + id);
-                double MaxCartAmount = Double.parseDouble(maxCartAmount);
-
-                if (CartAmount >= MinCartAmount && (CartAmount <= MaxCartAmount && MaxCartAmount != 0)) {
+                double MinCartAmount = DBManager.GetDouble(Tables.ShippingFeesTable.MinCartAmount, Tables.ShippingFeesTable.Table, "where " + Tables.ShippingFeesTable.ID + " = " + id);
+                double MaxCartAmount = DBManager.GetDouble(Tables.ShippingFeesTable.MaxCartAmount, Tables.ShippingFeesTable.Table, "where " + Tables.ShippingFeesTable.ID + " = " + id);
+                if (CartAmount >= MinCartAmount && (CartAmount <= MaxCartAmount && MaxCartAmount != 0.00)) {
                     result = DBManager.GetString(Tables.ShippingFeesTable.DeliveryFees, Tables.ShippingFeesTable.Table, "where " + Tables.ShippingFeesTable.ID + " = " + id);
-                } else if (CartAmount >= MinCartAmount && MaxCartAmount == 0) {
+                } else if (CartAmount >= MinCartAmount && MaxCartAmount == 0.00) {
                     result = DBManager.GetString(Tables.ShippingFeesTable.DeliveryFees, Tables.ShippingFeesTable.Table, "where " + Tables.ShippingFeesTable.ID + " = " + id);
                 }
                 shippingfeesid = id;
@@ -186,19 +183,17 @@ public class EngineShippingManager {
      */
     public static String UpdateShippingMethodEarnings(int ShippingMethodID, double ShippingFeesAmount, String Option) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         String result = "failed";
-        double ExistingEarning = 0.0;
-        result = DBManager.GetString(Tables.ShippingTable.TotalEarnings, Tables.ShippingTable.Table, "where " + Tables.ShippingTable.ID + " = " + ShippingMethodID);
-        if (result.equals("none")) {
+        double ExistingEarning = DBManager.GetDouble(Tables.ShippingTable.TotalEarnings, Tables.ShippingTable.Table, "where " + Tables.ShippingTable.ID + " = " + ShippingMethodID);
+        if (ExistingEarning == 0.00) {
             ExistingEarning = ExistingEarning + ShippingFeesAmount;
         } else {
-            ExistingEarning = Double.parseDouble(result);
             if (Option.equals("Add")) {
                 ExistingEarning = ExistingEarning + ShippingFeesAmount;
             } else if (Option.equals("Subtract")) {
                 ExistingEarning = ExistingEarning - ShippingFeesAmount;
             }
         }
-        result = DBManager.UpdateStringData(Tables.ShippingTable.Table, Tables.ShippingTable.TotalEarnings, "" + ExistingEarning, "where " + Tables.ShippingTable.ID + " = " + ShippingMethodID);
+        result = DBManager.UpdateDoubleData(Tables.ShippingTable.Table, Tables.ShippingTable.TotalEarnings, ExistingEarning, "where " + Tables.ShippingTable.ID + " = " + ShippingMethodID);
         return result;
     }
 
@@ -329,7 +324,7 @@ public class EngineShippingManager {
     public static String EditShippingFees(int ShippingFeesID, double ShippingAmt) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         String result = "failed";
         if (ShippingAmt != 0) {
-            result = DBManager.UpdateStringData(Tables.ShippingFeesTable.Table, Tables.ShippingFeesTable.DeliveryFees, "" + ShippingAmt, "where " + Tables.ShippingFeesTable.ID + " = " + ShippingFeesID);
+            result = DBManager.UpdateDoubleData(Tables.ShippingFeesTable.Table, Tables.ShippingFeesTable.DeliveryFees, ShippingAmt, "where " + Tables.ShippingFeesTable.ID + " = " + ShippingFeesID);
         }
         return result;
     }
@@ -345,4 +340,23 @@ public class EngineShippingManager {
             return result = true;
         }
     }
+
+    /**
+     *
+     * @return @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static double GetAllShippingBalances() throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        double result = 0.0;
+        ArrayList<Integer> IDs = GetShippingIDs();
+        if (!IDs.isEmpty()) {
+            for (int id : IDs) {
+                double Earnings = DBManager.GetDouble(Tables.ShippingTable.TotalEarnings, Tables.ShippingTable.Table, "where " + Tables.ShippingTable.ID + " = " + id);
+                result = (result + Earnings);
+            }
+        }
+        return result;
+    }
+
 }

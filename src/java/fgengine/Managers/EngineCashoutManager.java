@@ -157,8 +157,7 @@ public class EngineCashoutManager {
     public static String ProcessCashOut(int CashOutID, String Option) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
         String result = "failed";
         int UserID = GetUserIDByCashOutID(CashOutID);
-        String Amt = GetAmountByCashOutID(CashOutID);
-        int Amount = Integer.parseInt(Amt);
+        double Amount = GetAmountByCashOutID(CashOutID);
         if (Option.equals("Approved")) {
             result = EngineWalletManager.ComputeWalletRecord(UserID, EngineUserManager.GetAdminUserID(), EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), Amount, "Move Fund", "For cashout/payout request.");
             String msg = "Hi " + EngineUserManager.GetUserName(UserID) + ", \nYour cashout request has been succesfully approved. For further assistance, please contact the support team";
@@ -197,8 +196,8 @@ public class EngineCashoutManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String GetAmountByCashOutID(int CashoutID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        String result = DBManager.GetString(Tables.CashoutTable.Amount, Tables.CashoutTable.Table, "where " + Tables.CashoutTable.ID + " = " + CashoutID);
+    public static double GetAmountByCashOutID(int CashoutID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        double result = DBManager.GetDouble(Tables.CashoutTable.Amount, Tables.CashoutTable.Table, "where " + Tables.CashoutTable.ID + " = " + CashoutID);
         return result;
     }
 

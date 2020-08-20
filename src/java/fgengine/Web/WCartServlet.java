@@ -275,7 +275,7 @@ public class WCartServlet extends HttpServlet {
                         returninfo.addProperty("status", "success");
                         HashMap<Integer, HashMap<String, String>> PropList = EngineProductManager.GetProductPropertyList(ProductID);
                         String productName = EngineProductManager.GetProductNameByProductID(ProductID);
-                        int productPrice = EngineProductManager.GetProductSellingPrice(ProductID);
+                        double productPrice = EngineProductManager.GetProductSellingPrice(ProductID);
                         int imageid = EngineImageManager.GetFirstImageID(ProductID, "Product");
                         String ImageText = EngineImageManager.GetImageTextByImageID(imageid);
                         CartDetails = EngineCartManager.GetCartDataByUserID(UserID);
@@ -418,9 +418,9 @@ public class WCartServlet extends HttpServlet {
                     if (result.equals("success")) {
                         returninfo.addProperty("status", "success");
                         int CartID = EngineCartManager.GetCartIDByUserID(UserID);
-                        String discountAmt = EngineCartManager.GetDiscountAmountByCartID(CartID);
+                        double discountAmt = EngineCartManager.GetDiscountAmountByCartID(CartID);
                         returninfo.addProperty("cartDiscountAmount", discountAmt);
-                        String cartAmount = EngineCartManager.GetCartTotalAmountByUserID(UserID);
+                        double cartAmount = EngineCartManager.GetCartTotalAmountByUserID(UserID);
                         returninfo.addProperty("cartTotalAmount", cartAmount);
                         returninfo.addProperty("msg", "Discount Code has been added and your cart has been updated.");
                     } else {

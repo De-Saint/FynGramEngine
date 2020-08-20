@@ -59,8 +59,7 @@ public class EngineReviewManager {
         ArrayList<Integer> UserRatingIDs = GetObjectRatingIDs(ObjectID);
         if (!UserRatingIDs.isEmpty()) {
             for (int rateid : UserRatingIDs) {
-                ratevalue = GetRateValueByReviewID(rateid);
-                double RateValue = Double.parseDouble(ratevalue);
+                double RateValue = GetRateValueByReviewID(rateid);
                 totalratevalue += RateValue;
             }
 
@@ -119,8 +118,8 @@ public class EngineReviewManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String GetRateValueByReviewID(int ReviewID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        String result = DBManager.GetString(Tables.ReviewsTable.RateValue, Tables.ReviewsTable.Table, "where " + Tables.ReviewsTable.ID + " = " + ReviewID);
+    public static double GetRateValueByReviewID(int ReviewID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        double result = DBManager.GetDouble(Tables.ReviewsTable.RateValue, Tables.ReviewsTable.Table, "where " + Tables.ReviewsTable.ID + " = " + ReviewID);
         return result;
     }
 

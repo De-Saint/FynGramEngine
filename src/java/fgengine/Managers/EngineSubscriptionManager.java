@@ -32,7 +32,7 @@ public class EngineSubscriptionManager {
      */
     public static String UpdateSellerSubscriptionAmount(int SubscriptionAmountID, double NewAmount) throws ClassNotFoundException, SQLException, ParseException, UnsupportedEncodingException {
         String result = "failed";
-        result = DBManager.UpdateStringData(Tables.SellerSubscriptionAmountTable.Table, Tables.SellerSubscriptionAmountTable.Amount, "" + NewAmount, "where " + Tables.SellerSubscriptionAmountTable.ID + " = " + SubscriptionAmountID);
+        result = DBManager.UpdateDoubleData(Tables.SellerSubscriptionAmountTable.Table, Tables.SellerSubscriptionAmountTable.Amount, NewAmount, "where " + Tables.SellerSubscriptionAmountTable.ID + " = " + SubscriptionAmountID);
         return result;
     }
 
@@ -115,9 +115,8 @@ public class EngineSubscriptionManager {
         DBManager.UpdateStringData(Tables.SellerSubscriptionTable.Table, Tables.SellerSubscriptionTable.EndDate, "" + EndDate, "where " + Tables.SellerSubscriptionTable.ID + " = " + SubscriptionID);
         EngineUserManager.UpdateSellerStatus(SellerUserID, "Activated");
         EngineUserManager.UpdateSellerActive(SellerUserID, 1);
-        String SubscriptionAmount = GetSellerSubscriptionAmountBySellerTypeIDAndSubscriptionTypeID(SellerTypeID, SubscriptionTypeID);
         int AdminUserID = EngineUserManager.GetAdminUserID();
-        double SubsAmount = Double.parseDouble(SubscriptionAmount);
+        double SubsAmount = GetSellerSubscriptionAmountBySellerTypeIDAndSubscriptionTypeID(SellerTypeID, SubscriptionTypeID);
         result = EngineWalletManager.ComputeWalletRecord(SellerUserID, AdminUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), SubsAmount, "Activate Supplier Account", "");
         String msgbdy = "Congratulations!!! \nYour account has been successfully activated. \nThank you for being part of FynGram Onlne Store";
         EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), msgbdy, "Seller Account Activated", SellerUserID);
@@ -168,9 +167,8 @@ public class EngineSubscriptionManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String GetSellerSubscriptionAmountBySellerTypeIDAndSubscriptionTypeID(int SellerTypeID, int SubscriptionTypeID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        String result = "failed";
-        result = DBManager.GetString(Tables.SellerSubscriptionAmountTable.Amount, Tables.SellerSubscriptionAmountTable.Table, "where " + Tables.SellerSubscriptionAmountTable.SellerTypeID + " = " + SellerTypeID + " And " + Tables.SellerSubscriptionAmountTable.SellerSubscriptionTypeID + " = " + SubscriptionTypeID);
+    public static double GetSellerSubscriptionAmountBySellerTypeIDAndSubscriptionTypeID(int SellerTypeID, int SubscriptionTypeID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        double result = DBManager.GetDouble(Tables.SellerSubscriptionAmountTable.Amount, Tables.SellerSubscriptionAmountTable.Table, "where " + Tables.SellerSubscriptionAmountTable.SellerTypeID + " = " + SellerTypeID + " And " + Tables.SellerSubscriptionAmountTable.SellerSubscriptionTypeID + " = " + SubscriptionTypeID);
         return result;
     }
 
@@ -212,7 +210,7 @@ public class EngineSubscriptionManager {
      * @throws UnsupportedEncodingException
      * @throws ParseException
      */
-    public static String CreateSubscriptionAmount(int SellerTypeID, int SubscriptionTypeID, int Amount) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
+    public static String CreateSubscriptionAmount(int SellerTypeID, int SubscriptionTypeID, double Amount) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
         HashMap<String, Object> tableData = new HashMap<>();
         tableData.put(Tables.SellerSubscriptionAmountTable.SellerTypeID, SellerTypeID);
         tableData.put(Tables.SellerSubscriptionAmountTable.SellerSubscriptionTypeID, SubscriptionTypeID);

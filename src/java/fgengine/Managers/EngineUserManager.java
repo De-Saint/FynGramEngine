@@ -994,8 +994,8 @@ public class EngineUserManager {
             int SellerSubscriptionTypeID = EngineSubscriptionManager.GetSellerSubscriptionTypeIDBySellerUserID(UserID);
             String SubscriptionName = EngineSubscriptionManager.GetSellerSubscriptionTypeNameBySubscriptionTypeID(SellerSubscriptionTypeID);
             Data.put("SubscriptionName", SubscriptionName);
-            String SubscriptionFeesAmount = EngineSubscriptionManager.GetSellerSubscriptionAmountBySellerTypeIDAndSubscriptionTypeID(SellerTypeID, SellerSubscriptionTypeID);
-            Data.put("SubscriptionFeesAmount", SubscriptionFeesAmount);
+            double SubscriptionFeesAmount = EngineSubscriptionManager.GetSellerSubscriptionAmountBySellerTypeIDAndSubscriptionTypeID(SellerTypeID, SellerSubscriptionTypeID);
+            Data.put("SubscriptionFeesAmount", ""+SubscriptionFeesAmount);
             //wallets
             JSONObject datawallet = new JSONObject();
             datawallet.put("WalletDetails", EngineWalletManager.ComputeWalletDetails(UserID));

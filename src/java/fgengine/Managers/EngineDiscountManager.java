@@ -367,8 +367,8 @@ public class EngineDiscountManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static int GetDiscountCodeDeductionValueByDiscounCodeID(int DiscountCodeID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        int result = DBManager.GetInt(Tables.DiscountCodesTable.DeductionValue, Tables.DiscountCodesTable.Table, "where " + Tables.DiscountCodesTable.ID + " = " + DiscountCodeID);
+    public static double GetDiscountCodeDeductionValueByDiscounCodeID(int DiscountCodeID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        double result = DBManager.GetInt(Tables.DiscountCodesTable.DeductionValue, Tables.DiscountCodesTable.Table, "where " + Tables.DiscountCodesTable.ID + " = " + DiscountCodeID);
         return result;
     }
 

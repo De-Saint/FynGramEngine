@@ -332,6 +332,11 @@ public class EngineWalletManager {
                 int TotalPendingWallets = UserPendingBalance + TotalSellersPendingBalance + TotalCustomersPendingBalance;
                 data.put("TotalPendingWallets", "" + TotalPendingWallets);
                 
+                
+                double TotalShippingEarnings = EngineShippingManager.GetAllShippingBalances();
+                data.put("TotalShippingEarnings", "" + TotalShippingEarnings);
+                
+                
             }
         }
 

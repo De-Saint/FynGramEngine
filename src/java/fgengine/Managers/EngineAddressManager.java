@@ -421,7 +421,7 @@ public class EngineAddressManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static int CreatePickUpStation(int PickupTownID, String StationName, String Phone, String Email, String OpeningHours, int Fees, int SellerPickupPercentage, int AdminPickupPercentage) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+    public static int CreatePickUpStation(int PickupTownID, String StationName, String Phone, String Email, String OpeningHours, double Fees, int SellerPickupPercentage, int AdminPickupPercentage) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         HashMap<String, Object> data = new HashMap<>();
         data.put(Tables.PickupStationTable.PickupTownID, PickupTownID);
         data.put(Tables.PickupStationTable.Name, StationName);
@@ -566,8 +566,8 @@ public class EngineAddressManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static int GetPickupStationFeesByID(int PickupStationID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        int AddressDetailsID = DBManager.GetInt(Tables.PickupStationTable.Fees, Tables.PickupStationTable.Table, "where " + Tables.PickupStationTable.ID + " = " + PickupStationID);
+    public static double GetPickupStationFeesByID(int PickupStationID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        double AddressDetailsID = DBManager.GetDouble(Tables.PickupStationTable.Fees, Tables.PickupStationTable.Table, "where " + Tables.PickupStationTable.ID + " = " + PickupStationID);
         return AddressDetailsID;
     }
 

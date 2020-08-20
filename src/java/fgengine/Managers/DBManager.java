@@ -7,6 +7,7 @@ package fgengine.Managers;
 
 import fgengine.Connector.JDBCConnector;
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -655,6 +656,7 @@ public class DBManager {
                 int i;
                 for (i = 1; i <= rsmd.getColumnCount(); i++) {
                     int type = rsmd.getColumnType(i);
+
                     String ColumnName = rsmd.getColumnName(i);
                     if (type == 12 || type == 1 || type == -1) {
                         result.put(ColumnName, rs.getString(i));
@@ -662,7 +664,9 @@ public class DBManager {
                         result.put(ColumnName, "" + rs.getInt(i));
                     } else if (type == 91) {
                         result.put(ColumnName, "" + rs.getDate(i));
-                    } else if (type == 92) {
+                     } else if (type == 3 || type == 8 || type == 7 || type == 6) {
+                        result.put(ColumnName, "" + rs.getDouble(i));
+                     } else if (type == 92) {
                         result.put(ColumnName, "" + rs.getTime(i));
                     } else {
                         result.put(ColumnName, "" + rs.getLong(i));
@@ -678,7 +682,9 @@ public class DBManager {
                             result.put(ColumnName, "" + rs.getInt(i));
                         } else if (type == 91) {
                             result.put(ColumnName, "" + rs.getDate(i));
-                        } else if (type == 92) {
+                         } else if (type == 3 || type == 8 || type == 7 || type == 6) {
+                        result.put(ColumnName, "" + rs.getDouble(i));
+                         } else if (type == 92) {
                             result.put(ColumnName, "" + rs.getTime(i));
                         } else {
                             result.put(ColumnName, "" + rs.getLong(i));
@@ -732,8 +738,10 @@ public class DBManager {
                     if (type == 12 || type == 1 || type == -1) {
                         result.put(ColumnName, rs.getString(i));
                     } else if (type == 4) {
-                        result.put(ColumnName, Integer.valueOf(rs.getInt(i)));
-                    } else if (type == 91) {
+                        result.put(ColumnName, rs.getInt(i));
+                     } else if (type == 3 || type == 8 || type == 7 || type == 6) {
+                        result.put(ColumnName, "" + rs.getDouble(i));
+                     } else if (type == 91) {
                         result.put(ColumnName, "" + rs.getDate(i));
                     } else if (type == 92) {
                         result.put(ColumnName, "" + rs.getTime(i));
@@ -748,8 +756,10 @@ public class DBManager {
                         if (type == 12 || type == 1 || type == -1) {
                             result.put(ColumnName, rs.getString(i));
                         } else if (type == 4) {
-                            result.put(ColumnName, Integer.valueOf(rs.getInt(i)));
-                        } else if (type == 91) {
+                            result.put(ColumnName, rs.getInt(i));
+                         } else if (type == 3 || type == 8 || type == 7 || type == 6) {
+                        result.put(ColumnName, "" + rs.getDouble(i));
+                         } else if (type == 91) {
                             result.put(ColumnName, "" + rs.getDate(i));
                         } else if (type == 92) {
                             result.put(ColumnName, "" + rs.getTime(i));
@@ -1521,4 +1531,90 @@ public class DBManager {
         }
         return result;
     }
+    
+     /**
+     *
+     * @param outputColumn
+     * @param TableName
+     * @param Condition
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static double GetDouble(String outputColumn, String TableName, String Condition) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        Connection con = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        double result = 0.00;
+        String sql = "Select * from " + TableName + " " + Condition;
+        try {
+            con = (new JDBCConnector()).getConnection();
+            stmt = con.prepareStatement(sql);
+            rs = stmt.executeQuery();
+            rs.first();
+            if (rs.first()) {
+                result = rs.getDouble(outputColumn);
+            } else {
+                result = 0.00;
+            }
+        } catch (SQLException e) {
+            String error = e.getMessage();
+            System.out.print(error);
+            return result;
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+            if (stmt != null) {
+                stmt.close();
+            }
+            if (con != null) {
+                con.close();
+            }
+        }
+        return result;
+    }
+
+ /**
+     *
+     * @param TableName
+     * @param inputColumn
+     * @param Data
+     * @param Condition
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static String UpdateDoubleData(String TableName, String inputColumn, Double Data, String Condition) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        Connection con = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        String result = "failed";
+        String sql = "Update " + TableName + " SET " + inputColumn + " = ? " + Condition;
+        try {
+            con = (new JDBCConnector()).getConnection();
+            stmt = con.prepareStatement(sql);
+            stmt.setDouble(1, Data);
+            stmt.executeUpdate();
+            result = "success";
+        } catch (SQLException e) {
+            String error = e.getMessage();
+            System.out.print(error);
+            return result;
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+            if (stmt != null) {
+                stmt.close();
+            }
+            if (con != null) {
+                con.close();
+            }
+        }
+        return result;
+    }
+
 }

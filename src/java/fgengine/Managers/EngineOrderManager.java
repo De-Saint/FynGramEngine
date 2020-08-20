@@ -45,26 +45,15 @@ public class EngineOrderManager {
             try {
                 String Shippingtypeid = CartData.get(Tables.OrdersTable.ShippingTypeID);
                 int ShippingTypeID = Integer.parseInt(Shippingtypeid);
-                String Orderamount = CartData.get(Tables.CartTable.Amount);
-                double OrderAmount = Double.parseDouble(Orderamount);
-                String Totalamount = CartData.get(Tables.CartTable.TotalAmount);
-                double TotalAmount = Double.parseDouble(Totalamount);
+                double OrderAmount = Double.parseDouble(CartData.get(Tables.CartTable.Amount));
+                double TotalAmount = Double.parseDouble(CartData.get(Tables.CartTable.TotalAmount));
                 String shippingAddressid = CartData.get(Tables.CartTable.ShippingAddressID);
                 int ShippingAddressID = Integer.parseInt(shippingAddressid);
-                String Deliveryfees = CartData.get(Tables.CartTable.Fees);
-                double DeliveryFess = Double.parseDouble(Deliveryfees);
+                double DeliveryFess = Double.parseDouble(CartData.get(Tables.CartTable.Fees));
                 String discountcodeid = CartData.get(Tables.CartTable.DiscountCodeID);
                 int DiscountCodeID = Integer.parseInt(discountcodeid);
-                String Discountamount = CartData.get(Tables.CartTable.DiscountAmount);
-                double DiscountAmount = 0;
-                if (Discountamount != null) {
-                    DiscountAmount = Double.parseDouble(Discountamount);
-                }
-                String Discountedamount = CartData.get(Tables.CartTable.DiscountedAmount);
-                double DiscountedAmount = 0;
-                if (Discountedamount != null) {
-                    DiscountedAmount = Double.parseDouble(Discountedamount);
-                }
+                double DiscountAmount = Double.parseDouble( CartData.get(Tables.CartTable.DiscountAmount));
+                double DiscountedAmount = Double.parseDouble(CartData.get(Tables.CartTable.DiscountedAmount));
 
                 int UserAcctBalance = EngineWalletManager.GetUserBalance(UserID, EngineWalletManager.GetMainWalletID());
                 if (UserAcctBalance >= TotalAmount) {
@@ -161,7 +150,7 @@ public class EngineOrderManager {
                     CartProductDetailData = EngineCartManager.GetCartProductDetailsDataByID(CartProductDetailsID);
                     int ProductID = Integer.parseInt(CartProductDetailData.get(Tables.CartProductDetailsTable.ProductID));
                     int SellerUserID = EngineProductManager.GetProductSellerUserIDByProductID(ProductID);
-                    int Amount = Integer.parseInt(CartProductDetailData.get(Tables.CartProductDetailsTable.ProductPrice));
+                    double Amount = Integer.parseInt(CartProductDetailData.get(Tables.CartProductDetailsTable.ProductPrice));
                     String SellerDetails = SellerUserID + "-" + Amount;
                     ProductSellerDetails.add(SellerDetails);
                 }
@@ -191,11 +180,11 @@ public class EngineOrderManager {
                 CartProductDetailData = EngineCartManager.GetCartProductDetailsDataByID(CartProductDetailsID);
                 if (!CartProductDetailData.isEmpty()) {
                     int ProductID = Integer.parseInt(CartProductDetailData.get(Tables.CartProductDetailsTable.ProductID));
-                    int ProductPrice = Integer.parseInt(CartProductDetailData.get(Tables.CartProductDetailsTable.ProductPrice));
+                    double ProductPrice = Integer.parseInt(CartProductDetailData.get(Tables.CartProductDetailsTable.ProductPrice));
                     int ProductQuantity = Integer.parseInt(CartProductDetailData.get(Tables.CartProductDetailsTable.ProductQuantity));
                     int ProductSellerUserID = EngineProductManager.GetProductSellerUserIDByProductID(ProductID);
                     if (ProductSellerUserID == OrderSellerUserID) {
-                        String TrackingNumber = EngineDiscountManager.GenerateDiscountCode(ProductID, ProductQuantity, ProductPrice);
+                        String TrackingNumber = EngineDiscountManager.GenerateDiscountCode(ProductID, ProductQuantity, ProductQuantity);
                         result = CreateOrderHistory(OrderID, ProductID, ProductPrice, ProductQuantity, ProductSellerUserID, TrackingNumber);
                     }
                 }
@@ -383,7 +372,7 @@ public class EngineOrderManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String CreateOrderHistory(int OrderID, int ProductID, int ProductPrice, int ProductQuantity, int SellerUserID, String TrackingNumber) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+    public static String CreateOrderHistory(int OrderID, int ProductID, double ProductPrice, int ProductQuantity, int SellerUserID, String TrackingNumber) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         HashMap<String, Object> tableData = new HashMap<>();
         tableData.put(Tables.OrderHistoryTable.OrderID, OrderID);
         tableData.put(Tables.OrderHistoryTable.ProductID, ProductID);
@@ -470,8 +459,8 @@ public class EngineOrderManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static int GetOrderTotalAmount(int OrderID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        int result = DBManager.GetInt(Tables.OrdersTable.TotalPaid, Tables.OrdersTable.Table, "where " + Tables.OrdersTable.ID + " = " + OrderID);
+    public static double GetOrderTotalAmount(int OrderID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        double result = DBManager.GetDouble(Tables.OrdersTable.TotalPaid, Tables.OrdersTable.Table, "where " + Tables.OrdersTable.ID + " = " + OrderID);
         return result;
     }
 
@@ -522,8 +511,8 @@ public class EngineOrderManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static int GetOrderShippingFees(int OrderID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        int result = DBManager.GetInt(Tables.OrdersTable.DeliveryFees, Tables.OrdersTable.Table, "where " + Tables.OrdersTable.ID + " = " + OrderID);
+    public static double GetOrderShippingFees(int OrderID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        double result = DBManager.GetDouble(Tables.OrdersTable.DeliveryFees, Tables.OrdersTable.Table, "where " + Tables.OrdersTable.ID + " = " + OrderID);
         return result;
     }
 
@@ -548,8 +537,8 @@ public class EngineOrderManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static int GetOrderDiscountAmount(int OrderID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        int result = DBManager.GetInt(Tables.OrdersTable.DiscountAmount, Tables.OrdersTable.Table, "where " + Tables.OrdersTable.ID + " = " + OrderID);
+    public static double GetOrderDiscountAmount(int OrderID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        double result = DBManager.GetDouble(Tables.OrdersTable.DiscountAmount, Tables.OrdersTable.Table, "where " + Tables.OrdersTable.ID + " = " + OrderID);
         return result;
     }
 
@@ -574,8 +563,8 @@ public class EngineOrderManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static int GetOrderSellerAmount(int OrderID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        int result = DBManager.GetInt(Tables.OrdersTable.SellerAmount, Tables.OrdersTable.Table, "where " + Tables.OrdersTable.ID + " = " + OrderID);
+    public static double GetOrderSellerAmount(int OrderID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        double result = DBManager.GetDouble(Tables.OrdersTable.SellerAmount, Tables.OrdersTable.Table, "where " + Tables.OrdersTable.ID + " = " + OrderID);
         return result;
     }
 
@@ -940,9 +929,7 @@ public class EngineOrderManager {
     }
 
     public static double GetEnforceCancelFeesPercentage() throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        double result = 0.0;
-        String feespercent = DBManager.GetString(Tables.OrderCancelRulesTable.Percent, Tables.OrderCancelRulesTable.Table, "");
-        result = Double.parseDouble(feespercent);
+        double result = DBManager.GetDouble(Tables.OrderCancelRulesTable.Percent, Tables.OrderCancelRulesTable.Table, "");
         return result;
     }
 

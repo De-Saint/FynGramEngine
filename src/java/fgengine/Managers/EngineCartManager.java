@@ -30,7 +30,7 @@ public class EngineCartManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static int CreateCart(String UserID, String Amount, int ProductCount) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+    public static int CreateCart(String UserID, double Amount, int ProductCount) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         HashMap<String, Object> tableData = new HashMap<>();
         tableData.put(Tables.CartTable.UserID, UserID);
         tableData.put(Tables.CartTable.Amount, Amount);
@@ -58,8 +58,7 @@ public class EngineCartManager {
         String result = "failed";
         int CartProductDetailsID = DBManager.GetInt(Tables.CartProductDetailsTable.ID, Tables.CartProductDetailsTable.Table, "where " + Tables.CartProductDetailsTable.CartID + " = " + CartID + " And " + Tables.CartProductDetailsTable.ProductID + " = " + ProductID);
         if (CartProductDetailsID != 0) {
-            String oldProductPrice = GetCartProductPriceByID(CartProductDetailsID);
-            double OldProductPrice = Double.parseDouble(oldProductPrice);
+            double OldProductPrice = GetCartProductPriceByID(CartProductDetailsID);
 
             int OldProductQuantity = GetCartProductQuantityByID(CartProductDetailsID);
             double NewProductPrice = 0.0;
@@ -71,7 +70,7 @@ public class EngineCartManager {
                 NewProductPrice = OldProductPrice - ProductPrice;
                 NewProductQuantity = OldProductQuantity - ProductQuantity;
             }
-            result = UpdateCartProductPrice(CartProductDetailsID, "" + NewProductPrice);
+            result = UpdateCartProductPrice(CartProductDetailsID,  NewProductPrice);
             if (result.equals("success")) {
                 result = UpdateCartProductQuantity(CartProductDetailsID, NewProductQuantity);
                 if (result.equals("success")) {
@@ -99,8 +98,8 @@ public class EngineCartManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String GetCartProductPriceByID(int CartProductDetailsID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        String result = DBManager.GetString(Tables.CartProductDetailsTable.ProductPrice, Tables.CartProductDetailsTable.Table, "where " + Tables.CartProductDetailsTable.ID + " = " + CartProductDetailsID);
+    public static double GetCartProductPriceByID(int CartProductDetailsID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        double result = DBManager.GetDouble(Tables.CartProductDetailsTable.ProductPrice, Tables.CartProductDetailsTable.Table, "where " + Tables.CartProductDetailsTable.ID + " = " + CartProductDetailsID);
         return result;
     }
 
@@ -140,8 +139,8 @@ public class EngineCartManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String UpdateCartProductPrice(int CartProductDetailsID, String NewProductPrice) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        String result = DBManager.UpdateStringData(Tables.CartProductDetailsTable.Table, Tables.CartProductDetailsTable.ProductPrice, NewProductPrice, "where " + Tables.CartProductDetailsTable.ID + " = " + CartProductDetailsID);
+    public static String UpdateCartProductPrice(int CartProductDetailsID, Double NewProductPrice) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        String result = DBManager.UpdateDoubleData(Tables.CartProductDetailsTable.Table, Tables.CartProductDetailsTable.ProductPrice, NewProductPrice, "where " + Tables.CartProductDetailsTable.ID + " = " + CartProductDetailsID);
         return result;
     }
 
@@ -187,10 +186,8 @@ public class EngineCartManager {
 
         if (ExistingCartID != 0) {
             //update the amount in the cart table
-            String oldAmount = GetCartAmountByUserID(UserID);
-            double OldAmount = Double.parseDouble(oldAmount);
-            String oldTotalAmount = GetCartTotalAmountByUserID(UserID);
-            double OldTotalAmount = Double.parseDouble(oldTotalAmount);
+            double OldAmount = GetCartAmountByUserID(UserID);
+            double OldTotalAmount = GetCartTotalAmountByUserID(UserID);
             int OldProductCount = GetCartProductCountByUserID(UserID);
             double NewAmount = 0.0;
             double NewTotalAmount = 0.0;
@@ -205,9 +202,9 @@ public class EngineCartManager {
                 NewTotalAmount = OldTotalAmount - ProductPrice;
                 NewProductCount = OldProductCount - ProductQuantity;
             }
-            result = UpdateCartAmount(ExistingCartID, "" + NewAmount);
+            result = UpdateCartAmount(ExistingCartID, NewAmount);
             if (result.equals("success")) {
-                result = UpdateCartTotalAmount(ExistingCartID, "" + NewTotalAmount);
+                result = UpdateCartTotalAmount(ExistingCartID, NewTotalAmount);
                 if (result.equals("success")) {
                     result = UpdateCartProductCount(ExistingCartID, NewProductCount);
                     if (result.equals("success")) {
@@ -222,7 +219,7 @@ public class EngineCartManager {
                 result = "Cart amount could not be updated";
             }
         } else {
-            int CartID = CreateCart(UserID, "" + ProductPrice, ProductQuantity);
+            int CartID = CreateCart(UserID, ProductPrice, ProductQuantity);
             result = ComputeCartProductDetails(CartID, ProductID, ProductPrice, ProductQuantity, Action);
         }
         return result;
@@ -236,8 +233,8 @@ public class EngineCartManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String GetCartAmountByUserID(String UserID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        String result = DBManager.GetString(Tables.CartTable.Amount, Tables.CartTable.Table, "where " + Tables.CartTable.UserID + " = '" + UserID + "'");
+    public static Double GetCartAmountByUserID(String UserID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        double result = DBManager.GetDouble(Tables.CartTable.Amount, Tables.CartTable.Table, "where " + Tables.CartTable.UserID + " = '" + UserID + "'");
         return result;
     }
 
@@ -249,8 +246,8 @@ public class EngineCartManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String GetCartTotalAmountByUserID(String UserID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        String result = DBManager.GetString(Tables.CartTable.TotalAmount, Tables.CartTable.Table, "where " + Tables.CartTable.UserID + " = '" + UserID + "'");
+    public static Double GetCartTotalAmountByUserID(String UserID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        double result = DBManager.GetDouble(Tables.CartTable.TotalAmount, Tables.CartTable.Table, "where " + Tables.CartTable.UserID + " = '" + UserID + "'");
         return result;
     }
 
@@ -262,8 +259,8 @@ public class EngineCartManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String GetCartAmountByCartID(int CartID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        String result = DBManager.GetString(Tables.CartTable.Amount, Tables.CartTable.Table, "where " + Tables.CartTable.ID + " = " + CartID);
+    public static Double GetCartAmountByCartID(int CartID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        double result = DBManager.GetDouble(Tables.CartTable.Amount, Tables.CartTable.Table, "where " + Tables.CartTable.ID + " = " + CartID);
         return result;
     }
 
@@ -275,8 +272,8 @@ public class EngineCartManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String GetCartTotalAmountByCartID(int CartID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        String result = DBManager.GetString(Tables.CartTable.TotalAmount, Tables.CartTable.Table, "where " + Tables.CartTable.ID + " = " + CartID);
+    public static double GetCartTotalAmountByCartID(int CartID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        double result = DBManager.GetDouble(Tables.CartTable.TotalAmount, Tables.CartTable.Table, "where " + Tables.CartTable.ID + " = " + CartID);
         return result;
     }
 
@@ -342,8 +339,8 @@ public class EngineCartManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String UpdateCartAmount(int CartID, String NewAmount) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        String result = DBManager.UpdateStringData(Tables.CartTable.Table, Tables.CartTable.Amount, NewAmount, "where " + Tables.CartTable.ID + " = " + CartID);
+    public static String UpdateCartAmount(int CartID, double NewAmount) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        String result = DBManager.UpdateDoubleData(Tables.CartTable.Table, Tables.CartTable.Amount, NewAmount, "where " + Tables.CartTable.ID + " = " + CartID);
         return result;
     }
 
@@ -356,8 +353,8 @@ public class EngineCartManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String UpdateCartTotalAmount(int CartID, String NewAmount) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        String result = DBManager.UpdateStringData(Tables.CartTable.Table, Tables.CartTable.TotalAmount, NewAmount, "where " + Tables.CartTable.ID + " = " + CartID);
+    public static String UpdateCartTotalAmount(int CartID, double NewAmount) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        String result = DBManager.UpdateDoubleData(Tables.CartTable.Table, Tables.CartTable.TotalAmount, NewAmount, "where " + Tables.CartTable.ID + " = " + CartID);
         return result;
     }
 
@@ -489,8 +486,8 @@ public class EngineCartManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String GetWishListProductPriceByID(int WishListProductDetailsID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        String result = DBManager.GetString(Tables.WishlistProductDetailsTable.ProductPrice, Tables.WishlistProductDetailsTable.Table, "where " + Tables.WishlistProductDetailsTable.ID + " = " + WishListProductDetailsID);
+    public static double GetWishListProductPriceByID(int WishListProductDetailsID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        double result = DBManager.GetDouble(Tables.WishlistProductDetailsTable.ProductPrice, Tables.WishlistProductDetailsTable.Table, "where " + Tables.WishlistProductDetailsTable.ID + " = " + WishListProductDetailsID);
         return result;
     }
 
@@ -530,8 +527,8 @@ public class EngineCartManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String UpdateWishListProductPrice(int WishListProductDetailsID, String NewProductPrice) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        String result = DBManager.UpdateStringData(Tables.WishlistProductDetailsTable.Table, Tables.WishlistProductDetailsTable.ProductPrice, NewProductPrice, "where " + Tables.WishlistProductDetailsTable.ID + " = " + WishListProductDetailsID);
+    public static String UpdateWishListProductPrice(int WishListProductDetailsID, double NewProductPrice) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        String result = DBManager.UpdateDoubleData(Tables.WishlistProductDetailsTable.Table, Tables.WishlistProductDetailsTable.ProductPrice, NewProductPrice, "where " + Tables.WishlistProductDetailsTable.ID + " = " + WishListProductDetailsID);
         return result;
     }
 
@@ -574,8 +571,7 @@ public class EngineCartManager {
         int ExistingWishListID = GetWishListIDByUserID(UserID);
         if (ExistingWishListID != 0) {
             //update the amount in the cart table
-            String oldAmount = GetWishListAmountByUserID(UserID);
-            double OldAmount = Double.parseDouble(oldAmount);
+            double OldAmount = GetWishListAmountByUserID(UserID);
             double NewAmount = 0.0;
             if (Option.equals("Increase")) {
                 NewAmount = OldAmount + ProductPrice;
@@ -595,7 +591,7 @@ public class EngineCartManager {
                 }
                 result = UpdateWishListProductCount(ExistingWishListID, NewProductCount);
                 if (result.equals("success")) {
-                    result = UpdateWishListAmount(ExistingWishListID, "" + NewAmount);
+                    result = UpdateWishListAmount(ExistingWishListID,NewAmount);
                 } else {
                     result = "WishList total product count could not be updated";
                 }
@@ -615,8 +611,8 @@ public class EngineCartManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String GetWishListAmountByUserID(String UserID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        String result = DBManager.GetString(Tables.WishlistTable.Amount, Tables.WishlistTable.Table, "where " + Tables.WishlistTable.UserID + " = '" + UserID + "'");
+    public static double GetWishListAmountByUserID(String UserID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        double result = DBManager.GetDouble(Tables.WishlistTable.Amount, Tables.WishlistTable.Table, "where " + Tables.WishlistTable.UserID + " = '" + UserID + "'");
         return result;
     }
 
@@ -628,8 +624,8 @@ public class EngineCartManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String GetWishListAmountByWishListID(int WishListID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        String result = DBManager.GetString(Tables.WishlistTable.Amount, Tables.WishlistTable.Table, "where " + Tables.WishlistTable.ID + " = " + WishListID);
+    public static double GetWishListAmountByWishListID(int WishListID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        double result = DBManager.GetDouble(Tables.WishlistTable.Amount, Tables.WishlistTable.Table, "where " + Tables.WishlistTable.ID + " = " + WishListID);
         return result;
     }
 
@@ -695,8 +691,8 @@ public class EngineCartManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String UpdateWishListAmount(int WishListID, String NewAmount) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        String result = DBManager.UpdateStringData(Tables.WishlistTable.Table, Tables.WishlistTable.Amount, NewAmount, "where " + Tables.WishlistTable.ID + " = " + WishListID);
+    public static String UpdateWishListAmount(int WishListID, double NewAmount) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        String result = DBManager.UpdateDoubleData(Tables.WishlistTable.Table, Tables.WishlistTable.Amount, NewAmount, "where " + Tables.WishlistTable.ID + " = " + WishListID);
         return result;
     }
 
@@ -736,16 +732,13 @@ public class EngineCartManager {
     public static String DeleteCartProduct(int CartID, int ProductID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         String result = "failed";
         int CartProductDetailsID = DBManager.GetInt(Tables.CartProductDetailsTable.ID, Tables.CartProductDetailsTable.Table, "where " + Tables.CartProductDetailsTable.CartID + " = " + CartID + " And " + Tables.CartProductDetailsTable.ProductID + " = " + ProductID);
-        String cartProductPrice = GetCartProductPriceByID(CartProductDetailsID);
-        double CartProductPrice = Double.parseDouble(cartProductPrice);
+        double CartProductPrice = GetCartProductPriceByID(CartProductDetailsID);
         int CartProductQuantity = GetCartProductQuantityByID(CartProductDetailsID);
 
         DBManager.DeleteObject(Tables.CartProductDetailsTable.Table, "where " + Tables.CartProductDetailsTable.ID + " = " + CartProductDetailsID);
 
-        String cartAmount = GetCartAmountByCartID(CartID);
-        double CartAmount = Double.parseDouble(cartAmount);
-        String cartTotalAmount = GetCartTotalAmountByCartID(CartID);
-        double CartTotalAmount = Double.parseDouble(cartTotalAmount);
+        double CartAmount = GetCartAmountByCartID(CartID);
+        double CartTotalAmount =GetCartTotalAmountByCartID(CartID);
         int OldCartProductCount = GetCartProductCountByCartID(CartID);
         double NewCartAmount = CartAmount - CartProductPrice;
         double NewTotalCartAmount = CartTotalAmount - CartProductPrice;
@@ -753,9 +746,9 @@ public class EngineCartManager {
 
         result = UpdateCartProductCount(CartID, NewCartProductCount);
         if (result.equals("success")) {
-            result = UpdateCartAmount(CartID, "" + NewCartAmount);
+            result = UpdateCartAmount(CartID, NewCartAmount);
             if (result.equals("success")) {
-                result = UpdateCartTotalAmount(CartID, "" + NewTotalCartAmount);
+                result = UpdateCartTotalAmount(CartID, NewTotalCartAmount);
             } else {
                 result = "Cart Amount could not be updated";
             }
@@ -782,21 +775,19 @@ public class EngineCartManager {
     public static String DeleteWishListProduct(int WishlistID, int ProductID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         String result = "failed";
         int WishlistProductDetailsID = DBManager.GetInt(Tables.WishlistProductDetailsTable.ID, Tables.WishlistProductDetailsTable.Table, "where " + Tables.WishlistProductDetailsTable.WishlistID + " = " + WishlistID + " And " + Tables.CartProductDetailsTable.ProductID + " = " + ProductID);
-        String wishListProductPrice = GetWishListProductPriceByID(WishlistProductDetailsID);
-        double WishListProductPrice = Double.parseDouble(wishListProductPrice);
+        double WishListProductPrice =GetWishListProductPriceByID(WishlistProductDetailsID);
         int WishListProductQuantity = GetWishListProductQuantityByID(WishlistProductDetailsID);
 
         DBManager.DeleteObject(Tables.WishlistProductDetailsTable.Table, "where " + Tables.WishlistProductDetailsTable.ID + " = " + WishlistProductDetailsID);
 
-        String wishListAmount = GetWishListAmountByWishListID(WishlistID);
-        double WishListAmount = Double.parseDouble(wishListAmount);
+        double WishListAmount = GetWishListAmountByWishListID(WishlistID);
         int OldWishListProductCount = GetWishListProductCountByWishListID(WishlistID);
         double NewWishListAmount = WishListAmount - WishListProductPrice;
         int NewWishListProductCount = OldWishListProductCount - WishListProductQuantity;
 
         result = UpdateWishListProductCount(WishlistID, NewWishListProductCount);
         if (result.equals("success")) {
-            result = UpdateWishListAmount(WishlistID, "" + NewWishListAmount);
+            result = UpdateWishListAmount(WishlistID, NewWishListAmount);
             if (!result.equals("success")) {
                 result = "WishList Amount could not be updated";
             }
@@ -821,8 +812,7 @@ public class EngineCartManager {
     public static String AddAllWishListProductsToCart(String UserID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         String result = "failed";
         int WishListID = GetWishListIDByUserID(UserID);
-        String wishListAmount = GetWishListAmountByWishListID(WishListID);
-        double WishListAmount = Double.parseDouble(wishListAmount);
+        double WishListAmount = GetWishListAmountByWishListID(WishListID);
         int WishListProductCount = GetWishListProductCountByWishListID(WishListID);
         ArrayList<Integer> WishListProductDetailIDs = GetWishListProductDetailsIDsByWishListID(WishListID);
         HashMap<String, String> WishListProductDetailsData = new HashMap<>();
@@ -830,17 +820,15 @@ public class EngineCartManager {
         int CartID = GetCartIDByUserID(UserID);
         if (CartID != 0) {
             //update the amount in the cart table
-            String cartAmount = GetCartAmountByUserID(UserID);
-            double CartAmount = Double.parseDouble(cartAmount);
-            String cartTotalAmount = GetCartTotalAmountByUserID(UserID);
-            double CartTotalAmount = Double.parseDouble(cartTotalAmount);
+            double CartAmount = GetCartAmountByUserID(UserID);
+            double CartTotalAmount =GetCartTotalAmountByUserID(UserID);
             double NewCartAmount = CartAmount + WishListAmount;
             double NewCartTotalAmount = CartTotalAmount += WishListAmount;
-            result = UpdateCartAmount(CartID, "" + NewCartAmount);
+            result = UpdateCartAmount(CartID, NewCartAmount);
 
             if (result.equals("success")) {
                 //update the product count in the cart
-                result = UpdateCartTotalAmount(CartID, "" + NewCartTotalAmount);
+                result = UpdateCartTotalAmount(CartID, NewCartTotalAmount);
                 if (result.equals("success")) {
                     int CartProductCount = GetCartProductCountByUserID(UserID);
                     int NewProductCount = CartProductCount += WishListProductCount;
@@ -865,7 +853,7 @@ public class EngineCartManager {
                 result = "Cart  amount could not be updated";
             }
         } else {
-            CartID = CreateCart(UserID, "" + WishListAmount, WishListProductCount);
+            CartID = CreateCart(UserID, WishListAmount, WishListProductCount);
             if (!WishListProductDetailIDs.isEmpty()) {
                 for (int WishListProductDetailID : WishListProductDetailIDs) {
                     WishListProductDetailsData = GetWishListProductDetailsDataByID(WishListProductDetailID);
@@ -923,19 +911,17 @@ public class EngineCartManager {
         String result = "failed";
         int WishlistProductDetailsID = DBManager.GetInt(Tables.WishlistProductDetailsTable.ID, Tables.WishlistProductDetailsTable.Table, "where " + Tables.WishlistProductDetailsTable.WishlistID + " = " + WishListID + " And " + Tables.CartProductDetailsTable.ProductID + " = " + ProductID);
         if (WishlistProductDetailsID != 0) {
-            String wishListProductPrice = GetWishListProductPriceByID(WishlistProductDetailsID);
-            double WishListProductPrice = Double.parseDouble(wishListProductPrice);
+            double WishListProductPrice = GetWishListProductPriceByID(WishlistProductDetailsID);
             int WishListProductQuantity = GetWishListProductQuantityByID(WishlistProductDetailsID);
 
-            String oldWishListAmount = GetWishListAmountByWishListID(WishListID);
-            double OldWishListAmount = Double.parseDouble(oldWishListAmount);
+            double OldWishListAmount = GetWishListAmountByWishListID(WishListID);
             int OldWishListProductCount = GetWishListProductCountByWishListID(WishListID);
             double NewWishListAmount = OldWishListAmount - WishListProductPrice;
             int NewWishListProductCount = OldWishListProductCount - WishListProductQuantity;
 
             result = UpdateWishListProductCount(WishListID, NewWishListProductCount);
             if (result.equals("success")) {
-                result = UpdateWishListAmount(WishListID, "" + NewWishListAmount);
+                result = UpdateWishListAmount(WishListID, NewWishListAmount);
                 if (result.equals("success")) {
                     //Delete item from cart
                     result = DBManager.DeleteObject(Tables.WishlistProductDetailsTable.Table, "where " + Tables.WishlistProductDetailsTable.ID + " = " + WishlistProductDetailsID);
@@ -972,8 +958,7 @@ public class EngineCartManager {
      */
     public static String ComputeCartDiscountCode(String UserID, String DiscountCode) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
         String result = "failed";
-        String cartAmount = GetCartTotalAmountByUserID(UserID);
-        double CartAmount = Double.parseDouble(cartAmount);
+        double CartAmount = GetCartTotalAmountByUserID(UserID);
         int CartID = GetCartIDByUserID(UserID);
         double CartDiscountedAmount = 0.0;
         int DiscountCodeID = EngineDiscountManager.GetDiscountCodeIDByCode(UserID, DiscountCode);
@@ -981,21 +966,21 @@ public class EngineCartManager {
             int ExistingDiscountCodeID = GetDiscountCodeIDByCartID(CartID);
             if (ExistingDiscountCodeID == 0 && ExistingDiscountCodeID != DiscountCodeID) {
                 int DiscountDeductionTypeID = EngineDiscountManager.GetDiscountCodeDeductionTypeByDiscounCodeID(DiscountCodeID);
-                int DiscountDeductionValue = EngineDiscountManager.GetDiscountCodeDeductionValueByDiscounCodeID(DiscountCodeID);
+                double DiscountDeductionValue = EngineDiscountManager.GetDiscountCodeDeductionValueByDiscounCodeID(DiscountCodeID);
                 if (DiscountDeductionTypeID == 1) {//percentage
                     double DiscountAmt = EngineDiscountManager.ComputePercentageAmount(DiscountDeductionValue, CartAmount);
                     CartDiscountedAmount = CartAmount - DiscountAmt;
-                    result = DBManager.UpdateStringData(Tables.CartTable.Table, Tables.CartTable.DiscountAmount, "" + DiscountAmt, "where " + Tables.CartTable.ID + " = " + CartID);
+                    result = DBManager.UpdateDoubleData(Tables.CartTable.Table, Tables.CartTable.DiscountAmount, DiscountAmt, "where " + Tables.CartTable.ID + " = " + CartID);
                 } else if (DiscountDeductionTypeID == 2) {//amount
                     CartDiscountedAmount = CartAmount - DiscountDeductionValue;
-                    result = DBManager.UpdateIntData(Tables.CartTable.DiscountAmount, DiscountDeductionValue, Tables.CartTable.Table, "where " + Tables.CartTable.ID + " = " + CartID);
+                    result = DBManager.UpdateDoubleData(Tables.CartTable.Table, Tables.CartTable.DiscountAmount, DiscountDeductionValue,  "where " + Tables.CartTable.ID + " = " + CartID);
                 }
                 if (result.equals("success")) {
-                    result = DBManager.UpdateStringData(Tables.CartTable.Table, Tables.CartTable.DiscountedAmount, "" + CartDiscountedAmount, "where " + Tables.CartTable.ID + " = " + CartID);
+                    result = DBManager.UpdateDoubleData(Tables.CartTable.Table, Tables.CartTable.DiscountedAmount,  CartDiscountedAmount, "where " + Tables.CartTable.ID + " = " + CartID);
                     if (result.equals("success")) {
                         result = DBManager.UpdateIntData(Tables.CartTable.DiscountCodeID, DiscountCodeID, Tables.CartTable.Table, "where " + Tables.CartTable.ID + " = " + CartID);
                         if (result.equals("success")) {
-                            result = DBManager.UpdateStringData(Tables.CartTable.Table, Tables.CartTable.TotalAmount, "" + CartDiscountedAmount, "where " + Tables.CartTable.ID + " = " + CartID);
+                            result = DBManager.UpdateDoubleData(Tables.CartTable.Table, Tables.CartTable.TotalAmount, CartDiscountedAmount, "where " + Tables.CartTable.ID + " = " + CartID);
                             if (result.equals("success")) {
                                 result = EngineDiscountManager.UpdateDiscountCodeUsage(UserID, DiscountCodeID);
                             } else {
@@ -1028,8 +1013,8 @@ public class EngineCartManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String GetDiscountAmountByCartID(int CartID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        String result = DBManager.GetString(Tables.CartTable.DiscountAmount, Tables.CartTable.Table, "where " + Tables.CartTable.ID + " = " + CartID);
+    public static double GetDiscountAmountByCartID(int CartID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        double result = DBManager.GetDouble(Tables.CartTable.DiscountAmount, Tables.CartTable.Table, "where " + Tables.CartTable.ID + " = " + CartID);
         return result;
     }
 
@@ -1060,19 +1045,18 @@ public class EngineCartManager {
     public static String ComputeCartShipping(int ShippingTypeID, String UserID, int ShippingAdddresID, double ShippingFees) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         String result = "failed";
         int CartID = GetCartIDByUserID(UserID);
-        String oldCartTotalAmount = GetCartTotalAmountByUserID(UserID);
-        double OldCartTotalAmount = Double.parseDouble(oldCartTotalAmount);
+        double OldCartTotalAmount = GetCartTotalAmountByUserID(UserID);
         int shippingaddressid = GetCartShippingAddressIDByCartID(CartID);
         if (shippingaddressid == 0) {
             result = UpdateCartShippingAddressIDByCartID(CartID, ShippingAdddresID);
             if (result.equals("success")) {
                 //add the  fees to the cart amount 
                 double newCartTotalAmount = OldCartTotalAmount + ShippingFees;
-                result = UpdateCartTotalAmount(CartID, "" + newCartTotalAmount);
+                result = UpdateCartTotalAmount(CartID, newCartTotalAmount);
                 if (result.equals("success")) {
                     result = UpdateCartShippingTypeIDByCartID(CartID, ShippingTypeID);
                     if (result.equals("success")) {
-                        result = UpdateCartShippingFeesByCartID(CartID, "" + ShippingFees);
+                        result = UpdateCartShippingFeesByCartID(CartID, ShippingFees);
                         if (!result.equals("success")) {
                             result = "Updating Cart Shipping fess could not be completed.";
                         }
@@ -1114,8 +1098,8 @@ public class EngineCartManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String UpdateCartShippingFeesByCartID(int CartID, String Fees) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        String result = DBManager.UpdateStringData(Tables.CartTable.Table, Tables.CartTable.Fees, Fees, "Where " + Tables.CartTable.ID + " = " + CartID);
+    public static String UpdateCartShippingFeesByCartID(int CartID, double Fees) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        String result = DBManager.UpdateDoubleData(Tables.CartTable.Table, Tables.CartTable.Fees, Fees, "Where " + Tables.CartTable.ID + " = " + CartID);
         return result;
     }
 
