@@ -84,6 +84,13 @@ public class WOrderServlet extends HttpServlet {
                     json = new Gson().toJson(OrderDetails);
                     break;
                 }
+                case "GetOrderCancelRule": {
+                    HashMap<String, String> Details = EngineOrderManager.GetCancelOrderRuleData();
+                    JSONObject OrderDetails = new JSONObject();
+                    OrderDetails.put("rules", Details);
+                    json = new Gson().toJson(OrderDetails);
+                    break;
+                }
                 case "GetOrders": {//admin getting all carts
                     String sessionid = request.getParameter("data");
                     String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
@@ -155,7 +162,7 @@ public class WOrderServlet extends HttpServlet {
                     int OrderID = Integer.parseInt(orderid);
                     int ShippingMethodId = Integer.parseInt(shippingmethodid);
                     result = EngineOrderManager.ComputeAssignShippingMethodToOrder(OrderID, ShippingMethodId);
-                     JsonObject returninfo = new JsonObject();
+                    JsonObject returninfo = new JsonObject();
                     HashMap<String, String> Details = new HashMap<>();
                     JSONObject OrderDetails = new JSONObject();
                     if (result.equals("success")) {
@@ -163,6 +170,33 @@ public class WOrderServlet extends HttpServlet {
                         returninfo.addProperty("msg", "The shipping method has been successfully assigned to the order. You can proceed to ship the order.");
                         Details = EngineOrderManager.GetOrderFullData(OrderID);
                         OrderDetails.put("OrderDetails", Details);
+                    } else {
+                        returninfo.addProperty("status", "error");
+                        if (!result.equals("failed")) {
+                            returninfo.addProperty("msg", result);
+                        } else {
+                            returninfo.addProperty("msg", "Something went wrong. Please try again.");
+                        }
+                    }
+                    OrderDetails.put("result", returninfo);
+                    json = new Gson().toJson(OrderDetails);
+                    break;
+                }
+                case "UpdateEnforceCancelFees": {
+                    String[] data = request.getParameterValues("data[]");
+                    String amount = data[0].trim();
+                    String rule = data[1].trim();
+                    double Amount = Double.parseDouble(amount);
+                    int Rule = Integer.parseInt(rule);
+                    result = EngineOrderManager.UpdateEnforceCancelFees(Amount, Rule);
+                    JsonObject returninfo = new JsonObject();
+                    HashMap<String, String> Details = new HashMap<>();
+                    JSONObject OrderDetails = new JSONObject();
+                    if (result.equals("success")) {
+                        returninfo.addProperty("status", "success");
+                        returninfo.addProperty("msg", "The cancellation rule has been updated successfully.");
+                        Details = EngineOrderManager.GetCancelOrderRuleData();
+                        OrderDetails.put("rules", Details);
                     } else {
                         returninfo.addProperty("status", "error");
                         if (!result.equals("failed")) {
@@ -203,7 +237,7 @@ public class WOrderServlet extends HttpServlet {
                     json = new Gson().toJson(OrderDetails);
                     break;
                 }
-                 case "UpdateSellerPayment": {
+                case "UpdateSellerPayment": {
                     result = EngineOrderManager.UpdateSellerPayment();
                     json = new Gson().toJson(result);
                     break;

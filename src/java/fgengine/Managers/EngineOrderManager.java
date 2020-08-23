@@ -52,7 +52,7 @@ public class EngineOrderManager {
                 double DeliveryFess = Double.parseDouble(CartData.get(Tables.CartTable.Fees));
                 String discountcodeid = CartData.get(Tables.CartTable.DiscountCodeID);
                 int DiscountCodeID = Integer.parseInt(discountcodeid);
-                double DiscountAmount = Double.parseDouble( CartData.get(Tables.CartTable.DiscountAmount));
+                double DiscountAmount = Double.parseDouble(CartData.get(Tables.CartTable.DiscountAmount));
                 double DiscountedAmount = Double.parseDouble(CartData.get(Tables.CartTable.DiscountedAmount));
 
                 int UserAcctBalance = EngineWalletManager.GetUserBalance(UserID, EngineWalletManager.GetMainWalletID());
@@ -87,7 +87,7 @@ public class EngineOrderManager {
                                 if (result.equals("success")) {
                                     result = ComputeOrderHistory(OrderID, CartID, SellerUserID);
                                     if (result.equals("success")) {
-                                         CreateOrderStatusHistory(OrderID, PaymentStatusID);
+                                        CreateOrderStatusHistory(OrderID, PaymentStatusID);
                                     }
                                 } else {
                                     result = "Order Invoice could not be completed.";
@@ -103,7 +103,7 @@ public class EngineOrderManager {
                                 if (result.equals("success")) {
                                     result = EngineCartManager.DeleteOrEmtpyCart(CartID);
                                     if (result.equals("success")) {
-                                       
+
                                     } else {
                                         result = "Deleting Cart Details after placing order could not be completed.";
                                     }
@@ -919,6 +919,16 @@ public class EngineOrderManager {
         return refundableShippingFees;
     }
 
+    /**
+     *
+     * @param OrderID
+     * @param ShippingMethodID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     * @throws ParseException
+     */
     public static boolean GetEnforceCancelFees() throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         boolean result = false;
         int enforce = DBManager.GetInt(Tables.OrderCancelRulesTable.EnforceRule, Tables.OrderCancelRulesTable.Table, "where " + Tables.OrderCancelRulesTable.ID + " = " + 1);
@@ -928,8 +938,39 @@ public class EngineOrderManager {
         return result;
     }
 
+    /**
+     *
+     * @param OrderID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     * @throws ParseException
+     */
     public static double GetEnforceCancelFeesPercentage() throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         double result = DBManager.GetDouble(Tables.OrderCancelRulesTable.Percent, Tables.OrderCancelRulesTable.Table, "");
+        return result;
+    }
+
+    /**
+     *
+     * @param OrderID
+     * @param ShippingMethodID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     * @throws ParseException
+     */
+    public static String UpdateEnforceCancelFees(double Amount, int Rule) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        String result = DBManager.UpdateDoubleData(Tables.OrderCancelRulesTable.Table, Tables.OrderCancelRulesTable.Percent, Amount, "where " + Tables.OrderCancelRulesTable.ID + " = " + 1);
+        DBManager.UpdateIntData(Tables.OrderCancelRulesTable.EnforceRule, Rule, Tables.OrderCancelRulesTable.Table, "where " + Tables.OrderCancelRulesTable.ID + " = " + 1);
+        return result;
+    }
+
+    public static HashMap<String, String> GetCancelOrderRuleData() throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        HashMap<String, String> result = new HashMap<>();
+        result = DBManager.GetTableData(Tables.OrderCancelRulesTable.Table, "where " + Tables.OrderCancelRulesTable.ID + " = " + 1);
         return result;
     }
 
@@ -1184,12 +1225,10 @@ public class EngineOrderManager {
 
             //admin actual balance in the transactions. 
 //            double AdminBalance = AdminTransactionShare + AdminShippingAmount;
-            
             //but since the shipping company does not have account on the system
             //all the amount will be given to the admin the admin would settle the delivery company off the system.
             double AdminBalanceAndShippingMethodBalance = AdminTransactionShare + AdminShippingAmount + ShippingMethodShippingAmount;
-            
-            
+
             double SellerBalance = SellerTransactionShare;
             int SplitDiscountDeductionValue = EngineDiscountManager.GetDiscountSplitDeductionValue(DiscountCodeID);
 
