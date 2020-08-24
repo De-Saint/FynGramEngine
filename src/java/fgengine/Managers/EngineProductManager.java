@@ -595,6 +595,19 @@ public class EngineProductManager {
         String result = DBManager.GetString(Tables.ProductInfoTable.Name, Tables.ProductInfoTable.Table, "where " + Tables.ProductInfoTable.ProductID + " = " + ProductID);
         return result;
     }
+    
+     /**
+     *
+     * @param ProductID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static String GetProductDescriptionByProductID(int ProductID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        String result = DBManager.GetString(Tables.ProductInfoTable.Description, Tables.ProductInfoTable.Table, "where " + Tables.ProductInfoTable.ProductID + " = " + ProductID);
+        return result;
+    }
 
     /**
      *
@@ -1020,10 +1033,6 @@ public class EngineProductManager {
                 count++;
                 String ImageText = EngineImageManager.GetImageTextByImageID(ImageID);
                 ImageDetailList.put("ImageText" + count, ImageText);
-//                ImageDetailList = EngineImageManager.GetImageData(ImageID);
-//                if (!ImageDetailList.isEmpty()) {
-//                    ImageList.put(ImageID, ImageDetailList);
-//                }
             }
         }
         return ImageDetailList;
@@ -1530,25 +1539,7 @@ public class EngineProductManager {
         return IDs;
     }
 
-    /**
-     *
-     * @param UserID
-     * @param MinID
-     * @param MaxID
-     * @return
-     * @throws ClassNotFoundException
-     * @throws SQLException
-     * @throws UnsupportedEncodingException
-     */
-    public static ArrayList<Integer> GetProductIDsByIDs(int UserID, int MinID, int MaxID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        ArrayList<Integer> IDs = DBManager.GetIntArrayListDescending(Tables.ProductsTable.ID, Tables.ProductsTable.Table, "where " + Tables.ProductsTable.ID + " BETWEEN " + MinID + " AND " + MaxID + " ORDER BY id DESC");
-        if (!IDs.isEmpty()) {
-            if (UserID != 1) {
-                IDs = GetSellerProductIDsOptions(IDs, UserID);
-            }
-        }
-        return IDs;
-    }
+ 
 
     /**
      *
@@ -1606,6 +1597,19 @@ public class EngineProductManager {
                 IDs = GetSellerProductIDsOptions(IDs, UserID);
             }
         }
+        return IDs;
+    }
+    
+    /**
+     *
+     * @param Name
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static ArrayList<Integer> GetProductIDsByName(String Name) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        ArrayList<Integer> IDs = DBManager.GetIntArrayListDescending(Tables.ProductInfoTable.ProductID, Tables.ProductInfoTable.Table, "where " + Tables.ProductInfoTable.Name + " LIKE '%" + Name + "%' ORDER BY id DESC");
         return IDs;
     }
 

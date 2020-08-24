@@ -364,7 +364,7 @@ public class WProductServlet extends HttpServlet {
                     String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
                     int UserID = Integer.parseInt(SessionID);
                     HashMap<Integer, HashMap<String, String>> List = new HashMap<>();
-                    ArrayList<Integer> IDS = EngineProductManager.GetProductIDsByIDs(UserID, MinID, MaxID);
+                    ArrayList<Integer> IDS = EngineProductManager.GetProductIDsByPrice(UserID, MinID, MaxID);
                     if (!IDS.isEmpty()) {
                         for (int id : IDS) {
                             HashMap<String, String> details = EngineProductManager.GetProductData(id);
@@ -544,14 +544,14 @@ public class WProductServlet extends HttpServlet {
                     }
                     break;
                 }
-                case "GetShopCategoryPricesByCategoryID": {//[idmin, idmax, sessionid];
+                case "GetShopCategoryPricesByCategoryID": {
                     String catid = request.getParameter("data");
                     int CatID = Integer.parseInt(catid);
                     result = EngineProductManager.GetCategoryMinAndMaxPrice(CatID);
                     json = new Gson().toJson(result);
                     break;
                 }
-                case "GetShopProductsByPricesAndCategoryID": {//[idmin, idmax, sessionid];
+                case "GetShopProductsByPricesAndCategoryID": {
                     String[] data = request.getParameterValues("data[]");
                     String minprice = data[0];
                     int MinPrice = Integer.parseInt(minprice);
@@ -576,7 +576,35 @@ public class WProductServlet extends HttpServlet {
                     }
                     break;
                 }
-               
+
+                case "GlobalSearch": {//by productName, brand, and category
+                    String data = request.getParameter("data");
+//                    //using the searchValue;
+//                    //2. go into the properties table and get the id/s where the name is like searchValue
+//                    //3. go into product properties table and get product id/s where the propertyid is same with #2
+//                    //4. go into the categories table and get the id/s where the name is like the searchvalue
+//                    //5. go into the product categories table and get product id/s whre the category id/s is same with #4. GetProductIDsByCategoryName
+//                    //6. combine all the ids and go into the product table to get products with the ids
+//                    //7. go into the product table and get the id/s where the name is like search value
+//                    //8. combine all the ids and go into the product table to get the products with the ids
+                    HashMap<Integer, HashMap<String, String>> List = new HashMap<>();
+                    ArrayList<Integer> IDS = EngineProductManager.GetProductIDsByName(data);
+                    if (!IDS.isEmpty()) {
+                        for (int id : IDS) {
+                            HashMap<String, String> details = EngineProductManager.GetProductData(id);
+                            if (!details.isEmpty()) {
+                                List.put(id, details);
+                            }
+                        }
+                        json1 = new Gson().toJson(IDS);
+                        json2 = new Gson().toJson(List);
+                        json = "[" + json1 + "," + json2 + "]";
+                    } else {
+                        json = new Gson().toJson(empty);
+                    }
+                    break;
+                }
+
                 case "ProductRestock": {
                     String[] data = request.getParameterValues("data[]");
                     String productid = data[0];

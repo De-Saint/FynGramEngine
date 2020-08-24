@@ -568,7 +568,25 @@ public class WUserServlet extends HttpServlet {
                     json = "[" + json1 + "," + json2 + "," + json3 + "," + json4 + "]";
                     break;
                 }
+                case "GetAllGuests": {
+                    ArrayList<Integer> IDs = EngineUserManager.GetAllGuests();
+                    HashMap<Integer, HashMap<String, String>> transactionDetailsList = new HashMap<>();
+                    HashMap<String, String> transactiondetails = new HashMap<>();
+                    if (!IDs.isEmpty()) {
+                        for (int ID : IDs) {
+                            transactiondetails = EngineUserManager.GetGuestData(ID);
+                            transactionDetailsList.put(ID, transactiondetails);
+                        }
+                        json1 = new Gson().toJson(IDs);
+                        json2 = new Gson().toJson(transactionDetailsList);
+                        json3 = new Gson().toJson(IDs.size());
+                        json = "[" + json1 + "," + json2 + "," + json3 + "]";
+                    } else {
+                        json = new Gson().toJson(empty);
+                    }
 
+                    break;
+                }
             }
 
             response.setContentType("application/json");

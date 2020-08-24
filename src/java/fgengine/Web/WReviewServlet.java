@@ -88,8 +88,29 @@ public class WReviewServlet extends HttpServlet {
                     json = new Gson().toJson(datares);
                     break;
                 }
-                case "DeleteUserAddress": {
-
+                case "DeleteReview": {
+                    String reviewid = request.getParameter("data");
+                    int ReviewID = Integer.parseInt(reviewid);
+                    result = EngineReviewManager.DeleteReview(ReviewID);
+                    JsonObject returninfo = new JsonObject();
+                     JSONObject datares = new JSONObject();
+                    if (result.equals("success")) {
+                        returninfo.addProperty("status", "success");
+                        returninfo.addProperty("msg", "The review has been deleted successfully.");
+                        HashMap<Integer, HashMap<String, String>> List = EngineReviewManager.GetUserReviewList(1);
+                       
+                        datares.put("reviewdata", List);
+                    } else {
+                        if (!result.equals("failed")) {
+                            returninfo.addProperty("msg", result);
+                        } else {
+                            returninfo.addProperty("msg", "Something went wrong! Please, try again!");
+                        }
+                        returninfo.addProperty("status", "error");
+                    }
+                    
+                    datares.put("result", returninfo);
+                    json = new Gson().toJson(datares);
                     break;
                 }
                 case "GetPickUpCentres": {

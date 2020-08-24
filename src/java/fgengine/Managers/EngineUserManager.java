@@ -549,6 +549,7 @@ public class EngineUserManager {
         return result;
 
     }
+
     /**
      *
      * @param UserID
@@ -995,7 +996,7 @@ public class EngineUserManager {
             String SubscriptionName = EngineSubscriptionManager.GetSellerSubscriptionTypeNameBySubscriptionTypeID(SellerSubscriptionTypeID);
             Data.put("SubscriptionName", SubscriptionName);
             double SubscriptionFeesAmount = EngineSubscriptionManager.GetSellerSubscriptionAmountBySellerTypeIDAndSubscriptionTypeID(SellerTypeID, SellerSubscriptionTypeID);
-            Data.put("SubscriptionFeesAmount", ""+SubscriptionFeesAmount);
+            Data.put("SubscriptionFeesAmount", "" + SubscriptionFeesAmount);
             //wallets
             JSONObject datawallet = new JSONObject();
             datawallet.put("WalletDetails", EngineWalletManager.ComputeWalletDetails(UserID));
@@ -1248,8 +1249,7 @@ public class EngineUserManager {
         return ids;
     }
 
-    
-     /**
+    /**
      *
      * @return @throws ClassNotFoundException
      * @throws SQLException
@@ -1259,6 +1259,7 @@ public class EngineUserManager {
         ArrayList<Integer> ids = DBManager.GetIntArrayListDescending(Tables.NewFeatureRequestTable.ID, Tables.NewFeatureRequestTable.Table, "ORDER BY id DESC");
         return ids;
     }
+
     /**
      *
      * @param ComplaintID
@@ -1284,7 +1285,6 @@ public class EngineUserManager {
         return Details;
     }
 
-    
     /**
      *
      * @param ComplaintID
@@ -1296,7 +1296,7 @@ public class EngineUserManager {
     public static HashMap<String, String> GetNewfeatureSuggestionData(int NewFeatureID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         HashMap<String, String> Details = DBManager.GetTableData(Tables.NewFeatureRequestTable.Table, "where " + Tables.NewFeatureRequestTable.ID + " = " + NewFeatureID);
         if (!Details.isEmpty()) {
-           
+
             String dt = Details.get(Tables.NewFeatureRequestTable.Date);
             String date = DateManager.readDate(dt);
             Details.put(Tables.NewFeatureRequestTable.Date, date);
@@ -1307,6 +1307,7 @@ public class EngineUserManager {
         }
         return Details;
     }
+
     /**
      *
      * @param ComplaintID
@@ -1338,6 +1339,7 @@ public class EngineUserManager {
         result = DBManager.UpdateStringData(Tables.ComplaintTable.Table, Tables.ComplaintTable.Status, "Resolved", "where " + Tables.ComplaintTable.ID + " = " + ComplaintID);
         return result;
     }
+
     /**
      *
      * @param NewFeatureID
@@ -1356,7 +1358,8 @@ public class EngineUserManager {
         result = DBManager.UpdateStringData(Tables.NewFeatureRequestTable.Table, Tables.NewFeatureRequestTable.Status, "Implemented", "where " + Tables.NewFeatureRequestTable.ID + " = " + NewFeatureID);
         return result;
     }
-     /**
+
+    /**
      *
      * @param NewFeatureID
      * @return
@@ -1367,5 +1370,32 @@ public class EngineUserManager {
     public static String DeleteNewFeature(int NewFeatureID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         String result = DBManager.DeleteObject(Tables.NewFeatureRequestTable.Table, "where " + Tables.NewFeatureRequestTable.ID + " = " + NewFeatureID);
         return result;
+    }
+
+    /**
+     *
+     * @return @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static ArrayList<Integer> GetAllGuests() throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        ArrayList<Integer> ids = new ArrayList<>();
+        ids = DBManager.GetIntArrayList(Tables.GuestTable.ID, Tables.GuestTable.Table, "");
+//        ids = DBManager.GetIntArrayList(Tables.GuestTable.ID, Tables.GuestTable.Table, "where " + Tables.GuestTable.Email + " != " + "");
+        return ids;
+    }
+
+    public static HashMap<String, String> GetGuestData(int GuestID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        HashMap<String, String> Data = DBManager.GetTableData(Tables.GuestTable.Table, "where " + Tables.GuestTable.ID + " = " + GuestID);
+        if(!Data.isEmpty()){
+             String dt = Data.get(Tables.GuestTable.Date);
+            String date = DateManager.readDate(dt);
+            Data.put(Tables.GuestTable.Date, date);
+
+            String tm = Data.get(Tables.GuestTable.Time);
+            String time = DateManager.readTime(tm);
+            Data.put(Tables.GuestTable.Time, time);
+        }
+        return Data;
     }
 }

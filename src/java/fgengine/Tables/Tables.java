@@ -1371,11 +1371,6 @@ public class Tables {
         /**
          *
          */
-        public static String InvoiceID = "invoiceid";
-
-        /**
-         *
-         */
         public static String SendEmail = "send_email";
 
         /**

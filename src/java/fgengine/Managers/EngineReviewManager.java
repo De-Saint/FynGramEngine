@@ -78,7 +78,7 @@ public class EngineReviewManager {
      */
     public static ArrayList<Integer> GetUserRatingIDsByUserID(int UserID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         ArrayList<Integer> ids = new ArrayList<>();
-        ids = DBManager.GetIntArrayList(Tables.ReviewsTable.ID, Tables.ReviewsTable.Table, "where " + Tables.ReviewsTable.UserID + " = " + UserID + " Order by " + Tables.ReviewsTable.ID);
+        ids = DBManager.GetIntArrayListDescending(Tables.ReviewsTable.ID, Tables.ReviewsTable.Table, "where " + Tables.ReviewsTable.UserID + " = " + UserID + " Order by " + Tables.ReviewsTable.ID);
         return ids;
     }
 
@@ -92,7 +92,7 @@ public class EngineReviewManager {
      */
     public static ArrayList<Integer> GetObjectRatingIDs(int ObjectID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         ArrayList<Integer> ids = new ArrayList<>();
-        ids = DBManager.GetIntArrayList(Tables.ReviewsTable.ID, Tables.ReviewsTable.Table, "where " + Tables.ReviewsTable.ObjectID + " = " + ObjectID + " Order by " + Tables.ReviewsTable.ID);
+        ids = DBManager.GetIntArrayListDescending(Tables.ReviewsTable.ID, Tables.ReviewsTable.Table, "where " + Tables.ReviewsTable.ObjectID + " = " + ObjectID + " Order by " + Tables.ReviewsTable.ID);
         return ids;
     }
     
@@ -180,10 +180,15 @@ public class EngineReviewManager {
             int userID = Integer.parseInt(userid);
             String UserName = EngineUserManager.GetUserName(userID);
             data.put("reviewUsername", UserName);
+            data.put("reviewUserImage", "none");
             String prodid = data.get(Tables.ReviewsTable.ObjectID);
             int ProductID  = Integer.parseInt(prodid);
             String productName = EngineProductManager.GetProductNameByProductID(ProductID);
             data.put("reviewProductName", productName);
+            String productDesc = EngineProductManager.GetProductDescriptionByProductID(ProductID);
+            data.put("reviewProductDesc", productDesc);
+            data.put("reviewProductImage", "none");
+            
             String dt = data.get(Tables.ReviewsTable.Date);
             String date = DateManager.readDate(dt);
             data.put(Tables.ReviewsTable.Date, date);
@@ -197,8 +202,7 @@ public class EngineReviewManager {
     
       /**
      *
-     * @param ObjectID
-     * @param ObectType
+     * @param UserID
      * @return
      * @throws ClassNotFoundException
      * @throws SQLException
@@ -223,6 +227,19 @@ public class EngineReviewManager {
             }
         }
         return ReviewList;
+    }
+    
+      /**
+     *
+     * @param ReviewID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static String DeleteReview(int ReviewID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        String result = DBManager.DeleteObject(Tables.ReviewsTable.Table, "where " + Tables.ReviewsTable.ID + " = " + ReviewID);
+        return result;
     }
 
 }
