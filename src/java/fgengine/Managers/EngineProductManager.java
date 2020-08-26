@@ -595,8 +595,8 @@ public class EngineProductManager {
         String result = DBManager.GetString(Tables.ProductInfoTable.Name, Tables.ProductInfoTable.Table, "where " + Tables.ProductInfoTable.ProductID + " = " + ProductID);
         return result;
     }
-    
-     /**
+
+    /**
      *
      * @param ProductID
      * @return
@@ -1539,8 +1539,6 @@ public class EngineProductManager {
         return IDs;
     }
 
- 
-
     /**
      *
      * @param UserID
@@ -1597,19 +1595,6 @@ public class EngineProductManager {
                 IDs = GetSellerProductIDsOptions(IDs, UserID);
             }
         }
-        return IDs;
-    }
-    
-    /**
-     *
-     * @param Name
-     * @return
-     * @throws ClassNotFoundException
-     * @throws SQLException
-     * @throws UnsupportedEncodingException
-     */
-    public static ArrayList<Integer> GetProductIDsByName(String Name) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        ArrayList<Integer> IDs = DBManager.GetIntArrayListDescending(Tables.ProductInfoTable.ProductID, Tables.ProductInfoTable.Table, "where " + Tables.ProductInfoTable.Name + " LIKE '%" + Name + "%' ORDER BY id DESC");
         return IDs;
     }
 
@@ -2067,6 +2052,150 @@ public class EngineProductManager {
     public static ArrayList<Integer> GetDetailedFeaturedProducts() throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         ArrayList<Integer> IDs = DBManager.GetIntArrayListDescending(Tables.ProductsTable.ID, Tables.ProductsTable.Table, "where " + Tables.ProductsTable.Active + " = " + 1 + " ORDER BY " + Tables.ProductsTable.ID + " LIMIT " + 5 + ", " + 9);
         return IDs;
+    }
+
+    /**
+     *
+     * @param Option
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static String ProcessProductActualPrice(String Option) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        String result = "failed";
+        ArrayList<Integer> ProdIDs = GetProductIDs(1);
+        if (!ProdIDs.isEmpty()) {
+            for (int id : ProdIDs) {
+                if (Option.equals("Yes")) {
+                    result = DBManager.UpdateIntData(Tables.ProductsTable.ShowActualPrice, 1, Tables.ProductsTable.Table, "where " + Tables.ProductsTable.ID + " = " + id);
+                } else if (Option.equals("No")) {
+                    result = DBManager.UpdateIntData(Tables.ProductsTable.ShowActualPrice, 0, Tables.ProductsTable.Table, "where " + Tables.ProductsTable.ID + " = " + id);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     *
+     * @param CatID
+     * @param SortingValue
+     * @param MaxPrice
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static ArrayList<Integer> GetProductsBySorting(int CatID, String SortingValue) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        ArrayList<Integer> IDs = new ArrayList<>();
+        ArrayList<Integer> ProdIDs = DBManager.GetIntArrayListDescending(Tables.ProductCategoriesTable.ProductID, Tables.ProductCategoriesTable.Table, "where " + Tables.ProductCategoriesTable.CategoryID + " = " + CatID + " ORDER BY id DESC");
+
+        if (SortingValue.equals("Newest Arrival")) {
+            //sort by date
+        } else if (SortingValue.equals("Low to High")) {
+            //sort by price low to hie
+        } else if (SortingValue.equals("High to Low")) {
+            //sort by price low to hie
+        }
+
+//        if (!ProdIDs.isEmpty()) {
+//            for (int id : ProdIDs) {
+//                double price = GetProductSellingPrice(id);
+//                if (price >= MinPrice && price <= MaxPrice) {
+//                    IDs.add(id);
+//                }
+//            }
+//        }
+        return IDs;
+    }
+
+    /**
+     *
+     * @param UserID
+     * @param CatName
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+//    public static ArrayList<Integer> GetProductIDsByCategoryName(int UserID, String CatName) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+//        ArrayList<Integer> CatIDs = DBManager.GetIntArrayListDescending(Tables.CategoryTable.ID, Tables.CategoryTable.Table, "where " + Tables.CategoryTable.Name + " LIKE '%" + CatName + "%' ORDER BY id DESC");
+//        ArrayList<Integer> IDs = new ArrayList<>();
+//        if (!CatIDs.isEmpty()) {
+//            for (int catid : CatIDs) {
+//                ArrayList<Integer> ProCatIDs = DBManager.GetIntArrayListDescending(Tables.ProductCategoriesTable.ProductID, Tables.ProductCategoriesTable.Table, "where " + Tables.ProductCategoriesTable.CategoryID + " = " + catid + " ORDER BY id DESC");
+//                if (!ProCatIDs.isEmpty()) {
+//                    IDs.addAll(ProCatIDs);
+//                }
+//            }
+//        }
+//        if (!IDs.isEmpty()) {
+//            if (UserID != 1) {
+//                IDs = GetSellerProductIDsOptions(IDs, UserID);
+//            }
+//        }
+//        IDs = UtilityManager.removeDuplicatesIntegerArrayList(IDs);
+//        return IDs;
+//    }
+    /**
+     *
+     * @param SearchValue
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static ArrayList<Integer> GetProductIDsBySearchValue(String SearchValue) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        ArrayList<Integer> IDs = new ArrayList<>();
+        ArrayList<Integer> IDS = new ArrayList<>();
+        
+//                    //using the searchValue;
+//                    //2. go into the properties table and get the id/s where the name is like searchValue
+//                    //3. go into product properties table and get product id/s where the propertyid is same with #2
+//                    //4. go into the categories table and get the id/s where the name is like the searchvalue
+//                    //5. go into the product categories table and get product id/s whre the category id/s is same with #4. GetProductIDsByCategoryName
+//                    //6. combine all the ids and go into the product table to get products with the ids
+//                    //7. go into the product table and get the id/s where the name is like search value
+//                    //8. combine all the ids and go into the product table to get the products with the ids
+        
+        //By Product Name
+        ArrayList<Integer> ProdIDs = DBManager.GetIntArrayListDescending(Tables.ProductInfoTable.ProductID, Tables.ProductInfoTable.Table, "where " + Tables.ProductInfoTable.Name + " LIKE '%" + SearchValue + "%' ORDER BY id DESC");
+        IDs.addAll(ProdIDs);
+       
+        //By Category Name
+        ArrayList<Integer> CatIDs = DBManager.GetIntArrayListDescending(Tables.CategoryTable.ID, Tables.CategoryTable.Table, "where " + Tables.CategoryTable.Name + " LIKE '%" + SearchValue + "%' ORDER BY id DESC");
+        if (!CatIDs.isEmpty()) {
+            for (int catid : CatIDs) {
+                ArrayList<Integer> ProCatIDs = DBManager.GetIntArrayListDescending(Tables.ProductCategoriesTable.ProductID, Tables.ProductCategoriesTable.Table, "where " + Tables.ProductCategoriesTable.CategoryID + " = " + catid + " ORDER BY id DESC");
+                if (!ProCatIDs.isEmpty()) {
+                    IDs.addAll(ProCatIDs);
+                }
+            }
+        }
+        
+        //By Property/Brand Name
+        ArrayList<Integer> PropIDs = DBManager.GetIntArrayListDescending(Tables.PropertiesTable.ID, Tables.PropertiesTable.Table, "where " + Tables.PropertiesTable.Name + " LIKE '%" + SearchValue + "%' ORDER BY id DESC");
+        if (!PropIDs.isEmpty()) {
+            for (int propid : PropIDs) {
+                ArrayList<Integer> ProdPropIDs = DBManager.GetIntArrayListDescending(Tables.ProductPropertiesTable.ProductID, Tables.ProductPropertiesTable.Table, "where " + Tables.ProductPropertiesTable.PropertyID + " = " + propid + " ORDER BY id DESC");
+                if (!ProdPropIDs.isEmpty()) {
+                    IDs.addAll(ProdPropIDs);
+                }
+            }
+        }
+
+        
+        
+        
+        IDs = UtilityManager.removeDuplicatesIntegerArrayList(IDs);
+        for (int id : IDs) {
+            int active = DBManager.GetInt(Tables.ProductsTable.Active, Tables.ProductsTable.Table, "where " + Tables.ProductsTable.ID + " = " + id);
+            if (active == 1) {
+                IDS.add(id);
+            }
+        }
+        return IDS;
     }
 
 }

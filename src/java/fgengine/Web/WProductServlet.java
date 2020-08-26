@@ -576,19 +576,34 @@ public class WProductServlet extends HttpServlet {
                     }
                     break;
                 }
+                  case "GetShopProductsBySorting": {
+                    String[] data = request.getParameterValues("data[]");
+                    String option = data[1];
+                    String catid = data[0];
+                    int CatID = Integer.parseInt(catid);
+                    HashMap<Integer, HashMap<String, String>> List = new HashMap<>();
+                    ArrayList<Integer> IDS = EngineProductManager.GetProductsBySorting(CatID, option);
+                    if (!IDS.isEmpty()) {
+                        for (int id : IDS) {
+                            HashMap<String, String> details = EngineProductManager.GetProductData(id);
+                            if (!details.isEmpty()) {
+                                List.put(id, details);
+                            }
+                        }
+                        json1 = new Gson().toJson(IDS);
+                        json2 = new Gson().toJson(List);
+                        json = "[" + json1 + "," + json2 + "]";
+                    } else {
+                        json = new Gson().toJson(empty);
+                    }
+                    break;
+                }
 
                 case "GlobalSearch": {//by productName, brand, and category
                     String data = request.getParameter("data");
-//                    //using the searchValue;
-//                    //2. go into the properties table and get the id/s where the name is like searchValue
-//                    //3. go into product properties table and get product id/s where the propertyid is same with #2
-//                    //4. go into the categories table and get the id/s where the name is like the searchvalue
-//                    //5. go into the product categories table and get product id/s whre the category id/s is same with #4. GetProductIDsByCategoryName
-//                    //6. combine all the ids and go into the product table to get products with the ids
-//                    //7. go into the product table and get the id/s where the name is like search value
-//                    //8. combine all the ids and go into the product table to get the products with the ids
+                     ArrayList<Integer> IDS =  new ArrayList<>();
                     HashMap<Integer, HashMap<String, String>> List = new HashMap<>();
-                    ArrayList<Integer> IDS = EngineProductManager.GetProductIDsByName(data);
+                     IDS = EngineProductManager.GetProductIDsBySearchValue(data);
                     if (!IDS.isEmpty()) {
                         for (int id : IDS) {
                             HashMap<String, String> details = EngineProductManager.GetProductData(id);
@@ -793,6 +808,24 @@ public class WProductServlet extends HttpServlet {
                     } else {
                         json = new Gson().toJson(empty);
                     }
+                    break;
+                }
+                case "ProcessProductActualPrice": {
+                    String option = request.getParameter("data");
+                    result = EngineProductManager.ProcessProductActualPrice(option);
+                    JsonObject returninfo = new JsonObject();
+                    if (result.equals("success")) {
+                        returninfo.addProperty("status", "success");
+                        returninfo.addProperty("msg", "Products actual price has been updated successfully.");
+                    } else {
+                        if (!result.equals("failed")) {
+                            returninfo.addProperty("msg", result);
+                        } else {
+                            returninfo.addProperty("msg", "Something went wrong. Please try again.");
+                        }
+                        returninfo.addProperty("status", "error");
+                    }
+                    json = new Gson().toJson((JsonElement) returninfo);
                     break;
                 }
             }
