@@ -380,10 +380,11 @@ public class WProductServlet extends HttpServlet {
                     }
                     break;
                 }
-                case "GetShopProductsByCategoryID": {//[idmin, idmax, sessionid];
+                case "GetShopProductsByCategoryID": {
                     String catid = request.getParameter("data");
                     int CatID = Integer.parseInt(catid);
                     HashMap<Integer, HashMap<String, String>> List = new HashMap<>();
+                    //if catid = 0 => bring all the top category
                     ArrayList<Integer> IDS = EngineProductManager.GetProductsByCategoryID(CatID);
                     if (!IDS.isEmpty()) {
                         for (int id : IDS) {
