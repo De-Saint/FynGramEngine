@@ -1577,42 +1577,12 @@ public class Tables {
         /**
          *
          */
-        public static String QuestionOne = "question_id_1";
+        public static String Code = "code";
 
         /**
          *
          */
-        public static String AnswerOne = "answer_1";
-
-        /**
-         *
-         */
-        public static String QuestionTwo = "question_id_2";
-
-        /**
-         *
-         */
-        public static String AnswerTwo = "answer_2";
-
-        /**
-         *
-         */
-        public static String CurrentPassword = "current_password";
-
-        /**
-         *
-         */
-        public static String PreviousPassword = "previous_password";
-
-        /**
-         *
-         */
-        public static String DateCreated = "date_created";
-
-        /**
-         *
-         */
-        public static String TimeCreated = "time_created";
+        public static String Email = "email";
 
         /**
          *
@@ -1624,32 +1594,8 @@ public class Tables {
          */
         public static String TimeUpdated = "time_updated";
 
-        /**
-         *
-         */
-        public static String Deleted = "deleted";
     }
 
-    /**
-     *
-     */
-    public static class PasswordRecoveryQuestionTable {
-
-        /**
-         *
-         */
-        public static String Table = "fg_password_recovery_questions";
-
-        /**
-         *
-         */
-        public static String ID = "id";
-
-        /**
-         *
-         */
-        public static String Questions = "question";
-    }
 
     /**
      *

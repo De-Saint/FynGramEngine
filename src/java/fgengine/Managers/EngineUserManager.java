@@ -447,112 +447,6 @@ public class EngineUserManager {
     /**
      *
      * @param UserID
-     * @param QuestionOne
-     * @param AnswerOne
-     * @param QuestionTwo
-     * @param AnswerTwo
-     * @return
-     * @throws ClassNotFoundException
-     * @throws SQLException
-     * @throws UnsupportedEncodingException
-     */
-    public static String ComputeRecovery(int UserID, int QuestionOne, String AnswerOne, int QuestionTwo, String AnswerTwo) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        String result = "failed";
-        String userPassword = GetUserPasswordl(UserID);
-        result = CreateRecovery(UserID, QuestionOne, AnswerOne, QuestionTwo, AnswerTwo, userPassword);
-        return result;
-    }
-
-    /**
-     *
-     * @param UserID
-     * @param QuestionOne
-     * @param AnswerOne
-     * @param QuestionTwo
-     * @param AnswerTwo
-     * @param CurrentPassword
-     * @return
-     * @throws ClassNotFoundException
-     * @throws SQLException
-     * @throws UnsupportedEncodingException
-     */
-    public static String CreateRecovery(int UserID, int QuestionOne, String AnswerOne, int QuestionTwo, String AnswerTwo, String CurrentPassword) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        HashMap<String, Object> tableData = new HashMap<>();
-        tableData.put(Tables.PasswordRecoveryTable.UserID, UserID);
-        tableData.put(Tables.PasswordRecoveryTable.QuestionOne, QuestionOne);
-        tableData.put(Tables.PasswordRecoveryTable.AnswerOne, AnswerOne);
-        tableData.put(Tables.PasswordRecoveryTable.QuestionTwo, QuestionTwo);
-        tableData.put(Tables.PasswordRecoveryTable.AnswerTwo, AnswerTwo);
-        tableData.put(Tables.PasswordRecoveryTable.CurrentPassword, CurrentPassword);
-        tableData.put(Tables.PasswordRecoveryTable.PreviousPassword, CurrentPassword);
-        int recoveryID = DBManager.insertTableDataReturnID(Tables.PasswordRecoveryTable.Table, tableData, "");
-        DBManager.UpdateCurrentDate(Tables.PasswordRecoveryTable.Table, Tables.PasswordRecoveryTable.DateCreated, "where " + Tables.PasswordRecoveryTable.ID + " = " + recoveryID);
-        String result = DBManager.UpdateCurrentTime(Tables.PasswordRecoveryTable.Table, Tables.PasswordRecoveryTable.TimeCreated, "where " + Tables.PasswordRecoveryTable.ID + " = " + recoveryID);
-        return result;
-    }
-
-    /**
-     *
-     * @param UserID
-     * @param QuestionOne
-     * @param AnswerOne
-     * @param QuestionTwo
-     * @param AnswerTwo
-     * @param OldPassword
-     * @param NewPassword
-     * @return
-     * @throws ClassNotFoundException
-     * @throws SQLException
-     * @throws UnsupportedEncodingException
-     */
-    public static String ComputeRecoverPassword(int UserID, int QuestionOne, String AnswerOne, int QuestionTwo, String AnswerTwo, String OldPassword, String NewPassword) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        String CurrentPassword = GetUserPasswordl(UserID);
-        int GetQuestion1ID = DBManager.GetInt(Tables.PasswordRecoveryTable.QuestionOne, Tables.PasswordRecoveryTable.Table, "where " + Tables.PasswordRecoveryTable.UserID + " = " + UserID);
-        int GetQuestion2ID = DBManager.GetInt(Tables.PasswordRecoveryTable.QuestionTwo, Tables.PasswordRecoveryTable.Table, "where " + Tables.PasswordRecoveryTable.UserID + " = " + UserID);
-        String GetAnswer1 = DBManager.GetString(Tables.PasswordRecoveryTable.AnswerOne, Tables.PasswordRecoveryTable.Table, "where " + Tables.PasswordRecoveryTable.UserID + " = " + UserID);
-        String GetAnswer2 = DBManager.GetString(Tables.PasswordRecoveryTable.AnswerTwo, Tables.PasswordRecoveryTable.Table, "where " + Tables.PasswordRecoveryTable.UserID + " = " + UserID);
-        String result = "failed";
-        if (CurrentPassword.equals(OldPassword)) {
-            if ((GetQuestion1ID == QuestionOne) && (GetAnswer1.equals(AnswerOne))) {
-                if ((GetQuestion2ID == QuestionTwo) && GetAnswer1.equals(AnswerOne)) {
-                    result = UpdateRecoveryPassword(UserID, NewPassword, OldPassword);
-                } else {
-                    result = "Question Two and Answer Two Combination  is Incorrect.";
-                }
-            } else {
-                result = "Question One and Answer One Combination  is Incorrect.";
-            }
-        } else {
-            result = "Current Password is Incorrect.";
-        }
-
-        return result;
-    }
-
-    /**
-     *
-     * @param UserID
-     * @param NewPassword
-     * @param OldPassword
-     * @return
-     * @throws ClassNotFoundException
-     * @throws SQLException
-     * @throws UnsupportedEncodingException
-     */
-    public static String UpdateRecoveryPassword(int UserID, String NewPassword, String OldPassword) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        String result = "";
-        result = DBManager.UpdateStringData(Tables.UsersTable.Table, Tables.UsersTable.Password, NewPassword, "where " + Tables.UsersTable.ID + " = " + UserID);
-        DBManager.UpdateStringData(Tables.PasswordRecoveryTable.Table, Tables.PasswordRecoveryTable.CurrentPassword, NewPassword, "where " + Tables.PasswordRecoveryTable.UserID + " = " + UserID);
-        DBManager.UpdateStringData(Tables.PasswordRecoveryTable.Table, Tables.PasswordRecoveryTable.PreviousPassword, OldPassword, "where " + Tables.PasswordRecoveryTable.UserID + " = " + UserID);
-        DBManager.UpdateCurrentDate(Tables.PasswordRecoveryTable.Table, Tables.PasswordRecoveryTable.DateUpdated, "where " + Tables.PasswordRecoveryTable.UserID + " = " + UserID);
-        DBManager.UpdateCurrentTime(Tables.PasswordRecoveryTable.Table, Tables.PasswordRecoveryTable.TimeUpdated, "where " + Tables.PasswordRecoveryTable.UserID + " = " + UserID);
-        return result;
-
-    }
-
-    /**
-     *
-     * @param UserID
      * @param GuestID
      * @param Name
      * @param Email
@@ -1231,7 +1125,7 @@ public class EngineUserManager {
             LoginID = GetGuestSystemIPAddress();
         }
         EngineUserManager.CreateOrUpdateSessionID(OldSessionID, NewSessionID, LoginID, "" + UserID);
-        if ((!App.equals("FynGramManager"))) {
+        if ((!App.equals("FyngramManager"))) {
             EngineCartManager.UpdateCartUserID(LoginID, "" + UserID);
         }
 
@@ -1353,7 +1247,7 @@ public class EngineUserManager {
         String result = "failed";
         String dt = DBManager.GetString(Tables.NewFeatureRequestTable.Date, Tables.NewFeatureRequestTable.Table, "where " + Tables.NewFeatureRequestTable.ID + " = " + NewFeatureID);
         String date = DateManager.readDate(dt);
-        String body = "Your suggestion for new feature that was logged on " + date + " has been implemented. Thank you for being part of fyngram.";
+        String body = "Your suggestion for new feature that was logged on " + date + " has been implemented. Thank you for being part of Fyngram.";
         EngineEmailManager.SendEmail(email, body, "New Feature Suggestion Implementation - Fyngram");
         result = DBManager.UpdateStringData(Tables.NewFeatureRequestTable.Table, Tables.NewFeatureRequestTable.Status, "Implemented", "where " + Tables.NewFeatureRequestTable.ID + " = " + NewFeatureID);
         return result;
@@ -1387,8 +1281,8 @@ public class EngineUserManager {
 
     public static HashMap<String, String> GetGuestData(int GuestID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         HashMap<String, String> Data = DBManager.GetTableData(Tables.GuestTable.Table, "where " + Tables.GuestTable.ID + " = " + GuestID);
-        if(!Data.isEmpty()){
-             String dt = Data.get(Tables.GuestTable.Date);
+        if (!Data.isEmpty()) {
+            String dt = Data.get(Tables.GuestTable.Date);
             String date = DateManager.readDate(dt);
             Data.put(Tables.GuestTable.Date, date);
 
@@ -1397,5 +1291,75 @@ public class EngineUserManager {
             Data.put(Tables.GuestTable.Time, time);
         }
         return Data;
+    }
+
+    public static String ComputeResetPassword(String Email) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        String result = "failed";
+        int UserID = DBManager.GetInt(Tables.UsersTable.ID, Tables.UsersTable.Table, "where " + Tables.UsersTable.Email + " = '" + Email + "'");
+        String Code = "FG-" + UtilityManager.randomAlphaNumeric(7);
+        result = CreateRecovery(UserID, Email, Code);
+
+        String body = "Hey " + GetUserName(UserID) + "!\n"
+                + "\n"
+                + "A password reset attempt requires further verification because we did not recognize who is requesting. To complete the reset password, enter the verification code along with your password to complete the password reset.\n"
+                + "\n"
+                + "Verification code: " + Code + "\n"
+                + "\n"
+                + "If you did not attempt to reset the password on your account, your password may be compromised. Visit https://fyngram.com/, login into your account and update your password to a new and strong password for your Fyngram account.\n"
+                + "\n"
+                + "\n"
+                + "Thanks,\n"
+                + "Fyngram Support Team";
+        String subject = "Password Recovery";
+        EngineEmailManager.SendEmail(Email, body, subject);
+        return result;
+    }
+
+    /**
+     *
+     * @param UserID
+     * @param Email
+     * @param Code
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static String CreateRecovery(int UserID, String Email, String Code) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        HashMap<String, Object> tableData = new HashMap<>();
+        tableData.put(Tables.PasswordRecoveryTable.UserID, UserID);
+        tableData.put(Tables.PasswordRecoveryTable.Email, Email);
+        tableData.put(Tables.PasswordRecoveryTable.Code, Code);
+        int recoveryID = DBManager.insertTableDataReturnID(Tables.PasswordRecoveryTable.Table, tableData, "");
+        DBManager.UpdateCurrentDate(Tables.PasswordRecoveryTable.Table, Tables.PasswordRecoveryTable.DateUpdated, "where " + Tables.PasswordRecoveryTable.ID + " = " + recoveryID);
+        String result = DBManager.UpdateCurrentTime(Tables.PasswordRecoveryTable.Table, Tables.PasswordRecoveryTable.TimeUpdated, "where " + Tables.PasswordRecoveryTable.ID + " = " + recoveryID);
+        return result;
+    }
+
+    /**
+     *
+     * @param RecoveryCode
+     * @param NewPassword
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static String UpdateRecoveryPassword(String RecoveryCode, String NewPassword) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        String result = "";
+        String Email = DBManager.GetString(Tables.PasswordRecoveryTable.Email, Tables.PasswordRecoveryTable.Table, "where " + Tables.PasswordRecoveryTable.Code + " = '" + RecoveryCode + "'");
+        if (!Email.equals("none")) {
+            int UserID = DBManager.GetInt(Tables.PasswordRecoveryTable.UserID, Tables.PasswordRecoveryTable.Table, "where " + Tables.PasswordRecoveryTable.Code + " = '" + RecoveryCode + "'");
+            String uEmail = GetUserEmail(UserID);
+            if (uEmail.equals(Email)) {
+                result = DBManager.UpdateStringData(Tables.UsersTable.Table, Tables.UsersTable.Password, NewPassword, "where " + Tables.UsersTable.ID + " = " + UserID);
+            } else {
+                result = "Invalid Validation Code. Please check and try again";
+            }
+        } else {
+            result = "Invalid Validation Code. Please check and try again";
+        }
+        return result;
+
     }
 }

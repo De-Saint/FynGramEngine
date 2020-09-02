@@ -71,7 +71,7 @@ public class WUserServlet extends HttpServlet {
                             String NewSessionID = "";
                             int usertypeid = EngineUserManager.GetUserTypeIDByUserID("" + UserID);
                             String usertype = "";
-
+//                            EngineEmailManager.SendEmail(EmailAddress, "Come home", "Test");
                             session = request.getSession(true);
                             switch (usertypeid) {
                                 case 1:
@@ -186,7 +186,8 @@ public class WUserServlet extends HttpServlet {
                     json = new Gson().toJson((JsonElement) returninfo);
                     break;
                 }
-                case "SubcribeNewletter": {
+
+                case "SubcribeNewsletter": {
                     String[] data = request.getParameterValues("data[]");
                     String Email = data[0].trim();
                     String sessionid = data[1].trim();
@@ -229,7 +230,7 @@ public class WUserServlet extends HttpServlet {
                                 if (result.equals("success")) {
                                     result = EngineWalletManager.CreateWallet(CustomerUserID);
                                     if (result.equals("success")) {
-                                        String msgbdy = "Congratulations!!! \nYou have been successfully registered as a member of FynGram Online Store.";
+                                        String msgbdy = "Congratulations!!! \nYou have been successfully registered as a member of Fyngram Online Store.";
                                         EngineMessageManager.sendMessage(1, msgbdy, "Customer Account Created", CustomerUserID);
                                         EngineEmailManager.SendEmail(EmailAddress, msgbdy, "Customer Account Created");
                                         session.invalidate();
@@ -365,7 +366,7 @@ public class WUserServlet extends HttpServlet {
                     JsonObject returninfo = new JsonObject();
                     if (result.equals("success")) {
                         returninfo.addProperty("status", "success");
-                        returninfo.addProperty("msg", "Congratulations!!! \nYour account has been successfully activated. \nThank you for being part of FynGram Onlne Store");
+                        returninfo.addProperty("msg", "Congratulations!!! \nYour account has been successfully activated. \nThank you for being part of Fyngram Onlne Store");
                     } else {
                         returninfo.addProperty("status", "error");
                         returninfo.addProperty("msg", "Oh No! It's our problem not yours. Please try again.");
@@ -405,7 +406,7 @@ public class WUserServlet extends HttpServlet {
                                         int MaxShippingDays = Integer.parseInt(maxshippingdays);
                                         result = EngineUserManager.CreateSellerInformation(SellerUserID, BizName, BizEmail, BizPhone, MinShippingDays, MaxShippingDays);
                                         if (result.equals("success")) {
-                                            String msgbdy = "Congratulations!!! \nYou have been successfully registered as a Seller on FynGram Online Store.";
+                                            String msgbdy = "Congratulations!!! \nYou have been successfully registered as a Seller on Fyngram Online Store.";
                                             EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), msgbdy, "Seller Account Created", SellerUserID);
                                             EngineEmailManager.SendEmail(EmailAddress, msgbdy, "Admin Account Created");
 
@@ -585,6 +586,48 @@ public class WUserServlet extends HttpServlet {
                         json = new Gson().toJson(empty);
                     }
 
+                    break;
+                }
+                case "ResetPassword": {
+                    String EmailAddress = request.getParameter("data");
+                    if (EngineUserManager.checkEmailAddressOrPhoneNumberExist(EmailAddress)) {
+                        result = EngineUserManager.ComputeResetPassword(EmailAddress);
+                    } else {
+                        result = "The email provided does not exist. Please, try again.";
+                    }
+                    JsonObject returninfo = new JsonObject();
+                    if (result.equals("success")) {
+                        returninfo.addProperty("status", "success");
+                        returninfo.addProperty("msg", "Please, check the email provided for verification details.");
+                    } else {
+                        if (!result.equals("failed")) {
+                            returninfo.addProperty("msg", result);
+                        } else {
+                            returninfo.addProperty("msg", "Something went wrong! Please, try again!");
+                        }
+                        returninfo.addProperty("status", "error");
+                    }
+                    json = new Gson().toJson((JsonElement) returninfo);
+                    break;
+                }
+                case "PasswordRecovery": {
+                    String[] data = request.getParameterValues("data[]");
+                    String RecoveryCode = data[0].trim();
+                    String NewPassword = data[1].trim();
+                    result = EngineUserManager.UpdateRecoveryPassword(RecoveryCode, NewPassword);
+                    JsonObject returninfo = new JsonObject();
+                    if (result.equals("success")) {
+                        returninfo.addProperty("status", "success");
+                        returninfo.addProperty("msg", "Your Password reset was successful. Please try to login with the new password.");
+                    } else {
+                        if (!result.equals("failed")) {
+                            returninfo.addProperty("msg", result);
+                        } else {
+                            returninfo.addProperty("msg", "Something went wrong! Please, try again!");
+                        }
+                        returninfo.addProperty("status", "error");
+                    }
+                    json = new Gson().toJson((JsonElement) returninfo);
                     break;
                 }
             }

@@ -160,7 +160,7 @@ public class EngineWalletManager {
         String ToWalletName = GetWalletNameByID(ToWalletTypeID);
         if (TransactionTypeName.equals("Subscription Fees")) {
             result = EngineWalletManager.InsertWalletRecord(FromUserID, TransactionAmount, FromWalletTypeID, "Credit");
-            Description = "Hi " + EngineUserManager.GetUserName(ToUserID) + ", \nYou have successfully transferred " + EngineTransactionManager.FormatNumber(TransactionAmount) + " to FynGram Account as payment for your Subscription";
+            Description = "Hi " + EngineUserManager.GetUserName(ToUserID) + ", \nYou have successfully transferred " + EngineTransactionManager.FormatNumber(TransactionAmount) + " to Fyngram Account as payment for your Subscription";
             EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), Description, TransactionTypeName, ToUserID);
         } else if (TransactionTypeName.equals("Activate Supplier Account")) {
             Description = "Seller's Account Activation for " + EngineUserManager.GetUserName(FromUserID);

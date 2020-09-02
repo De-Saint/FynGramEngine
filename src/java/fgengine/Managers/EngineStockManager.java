@@ -116,7 +116,7 @@ public class EngineStockManager {
 
         if (minimumQty >= NewProductTotalQuantity) {
             String BodyMsg = "Hi " + EngineUserManager.GetUserName(SellerUserID) + ", \nYour Pruduct " + ProductName + " has gotten to its minumum quantity set. Please, restock the product as it has been removed from the store.";
-            String Subject = "FynGram Product ReStock Notification";
+            String Subject = "Fyngram Product ReStock Notification";
             switch (NotyTypeID) {
                 //Email Only
                 case 1:

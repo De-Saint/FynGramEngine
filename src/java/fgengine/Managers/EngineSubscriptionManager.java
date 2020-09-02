@@ -118,7 +118,7 @@ public class EngineSubscriptionManager {
         int AdminUserID = EngineUserManager.GetAdminUserID();
         double SubsAmount = GetSellerSubscriptionAmountBySellerTypeIDAndSubscriptionTypeID(SellerTypeID, SubscriptionTypeID);
         result = EngineWalletManager.ComputeWalletRecord(SellerUserID, AdminUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), SubsAmount, "Activate Supplier Account", "");
-        String msgbdy = "Congratulations!!! \nYour account has been successfully activated. \nThank you for being part of FynGram Onlne Store";
+        String msgbdy = "Congratulations!!! \nYour account has been successfully activated. \nThank you for being part of Fyngram Onlne Store";
         EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), msgbdy, "Seller Account Activated", SellerUserID);
         try {
             String Email = EngineUserManager.GetUserEmail(SellerUserID);

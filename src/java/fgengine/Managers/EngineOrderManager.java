@@ -790,10 +790,10 @@ public class EngineOrderManager {
             EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), body, "Order Cancelled", SellerUserID);
             try {
                 String CustomerUserEmail = EngineUserManager.GetUserEmail(CustomerUserID);
-                EngineEmailManager.SendEmail(CustomerUserEmail, body, "FynGram Order Cancelled");
+                EngineEmailManager.SendEmail(CustomerUserEmail, body, "Fyngram Order Cancelled");
 
                 String SellerUserEmail = EngineUserManager.GetUserEmail(SellerUserID);
-                EngineEmailManager.SendEmail(SellerUserEmail, body, "FynGram Order Cancelled");
+                EngineEmailManager.SendEmail(SellerUserEmail, body, "Fyngram Order Cancelled");
             } catch (Exception ex) {
             }
         } else {
@@ -874,10 +874,10 @@ public class EngineOrderManager {
             EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), body, "Order Cancelled", SellerUserID);
             try {
                 String CustomerUserEmail = EngineUserManager.GetUserEmail(CustomerUserID);
-                EngineEmailManager.SendEmail(CustomerUserEmail, body, "FynGram Order Cancelled");
+                EngineEmailManager.SendEmail(CustomerUserEmail, body, "Fyngram Order Cancelled");
 
                 String SellerUserEmail = EngineUserManager.GetUserEmail(SellerUserID);
-                EngineEmailManager.SendEmail(SellerUserEmail, body, "FynGram Order Cancelled");
+                EngineEmailManager.SendEmail(SellerUserEmail, body, "Fyngram Order Cancelled");
             } catch (Exception ex) {
             }
         } else {
@@ -911,7 +911,7 @@ public class EngineOrderManager {
         String body = "Hi " + ShippingMethodName + "," + "\nThe Order with the Reference Number " + OrderRef + " has been cancelled.";
         try {
             String ShippingMethodEmail = EngineShippingManager.GetShippingMethodEmail(ShippingMethodID);
-            EngineEmailManager.SendEmail(ShippingMethodEmail, body, "FynGram Order Delivered");
+            EngineEmailManager.SendEmail(ShippingMethodEmail, body, "Fyngram Order Delivered");
         } catch (Exception ex) {
 
         }
@@ -1000,8 +1000,8 @@ public class EngineOrderManager {
             try {
                 String ShippingMethodEmail = EngineShippingManager.GetShippingMethodEmail(ShippingMethodID);
                 String ShippingMethodName = EngineShippingManager.GetShippingMethodName(ShippingMethodID);
-                body = "Hi " + ShippingMethodName + "," + "\nThe Order with the Order Reference Number " + OrderRef + " has been confirmed and it's pending delivery. \nPlease, contact FynGram Online Store For Shipping/Delivery Schedules.";
-                EngineEmailManager.SendEmail(ShippingMethodEmail, body, "FynGram Order Confirmation");
+                body = "Hi " + ShippingMethodName + "," + "\nThe Order with the Order Reference Number " + OrderRef + " has been confirmed and it's pending delivery. \nPlease, contact Fyngram Online Store For Shipping/Delivery Schedules.";
+                EngineEmailManager.SendEmail(ShippingMethodEmail, body, "Fyngram Order Confirmation");
             } catch (Exception ex) {
             }
         } else {
@@ -1078,15 +1078,15 @@ public class EngineOrderManager {
 
                 int SellerUserID = GetOrderSellerUserID(OrderID);
                 String SellerUserName = EngineUserManager.GetUserName(SellerUserID);
-                body = "Hi " + SellerUserName + "," + "\nThe Order with the Reference Number " + OrderRef + " that involves your product(s) has been confirmed. \nPlease, contact FynGram Online Store For Shipping/Delivery Schedules.";
+                body = "Hi " + SellerUserName + "," + "\nThe Order with the Reference Number " + OrderRef + " that involves your product(s) has been confirmed. \nPlease, contact Fyngram Online Store For Shipping/Delivery Schedules.";
                 EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), body, "Order Cancelled", SellerUserID);
                 CreateOrderStatusHistory(OrderID, PaymentStatusID);
                 try {
                     String UserEmail = EngineUserManager.GetUserEmail(CustomerUserID);
-                    EngineEmailManager.SendEmail(UserEmail, body, "FynGram Order Confirmation");
+                    EngineEmailManager.SendEmail(UserEmail, body, "Fyngram Order Confirmation");
 
                     String SellerUserEmail = EngineUserManager.GetUserEmail(SellerUserID);
-                    EngineEmailManager.SendEmail(SellerUserEmail, body, "FynGram Order Confirmation");
+                    EngineEmailManager.SendEmail(SellerUserEmail, body, "Fyngram Order Confirmation");
                 } catch (Exception ex) {
                 }
             } else {
@@ -1163,9 +1163,9 @@ public class EngineOrderManager {
                     EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), body, "Order Cancelled", CustomerUserID);
                     try {
                         String UserEmail = EngineUserManager.GetUserEmail(CustomerUserID);
-                        EngineEmailManager.SendEmail(UserEmail, body, "FynGram Order Cancelled");
+                        EngineEmailManager.SendEmail(UserEmail, body, "Fyngram Order Cancelled");
                         String SellerUserEmail = EngineUserManager.GetUserEmail(SellerUserID);
-                        EngineEmailManager.SendEmail(SellerUserEmail, sbody, "FynGram Order Cancelled");
+                        EngineEmailManager.SendEmail(SellerUserEmail, sbody, "Fyngram Order Cancelled");
                     } catch (Exception ex) {
                     }
                 }
@@ -1226,7 +1226,7 @@ public class EngineOrderManager {
             //admin actual balance in the transactions. 
 //            double AdminBalance = AdminTransactionShare + AdminShippingAmount;
             //but since the shipping company does not have account on the system
-            //all the amount will be given to the admin the admin would settle the delivery company off the system.
+            //all the amount would be given to the admin the admin would settle the delivery company off the system.
             double AdminBalanceAndShippingMethodBalance = AdminTransactionShare + AdminShippingAmount + ShippingMethodShippingAmount;
 
             double SellerBalance = SellerTransactionShare;
@@ -1235,18 +1235,20 @@ public class EngineOrderManager {
             int ShippingMethodID = GetOrderShippingMethodByOrderID(OrderID);
             result = EngineShippingManager.UpdateShippingMethodEarnings(ShippingMethodID, ShippingMethodShippingAmount, "Add");
             result = EngineShippingManager.UpdateShippingMethodNumberOfDelivery(ShippingMethodID, "Add");
-            if (DiscountFees == 0) {
-                result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, AdminUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetPendingWalletID(), AdminBalanceAndShippingMethodBalance, "Move Fund", "For delivered Order.");
+            if (DiscountFees == 0) {//no discounts
+                result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, AdminUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), AdminBalanceAndShippingMethodBalance, "Move Fund", "For delivered Order.");
+//                result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, AdminUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetPendingWalletID(), AdminBalanceAndShippingMethodBalance, "Move Fund", "For delivered Order.");
                 if (result.equals("success")) {
                     result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, SellerUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetPendingWalletID(), SellerBalance, "Move Fund", "For delivered Order.");
                 }
-            } else {
+            } else {//with discount
                 double withDiscountAmount = (DiscountFees / OrderIdsByRef.size());
                 if (SplitDiscountDeductionValue == 0) {
 //                     do not share discount amount
 //                    double AdminAmountAfterDiscount = AdminBalance - withDiscountAmount;
                     double AdminAmountAfterDiscountwithShippingMethodShare = AdminBalanceAndShippingMethodBalance - withDiscountAmount;
-                    result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, AdminUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetPendingWalletID(), AdminAmountAfterDiscountwithShippingMethodShare, "Move Fund", "For delivered Order.");
+                    result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, AdminUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), AdminAmountAfterDiscountwithShippingMethodShare, "Move Fund", "For delivered Order.");
+//                    result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, AdminUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetPendingWalletID(), AdminAmountAfterDiscountwithShippingMethodShare, "Move Fund", "For delivered Order.");
                     if (result.equals("success")) {
                         result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, SellerUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetPendingWalletID(), SellerBalance, "Move Fund", "For delivered Order.");
                     }
@@ -1258,7 +1260,8 @@ public class EngineOrderManager {
                     if (result.equals("success")) {
 //                        double AdminAmountAfterDiscount = AdminBalance - DiscountAmountToRefund;
                         double AdminAmountAfterDiscountwithShippingMethodBalance = AdminBalanceAndShippingMethodBalance - DiscountAmountToRefund;
-                        result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, AdminUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetPendingWalletID(), AdminAmountAfterDiscountwithShippingMethodBalance, "Move Fund", "For delivered Order.");
+                        result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, AdminUserID, EngineWalletManager.GetMainWalletID(), EngineWalletManager.GetPendingWalletID(), AdminAmountAfterDiscountwithShippingMethodBalance, "Move Fund", "For delivered Order.");
+//                        result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, AdminUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetPendingWalletID(), AdminAmountAfterDiscountwithShippingMethodBalance, "Move Fund", "For delivered Order.");
                     }
                 }
 
@@ -1269,25 +1272,25 @@ public class EngineOrderManager {
                 CreateOrderStatusHistory(OrderID, PaymentStatusID);
                 if (result.equals("success")) {
                     String CustomerUserName = EngineUserManager.GetUserName(CustomerUserID);
-                    String body = "Hi " + CustomerUserName + "," + "\nThe Order with the Reference Number " + OrderRef + " has been delivered . \nThank you for being part of FynGram";
+                    String body = "Hi " + CustomerUserName + "," + "\nThe Order with the Reference Number " + OrderRef + " has been delivered . \nThank you for being part of Fyngram";
                     EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), body, "Order Cancelled", CustomerUserID);
 
                     String SellerUserName = EngineUserManager.GetUserName(SellerUserID);
-                    body = "Hi " + SellerUserName + "," + "\nThe Order with the Reference Number " + OrderRef + " that involves your product(s) has been delivered. \nThank you for being part of FynGram.";
+                    body = "Hi " + SellerUserName + "," + "\nThe Order with the Reference Number " + OrderRef + " that involves your product(s) has been delivered. \nThank you for being part of Fyngram.";
                     EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), body, "Order Cancelled", SellerUserID);
 
                     String ShippingMethodName = EngineShippingManager.GetShippingMethodName(ShippingMethodID);
-                    body = "Hi " + ShippingMethodName + "," + "\nThe Order with the Reference Number " + OrderRef + " has been delivered. \nThank you for being part of FynGram.";
+                    body = "Hi " + ShippingMethodName + "," + "\nThe Order with the Reference Number " + OrderRef + " has been delivered. \nThank you for being part of Fyngram.";
 
                     try {
                         String CustomerEmail = EngineUserManager.GetUserEmail(CustomerUserID);
-                        EngineEmailManager.SendEmail(CustomerEmail, body, "FynGram Order Delivered");
+                        EngineEmailManager.SendEmail(CustomerEmail, body, "Fyngram Order Delivered");
 
                         String SellerUserEmail = EngineUserManager.GetUserEmail(SellerUserID);
-                        EngineEmailManager.SendEmail(SellerUserEmail, body, "FynGram Order Delivered");
+                        EngineEmailManager.SendEmail(SellerUserEmail, body, "Fyngram Order Delivered");
 
                         String ShippingMethodEmail = EngineShippingManager.GetShippingMethodEmail(ShippingMethodID);
-                        EngineEmailManager.SendEmail(ShippingMethodEmail, body, "FynGram Order Delivered");
+                        EngineEmailManager.SendEmail(ShippingMethodEmail, body, "Fyngram Order Delivered");
                     } catch (Exception ex) {
                     }
                 }
@@ -1418,6 +1421,13 @@ public class EngineOrderManager {
             PaymentDet.put("PaymentDetails", GetOrderPaymentData(OrderReference));
             if (!PaymentDet.isEmpty()) {
                 result.putAll(PaymentDet);
+            }
+            
+            HashMap<Integer, HashMap<String, String>> OrderStatusHistoryDetList = GetOrderStatusHistoryDataByOrderID(OrderID);
+            JSONObject StatusHistoryDet = new JSONObject();
+            StatusHistoryDet.put("StatusHistoryDetails", OrderStatusHistoryDetList);
+            if (!StatusHistoryDet.isEmpty()) {
+                result.putAll(StatusHistoryDet);
             }
 
             String bkdate = result.get(Tables.OrdersTable.BookingDate);
@@ -1607,6 +1617,7 @@ public class EngineOrderManager {
                 result.putAll(OrderHistoryDet);
             }
             result.put("product_count", "" + GetOrderHistoryIDs(OrderID).size());
+
             HashMap<Integer, HashMap<String, String>> OrderStatusHistoryDetList = GetOrderStatusHistoryDataByOrderID(OrderID);
             JSONObject StatusHistoryDet = new JSONObject();
             StatusHistoryDet.put("StatusHistoryDetails", OrderStatusHistoryDetList);
@@ -1793,24 +1804,13 @@ public class EngineOrderManager {
                 String orderTime = DBManager.GetString(Tables.OrdersTable.DeliveryTime, Tables.OrdersTable.Table, "where " + Tables.OrdersTable.ID + " = " + id);
                 try {
                     LocalDate TxnDate = LocalDate.parse(orderDate);
-                    LocalDate DateToPay = TxnDate.plusDays(1);
+                    LocalDate DateToPay = TxnDate.plusDays(2);
                     LocalTime TxnTime = LocalTime.parse(orderTime);
-                    LocalTime TimeToPay = TxnTime.plusHours(24);
+                    LocalTime TimeToPay = TxnTime.plusHours(48);
                     if (CurrentDate.isAfter(DateToPay) || CurrentDate.equals(DateToPay)) {
                         boolean isTimeAfter = CurrentTime.isAfter(TimeToPay);
                         if (isTimeAfter) {
-//                            int SellerUserID = DBManager.GetInt(Tables.PaymentGatewayTable.SellerUserID, Tables.PaymentGatewayTable.Table, "where " + Tables.PaymentGatewayTable.ID + " = " + id);
-//                            int AmountToPaySeller = DBManager.GetInt(Tables.PaymentGatewayTable.SellerAmountPayable, Tables.PaymentGatewayTable.Table, "where " + Tables.PaymentGatewayTable.ID + " = " + id);
-//                            String Comment = "The Order with an issue has been settled. Thanks for being part of the WealthMarket.";
-//                            String TransactionName = "Move Market Instrument";
-//                            //transfer from the buyer escrow to the seller direct
-//                            result = GeneralAccountManager.Transfer(SellerUserID, SellerUserID, 1, 3, 1, AmountToPaySeller, "To-Online", Comment, TransactionName, 0);
-//                            if (result.equals("success")) {
-//                                result = UpdateWMPayGatewayStatusByID(id, "WM Payment Settled");
-//                                String Comment2 = "Order Amount of " + GeneralAccountManager.FormatNumber(AmountToPaySeller) + " has been transferred into your Warrants Account.";
-//                                GeneralMessageManager.sendMemberMessage(GeneralAccountManager.WealthMarketUserID, Comment2, "Payment Settled", SellerUserID);
-//                                DBManager.UpdateCurrentTime(Tables.OrderUpdateTable.Table, Tables.OrderUpdateTable.Time, "where " + Tables.OrderUpdateTable.ID + " = " + 1);
-//                            }
+                            result = ComputeSettledOrder(id);
                         } else {
                             result = "Not yet time or it has been completed";
                         }
@@ -1823,6 +1823,48 @@ public class EngineOrderManager {
             }
         } else {
             result = "No Orders to process";
+        }
+        return result;
+    }
+
+    public static String ComputeSettledOrder(int OrderID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
+        String result = "failed";
+        int SellerUserID = GetOrderSellerUserID(OrderID);
+        double SellerAmount = GetOrderSellerAmount(OrderID);
+        int SellerTypeID = EngineSubscriptionManager.GetSellerTypeIDBySellerUserID(SellerUserID);
+        double AdminTransactionPercent = EngineTransactionManager.GetAdminTransactionPercentageBySellerType(SellerTypeID);
+        double AdminTransactionShare = EngineDiscountManager.ComputePercentageAmount(AdminTransactionPercent, SellerAmount);
+        double SellerTransactionShare = SellerAmount - AdminTransactionShare;
+        double SellerBalance = SellerTransactionShare;
+        double DiscountFees = GetOrderDiscountAmount(OrderID);
+        String OrderRef = GetOrderReferenceNumber(OrderID);
+        int DiscountCodeID = GetOrderDiscountCodeID(OrderID);
+        ArrayList<Integer> OrderIdsByRef = GetOrderIDsByReferenceNumber(OrderRef);
+        if (DiscountFees == 0) {
+            result = EngineWalletManager.ComputeWalletRecord(SellerUserID, SellerUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), SellerBalance, "Move Fund", "For delivered Order.");
+        } else {
+            int SplitDiscountDeductionValue = EngineDiscountManager.GetDiscountSplitDeductionValue(DiscountCodeID);
+            if (SplitDiscountDeductionValue == 0) {
+                result = EngineWalletManager.ComputeWalletRecord(SellerUserID, SellerUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), SellerBalance, "Move Fund", "For delivered Order.");
+
+            } else {
+                double withDiscountAmount = (DiscountFees / OrderIdsByRef.size());
+                double DiscountAmountToRefund = (withDiscountAmount / 2);
+                double SellerAmountAfterDiscount = SellerBalance - DiscountAmountToRefund;
+                result = EngineWalletManager.ComputeWalletRecord(SellerUserID, SellerUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), SellerAmountAfterDiscount, "Move Fund", "For delivered Order.");
+            }
+        }
+
+        if (result.equals("success")) {
+            result = UpdateOrderPaymentStatusID(OrderID, 7);//settled
+            CreateOrderStatusHistory(OrderID, 7);//settled
+
+            String SellerUserName = EngineUserManager.GetUserName(SellerUserID);
+            String body = "Hi " + SellerUserName + "," + "\nThe Order Amount of " + EngineTransactionManager.FormatNumber(SellerBalance) + "involved  with the Order Reference Number " + OrderRef + " has been transfered into your Wallet. \nThank you for being part of Fyngram.";
+            EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), body, "Order Cancelled", SellerUserID);
+            String SellerUserEmail = EngineUserManager.GetUserEmail(SellerUserID);
+            EngineEmailManager.SendEmail(SellerUserEmail, body, "Fyngram Order Delivered");
+
         }
         return result;
     }
