@@ -71,7 +71,6 @@ public class WUserServlet extends HttpServlet {
                             String NewSessionID = "";
                             int usertypeid = EngineUserManager.GetUserTypeIDByUserID("" + UserID);
                             String usertype = "";
-//                            EngineEmailManager.SendEmail(EmailAddress, "Come home", "Test");
                             session = request.getSession(true);
                             switch (usertypeid) {
                                 case 1:
@@ -230,9 +229,10 @@ public class WUserServlet extends HttpServlet {
                                 if (result.equals("success")) {
                                     result = EngineWalletManager.CreateWallet(CustomerUserID);
                                     if (result.equals("success")) {
-                                        String msgbdy = "Congratulations!!! \nYou have been successfully registered as a member of Fyngram Online Store.";
+                                        String msgbdy = "Congratulations!!! \nYou have been successfully registered as a customer on Fyngram.";
                                         EngineMessageManager.sendMessage(1, msgbdy, "Customer Account Created", CustomerUserID);
-                                        EngineEmailManager.SendEmail(EmailAddress, msgbdy, "Customer Account Created");
+                                        String Code = "FG-" + UtilityManager.randomAlphaNumeric(7) + "#C";
+                                        EngineEmailManager.PasswordResetEmail(EmailAddress, "Customer Account Created", Code, EngineUserManager.GetUserName(CustomerUserID), "Registration", "Customer");
                                         session.invalidate();
                                         session = request.getSession(true);
                                         String LoginID = EngineUserManager.GetLoginIDBySessionID(OldSessionID);
@@ -408,8 +408,8 @@ public class WUserServlet extends HttpServlet {
                                         if (result.equals("success")) {
                                             String msgbdy = "Congratulations!!! \nYou have been successfully registered as a Seller on Fyngram Online Store.";
                                             EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), msgbdy, "Seller Account Created", SellerUserID);
-                                            EngineEmailManager.SendEmail(EmailAddress, msgbdy, "Admin Account Created");
-
+                                            String Code = "FG-" + UtilityManager.randomAlphaNumeric(7) + "#S";
+                                            EngineEmailManager.PasswordResetEmail(EmailAddress, "Seller Account Created", Code, EngineUserManager.GetUserName(SellerUserID), "Registration", "Seller");
                                             String sessionid = session.getId() + "#S";
                                             String usertype = "Seller";
                                             EngineUserManager.CreateOrUpdateSessionID(sessionid, sessionid, "" + SellerUserID, "" + SellerUserID);

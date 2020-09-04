@@ -5,69 +5,122 @@
  */
 package fgengine.Managers;
 
-import java.util.Properties;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.PasswordAuthentication;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
+import com.sendgrid.Content;
+import com.sendgrid.Email;
+import com.sendgrid.Mail;
+import com.sendgrid.Method;
+import com.sendgrid.Personalization;
+import com.sendgrid.Request;
+import com.sendgrid.Response;
+import com.sendgrid.SendGrid;
+import fgengine.Tables.Tables;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.sql.SQLException;
+import java.util.Map;
 
 /**
  *
  * @author mac
  */
 public class EngineEmailManager {
-    
-    /**
-     *
-     * @param ToEmail
-     * @param Body
-     * @param Subject
-     * @return
-     */
-    public static String SendEmail(String ToEmail, String Body, String Subject) {
-        String from = "sales@fyngram.com";
-        String result = "success";
-        final String username = "sales@fyngram.com";//change accordingly
-        final String password = ".RAY_()Vv+FYN-Koronachinese";//change accordingly
-//        String host = "localhost";
-        String host = "thirtyseven.qservers.net";
 
-        Properties props = new Properties();
-        props.put("mail.smtp.auth", true);
-        props.put("mail.transport.protocol", "smtp");
-//        props.put("mail.smtp.starttls.enable", true);
-        props.put("mail.smtp.host", host);
-        props.put("mail.smtp.port", 456);
-        props.put("mail.smtp.user", username);
-        props.put("mail.smtp.password", password);
-        props.put("mail.smtp.from", from);
-        props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-
-        Session session = Session.getInstance(props, new javax.mail.Authenticator() {
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(username, password);
-            }
-        });
-
+    public static String PasswordResetEmail(String ToEmail, String Subject, String Code, String UserName, String Option, String UserType) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, IOException {
+        String result = "failed";
+        Mail mail = prepareEmail(ToEmail, Subject, Code, UserName, Option, UserType);
+        String key = GetSendGridKey();
+        SendGrid sg = new SendGrid(key);
+        Request request = new Request();
         try {
-            // Create a default MimeMessage object.
-            Message message = new MimeMessage(session);
-            message.setFrom(new InternetAddress(from));
-            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(ToEmail));
-            message.setSubject(Subject);
-            message.setContent(Body, "text/html");
-            // Send message
-            Transport.send(message);
-            System.out.println("Sent message successfully....");
+            request.setMethod(Method.POST);
+            request.setEndpoint("mail/send");
+            request.setBody(mail.build());
+            Response response = sg.api(request);
+            System.out.println(response.getStatusCode());
+            int code = response.getStatusCode();
+            System.out.println(response.getBody());
+            String body = response.getBody();
+            System.out.println(response.getHeaders());
+            Map header = response.getHeaders();
+            Map me = header;
             result = "success";
-        } catch (MessagingException e) {
-            result = "failed";
-            e.printStackTrace();
+        } catch (IOException ex) {
+            ex.getStackTrace();
+            System.out.println(ex.getMessage());
+            throw ex;
         }
         return result;
     }
 
+    public static String GetSendGridKey() throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        String result = DBManager.GetString(Tables.ParametersTable.SendGridKey, Tables.ParametersTable.Table, "where " + Tables.ParametersTable.ID + " = " + 1);
+        return result;
+    }
+
+    public static Mail prepareEmail(String ToEmail, String Subject, String Code, String UserName, String Option, String UserType) {
+
+        Mail mail = new Mail();
+        Email fromEmail = new Email();
+        fromEmail.setEmail("support@fyngram.com");
+        fromEmail.setName("Fyngram");
+        mail.setFrom(fromEmail);
+        mail.setSubject(Subject);
+
+        Personalization personalization = new Personalization();
+        Email toEmail = new Email();
+        toEmail.setEmail(ToEmail);
+        toEmail.setName(UserName);
+        personalization.addTo(toEmail);
+
+        if (Option.equals("Password")) {
+            personalization.addSubstitution("%name%", UserName);
+            personalization.addSubstitution("%code%", Code);
+            mail.addPersonalization(personalization);
+            mail.setTemplateId("7a6f7866-464d-48e1-9792-5e310ad08977");
+        } else if (Option.equals("Registration")) {
+            personalization.addSubstitution("%name%", UserName);
+            personalization.addSubstitution("%type%", UserType);
+            personalization.addSubstitution("%code%", Code);
+            mail.addPersonalization(personalization);
+            mail.setTemplateId("cb6f6e9d-9367-47aa-9b7c-f6cb4fa17183");
+        }
+
+        Email replyTo = new Email();
+        replyTo.setName("Fyngram");
+        replyTo.setEmail("support@fyngram.com");
+        mail.setReplyTo(replyTo);
+        return mail;
+    }
+
+    public static String SendEmail(String ToEmail, String Body, String Subject) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, IOException {
+        String result = "failed";
+
+        Email from = new Email("support@fyngram.com");
+        Email to = new Email(ToEmail);
+        Content content = new Content("text/plain", Body);
+        Mail mail = new Mail(from, Subject, to, content);
+        String key = GetSendGridKey();
+
+        Request request = new Request();
+        try {
+            SendGrid sg = new SendGrid(key);
+            request.setMethod(Method.POST);
+            request.setEndpoint("mail/send");
+            request.setBody(mail.build());
+            Response response = sg.api(request);
+            System.out.println(response.getStatusCode());
+            int code = response.getStatusCode();
+            System.out.println(response.getBody());
+            String body = response.getBody();
+            System.out.println(response.getHeaders());
+            Map header = response.getHeaders();
+            Map me = header;
+            result = "success";
+        } catch (IOException ex) {
+            ex.getStackTrace();
+            System.out.println(ex.getMessage());
+            throw ex;
+        }
+        return result;
+    }
 }

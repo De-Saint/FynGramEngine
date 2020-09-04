@@ -1677,6 +1677,10 @@ public class Tables {
          *
          */
         public static String PaystackPublicKey = "paystack_public_key";
+        /**
+         *
+         */
+        public static String SendGridKey = "sendgrid_key";
 
     }
 

@@ -6,6 +6,7 @@
 package fgengine.Managers;
 
 import fgengine.Tables.Tables;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -1242,7 +1243,7 @@ public class EngineUserManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String ImplementedNewFeature(int NewFeatureID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+    public static String ImplementedNewFeature(int NewFeatureID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, IOException {
         String email = DBManager.GetString(Tables.NewFeatureRequestTable.Email, Tables.NewFeatureRequestTable.Table, "where " + Tables.NewFeatureRequestTable.ID + " = " + NewFeatureID);
         String result = "failed";
         String dt = DBManager.GetString(Tables.NewFeatureRequestTable.Date, Tables.NewFeatureRequestTable.Table, "where " + Tables.NewFeatureRequestTable.ID + " = " + NewFeatureID);
@@ -1293,25 +1294,13 @@ public class EngineUserManager {
         return Data;
     }
 
-    public static String ComputeResetPassword(String Email) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+    public static String ComputeResetPassword(String Email) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, IOException {
         String result = "failed";
         int UserID = DBManager.GetInt(Tables.UsersTable.ID, Tables.UsersTable.Table, "where " + Tables.UsersTable.Email + " = '" + Email + "'");
         String Code = "FG-" + UtilityManager.randomAlphaNumeric(7);
         result = CreateRecovery(UserID, Email, Code);
-
-        String body = "Hey " + GetUserName(UserID) + "!\n"
-                + "\n"
-                + "A password reset attempt requires further verification because we did not recognize who is requesting. To complete the reset password, enter the verification code along with your password to complete the password reset.\n"
-                + "\n"
-                + "Verification code: " + Code + "\n"
-                + "\n"
-                + "If you did not attempt to reset the password on your account, your password may be compromised. Visit https://fyngram.com/, login into your account and update your password to a new and strong password for your Fyngram account.\n"
-                + "\n"
-                + "\n"
-                + "Thanks,\n"
-                + "Fyngram Support Team";
         String subject = "Password Recovery";
-        EngineEmailManager.SendEmail(Email, body, subject);
+        EngineEmailManager.PasswordResetEmail(Email, subject, Code, GetUserName(UserID), "Password", "");
         return result;
     }
 

@@ -6,6 +6,7 @@
 package fgengine.Managers;
 
 import fgengine.Tables.Tables;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -57,7 +58,7 @@ public class EngineStockManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String ComputeStockMovement(int OrderID, String Option) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+    public static String ComputeStockMovement(int OrderID, String Option) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, IOException {
         String result = "failed";
         ArrayList<Integer> OrderHistoryIDs = EngineOrderManager.GetOrderHistoryIDs(OrderID);
         HashMap<String, String> OrderHistoryData = new HashMap<>();
@@ -109,7 +110,7 @@ public class EngineStockManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String ComputeStockEvaluation(int minimumQty, int NewProductTotalQuantity, int ProductID, int SellerUserID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+    public static String ComputeStockEvaluation(int minimumQty, int NewProductTotalQuantity, int ProductID, int SellerUserID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, IOException {
         String result = "failed";
         int NotyTypeID = GetProductStockNotificationTypeID(ProductID);
         String ProductName = EngineProductManager.GetProductNameByProductID(ProductID);

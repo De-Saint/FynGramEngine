@@ -6,6 +6,7 @@
 package fgengine.Managers;
 
 import fgengine.Tables.Tables;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.sql.Date;
 import java.sql.SQLException;
@@ -32,7 +33,7 @@ public class EnginePaymentManager {
      * @throws UnsupportedEncodingException
      * @throws java.text.ParseException
      */
-    public static String ComputeSubscriptionFees(int UserID, String PaymentType, double Amount, String TransactionCode, String RefereceCode) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
+    public static String ComputeSubscriptionFees(int UserID, String PaymentType, double Amount, String TransactionCode, String RefereceCode) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException, IOException {
         String result = "failed";
         result = EnginePaymentManager.CreatePayment(UserID, PaymentType, Amount, TransactionCode, RefereceCode);
         if (result.equals("success")) {

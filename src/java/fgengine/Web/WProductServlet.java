@@ -21,7 +21,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.json.simple.JSONObject;
 
 /**
@@ -234,7 +233,7 @@ public class WProductServlet extends HttpServlet {
                     int ProductID = Integer.parseInt(productid);
                     String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
                     int UserID = 0;
-                    if (NumberUtils.isNumber(SessionID)) {
+                    if (EngineAddressManager.isNumeric(SessionID)) {
                         UserID = Integer.parseInt(SessionID);
                     }
                     result = EngineProductManager.ComputeUserProductViewed(UserID, ProductID, SessionID);
@@ -577,7 +576,7 @@ public class WProductServlet extends HttpServlet {
                     }
                     break;
                 }
-                  case "GetShopProductsBySorting": {
+                case "GetShopProductsBySorting": {
                     String[] data = request.getParameterValues("data[]");
                     String option = data[1];
                     String catid = data[0];
@@ -602,9 +601,9 @@ public class WProductServlet extends HttpServlet {
 
                 case "GlobalSearch": {//by productName, brand, and category
                     String data = request.getParameter("data");
-                     ArrayList<Integer> IDS =  new ArrayList<>();
+                    ArrayList<Integer> IDS = new ArrayList<>();
                     HashMap<Integer, HashMap<String, String>> List = new HashMap<>();
-                     IDS = EngineProductManager.GetProductIDsBySearchValue(data);
+                    IDS = EngineProductManager.GetProductIDsBySearchValue(data);
                     if (!IDS.isEmpty()) {
                         for (int id : IDS) {
                             HashMap<String, String> details = EngineProductManager.GetProductData(id);
@@ -773,9 +772,10 @@ public class WProductServlet extends HttpServlet {
                     String sessionid = request.getParameter("data");
                     String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
                     int UserID = 0;
-                    if (NumberUtils.isNumber(SessionID)) {
+                    if (EngineAddressManager.isNumeric(SessionID)) {
                         UserID = Integer.parseInt(SessionID);
                     }
+
                     HashMap<Integer, HashMap<String, String>> List = new HashMap<>();
                     ArrayList<Integer> IDS = EngineProductManager.GetRecentlyViewedProductIDs(UserID, SessionID);
                     if (!IDS.isEmpty()) {

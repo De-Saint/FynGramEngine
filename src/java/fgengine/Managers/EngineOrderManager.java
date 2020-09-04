@@ -6,6 +6,7 @@
 package fgengine.Managers;
 
 import fgengine.Tables.Tables;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
 import java.text.ParseException;
@@ -687,7 +688,7 @@ public class EngineOrderManager {
      * @throws UnsupportedEncodingException
      * @throws ParseException
      */
-    public static String ComputeCancelOrder(int OrderID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
+    public static String ComputeCancelOrder(int OrderID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException, IOException {
         String result = "failed";
         int CurrentOrderStatus = GetOrderPaymentStatusID(OrderID);
         int PaymentStatusID = GetOrderPaymentStatusID("Cancelled");
@@ -1022,7 +1023,7 @@ public class EngineOrderManager {
      * @throws UnsupportedEncodingException
      * @throws ParseException
      */
-    public static String ComputeOrderStatus(String SessionID, String orderID, String statusID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
+    public static String ComputeOrderStatus(String SessionID, String orderID, String statusID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException, IOException {
         String result = "failed";
         int StatusID = Integer.parseInt(statusID);
         int OrderID = Integer.parseInt(orderID);
@@ -1141,7 +1142,7 @@ public class EngineOrderManager {
      * @throws UnsupportedEncodingException
      * @throws ParseException
      */
-    public static String ComputeShippedOrder(int OrderID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
+    public static String ComputeShippedOrder(int OrderID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException, IOException {
         String result = "failed";
         int CurrentOrderStatus = GetOrderPaymentStatusID(OrderID);
         int PaymentStatusID = GetOrderPaymentStatusID("Shipped");
@@ -1827,7 +1828,7 @@ public class EngineOrderManager {
         return result;
     }
 
-    public static String ComputeSettledOrder(int OrderID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
+    public static String ComputeSettledOrder(int OrderID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException, IOException {
         String result = "failed";
         int SellerUserID = GetOrderSellerUserID(OrderID);
         double SellerAmount = GetOrderSellerAmount(OrderID);
