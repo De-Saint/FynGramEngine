@@ -41,7 +41,7 @@ public class EnginePaymentManager {
             if (result.equals("success")) {
                 result = EngineSubscriptionManager.CreateSubscription(UserID, Amount);
                 if (result.endsWith("success")) {
-                    String msgbdy = "Hi" + EngineUserManager.GetUserName(UserID) + ",\n\nCongratulations!!! \n\nYou have successfully paid your subscription fees as a Seller on Fyngram. \n\nYour Account would be activated and updated after your payment has been confirmed. \n\nCheers \nFyngram.";
+                    String msgbdy = "Hi " + EngineUserManager.GetUserName(UserID) + ",\n\nCongratulations!!! \n\nYou have successfully paid your subscription fees as a Seller on Fyngram. \n\nYour Account would be activated and updated after your payment has been confirmed. \n\nCheers \nFyngram.";
                     EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), msgbdy, "Seller Account Subscription", UserID);
                     try {
                         String Email = EngineUserManager.GetUserEmail(UserID);
