@@ -25,7 +25,7 @@ import java.util.Map;
  */
 public class EngineEmailManager {
 
-    public static String PasswordResetEmail(String ToEmail, String Subject, String Code, String UserName, String Option, String UserType) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, IOException {
+    public static String SendingEmailOption(String ToEmail, String Subject, String Code, String UserName, String Option, String UserType) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, IOException {
         String result = "failed";
         Mail mail = prepareEmail(ToEmail, Subject, Code, UserName, Option, UserType);
         String key = GetSendGridKey();
@@ -47,7 +47,6 @@ public class EngineEmailManager {
         } catch (IOException ex) {
             ex.getStackTrace();
             System.out.println(ex.getMessage());
-            throw ex;
         }
         return result;
     }
@@ -96,7 +95,9 @@ public class EngineEmailManager {
         String result = "failed";
 
         Email from = new Email("support@fyngram.com");
+        from.setName("Fyngram");
         Email to = new Email(ToEmail);
+        
         Content content = new Content("text/plain", Body);
         Mail mail = new Mail(from, Subject, to, content);
         String key = GetSendGridKey();

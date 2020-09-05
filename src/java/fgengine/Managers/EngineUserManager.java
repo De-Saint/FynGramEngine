@@ -1229,7 +1229,7 @@ public class EngineUserManager {
         String result = "failed";
         String dt = DBManager.GetString(Tables.ComplaintTable.Date, Tables.ComplaintTable.Table, "where " + Tables.ComplaintTable.ID + " = " + ComplaintID);
         String date = DateManager.readDate(dt);
-        String body = "Your complaint that was logged on " + date + " has been resolved. Thank you for being part of fyngram.";
+        String body = "Hi " + GetUserName(userid) + ",\n\nYour complaint that was logged on " + date + " has been resolved. \n\nCheers \nFyngram.";
         EngineMessageManager.sendMessage(GetAdminUserID(), body, "Complaint Revolved - Fyngram", userid);
         result = DBManager.UpdateStringData(Tables.ComplaintTable.Table, Tables.ComplaintTable.Status, "Resolved", "where " + Tables.ComplaintTable.ID + " = " + ComplaintID);
         return result;
@@ -1248,8 +1248,9 @@ public class EngineUserManager {
         String result = "failed";
         String dt = DBManager.GetString(Tables.NewFeatureRequestTable.Date, Tables.NewFeatureRequestTable.Table, "where " + Tables.NewFeatureRequestTable.ID + " = " + NewFeatureID);
         String date = DateManager.readDate(dt);
-        String body = "Your suggestion for new feature that was logged on " + date + " has been implemented. Thank you for being part of Fyngram.";
-        EngineEmailManager.SendEmail(email, body, "New Feature Suggestion Implementation - Fyngram");
+        String name = DBManager.GetString(Tables.NewFeatureRequestTable.Name, Tables.NewFeatureRequestTable.Table, "where " + Tables.NewFeatureRequestTable.ID + " = " + NewFeatureID);
+        String body = "Hi " + name + ",\n\nYour suggestion for new feature that was logged on " + date + " has been implemented.  \n\nCheers \nFyngram.";
+        EngineEmailManager.SendEmail(email, body, "New Feature Suggestion - Fyngram");
         result = DBManager.UpdateStringData(Tables.NewFeatureRequestTable.Table, Tables.NewFeatureRequestTable.Status, "Implemented", "where " + Tables.NewFeatureRequestTable.ID + " = " + NewFeatureID);
         return result;
     }
@@ -1300,7 +1301,7 @@ public class EngineUserManager {
         String Code = "FG-" + UtilityManager.randomAlphaNumeric(7);
         result = CreateRecovery(UserID, Email, Code);
         String subject = "Password Recovery";
-        EngineEmailManager.PasswordResetEmail(Email, subject, Code, GetUserName(UserID), "Password", "");
+        EngineEmailManager.SendingEmailOption(Email, subject, Code, GetUserName(UserID), "Password", "");
         return result;
     }
 
@@ -1349,6 +1350,33 @@ public class EngineUserManager {
             result = "Invalid Validation Code. Please check and try again";
         }
         return result;
+
+    }
+
+    /**
+     *
+     * @param RecoveryCode
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static String ConfirmAccount(String RecoveryCode) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        String result = "failed";
+        int UserID = 0;
+        String Email = DBManager.GetString(Tables.PasswordRecoveryTable.Email, Tables.PasswordRecoveryTable.Table, "where " + Tables.PasswordRecoveryTable.Code + " = '" + RecoveryCode + "'");
+        if (!Email.equals("none")) {
+            UserID = DBManager.GetInt(Tables.PasswordRecoveryTable.UserID, Tables.PasswordRecoveryTable.Table, "where " + Tables.PasswordRecoveryTable.Code + " = '" + RecoveryCode + "'");
+            String uEmail = GetUserEmail(UserID);
+            if (uEmail.equals(Email)) {
+                result = DBManager.UpdateIntData(Tables.UsersTable.Status, 1, Tables.UsersTable.Table, "where " + Tables.UsersTable.ID + " = " + UserID);
+            } else {
+                result = "Invalid Validation Code. Please check and try again";
+            }
+        } else {
+            result = "Invalid Validation Code. Please check and try again";
+        }
+        return result + "#" + UserID;
 
     }
 }

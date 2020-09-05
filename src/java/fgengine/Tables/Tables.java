@@ -2964,6 +2964,10 @@ public class Tables {
          *
          */
         public static String DeviceToken = "device_token";
+         /**
+         *
+         */
+        public static String Status = "status";
 
     }
 

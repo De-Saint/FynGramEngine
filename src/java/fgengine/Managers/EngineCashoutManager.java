@@ -160,13 +160,13 @@ public class EngineCashoutManager {
         double Amount = GetAmountByCashOutID(CashOutID);
         if (Option.equals("Approved")) {
             result = EngineWalletManager.ComputeWalletRecord(UserID, EngineUserManager.GetAdminUserID(), EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), Amount, "Move Fund", "For cashout/payout request.");
-            String msg = "Hi " + EngineUserManager.GetUserName(UserID) + ", \nYour cashout request has been succesfully approved. For further assistance, please contact the support team";
+            String msg = "Hi " + EngineUserManager.GetUserName(UserID) + ",\n\nYour cashout request has been succesfully approved. \n\nFor further assistance, please contact the support team.\n\nCheers \nFyngram";
             EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), msg, "Move Fund", UserID);
             DBManager.UpdateStringData(Tables.CashoutTable.Table, Tables.CashoutTable.Status, Option, "where " + Tables.CashoutTable.ID + " = " + CashOutID);
             //create paystack fund transfer to the user's bank account here.
         } else if (Option.equals("Rejected")) {
             result = EngineWalletManager.ComputeWalletRecord(UserID, UserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), Amount, "Move Fund", "For cashout/payout request.");
-            String msg = "Hi " + EngineUserManager.GetUserName(UserID) + ", \nYour cashout request was rejected. For further assistance, please contact the support team";
+            String msg = "Hi " + EngineUserManager.GetUserName(UserID) + ",\n\nYour cashout request was rejected. \n\nFor further assistance, please contact the support team.\n\nCheers \nFyngram";
             EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), msg, "Move Fund", UserID);
             DBManager.UpdateStringData(Tables.CashoutTable.Table, Tables.CashoutTable.Status, Option, "where " + Tables.CashoutTable.ID + " = " + CashOutID);
         } else if (Option.equals("Deleted")) {

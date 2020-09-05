@@ -217,7 +217,6 @@ public class WUserServlet extends HttpServlet {
                     String PhoneNumber = data[4].trim();
                     String Password = data[5].trim();
                     String newsletter = data[6].trim();
-                    String OldSessionID = data[7].trim();
                     int NewsLetter = Integer.parseInt(newsletter);
                     int CustomerUserID = 0;
                     JsonObject returninfo = new JsonObject();
@@ -229,25 +228,14 @@ public class WUserServlet extends HttpServlet {
                                 if (result.equals("success")) {
                                     result = EngineWalletManager.CreateWallet(CustomerUserID);
                                     if (result.equals("success")) {
-                                        String msgbdy = "Congratulations!!! \nYou have been successfully registered as a customer on Fyngram.";
+                                        String msgbdy = "Congratulations!!! \n\nYou have been successfully registered as a customer on Fyngram.";
                                         EngineMessageManager.sendMessage(1, msgbdy, "Customer Account Created", CustomerUserID);
                                         String Code = "FG-" + UtilityManager.randomAlphaNumeric(7) + "#C";
-                                        EngineEmailManager.PasswordResetEmail(EmailAddress, "Customer Account Created", Code, EngineUserManager.GetUserName(CustomerUserID), "Registration", "Customer");
-                                        session.invalidate();
-                                        session = request.getSession(true);
-                                        String LoginID = EngineUserManager.GetLoginIDBySessionID(OldSessionID);
-                                        String NewSessionID = session.getId() + "#C";
-                                        EngineUserManager.CreateOrUpdateSessionID(OldSessionID, NewSessionID, LoginID, "" + CustomerUserID);
-                                        EngineCartManager.UpdateCartUserID(LoginID, "" + CustomerUserID);
+                                        EngineUserManager.CreateRecovery(CustomerUserID, EmailAddress, Code);
+                                        EngineEmailManager.SendingEmailOption(EmailAddress, "Customer Account Created", Code, EngineUserManager.GetUserName(CustomerUserID), "Registration", "Customer");
                                         returninfo.addProperty("status", "success");
                                         returninfo.addProperty("msg", msgbdy);
-                                        JsonObject dataobject = new JsonObject();
-                                        dataobject.addProperty("sessionid", NewSessionID);
-                                        String usertype = "Customer";
-                                        dataobject.addProperty("sessiontype", usertype);
-                                        returninfo.add("data", dataobject);
-                                        returninfo.addProperty("status", "success");
-                                        returninfo.addProperty("msg", msgbdy);
+
                                     } else {
                                         returninfo.addProperty("status", "error");
                                         returninfo.addProperty("msg", "Oh No! Something went wrong while creating User Account. Please try again.");
@@ -406,17 +394,11 @@ public class WUserServlet extends HttpServlet {
                                         int MaxShippingDays = Integer.parseInt(maxshippingdays);
                                         result = EngineUserManager.CreateSellerInformation(SellerUserID, BizName, BizEmail, BizPhone, MinShippingDays, MaxShippingDays);
                                         if (result.equals("success")) {
-                                            String msgbdy = "Congratulations!!! \nYou have been successfully registered as a Seller on Fyngram Online Store.";
+                                            String msgbdy = "Congratulations!!! \n\nYou have been successfully registered as a Seller on Fyngram, a verification code email has been sent to the Seller's registered email.";
                                             EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), msgbdy, "Seller Account Created", SellerUserID);
                                             String Code = "FG-" + UtilityManager.randomAlphaNumeric(7) + "#S";
-                                            EngineEmailManager.PasswordResetEmail(EmailAddress, "Seller Account Created", Code, EngineUserManager.GetUserName(SellerUserID), "Registration", "Seller");
-                                            String sessionid = session.getId() + "#S";
-                                            String usertype = "Seller";
-                                            EngineUserManager.CreateOrUpdateSessionID(sessionid, sessionid, "" + SellerUserID, "" + SellerUserID);
-                                            JsonObject dataobject = new JsonObject();
-                                            dataobject.addProperty("sessionid", sessionid);
-                                            dataobject.addProperty("sessiontype", usertype);
-                                            returninfo.add("data", dataobject);
+                                            EngineUserManager.CreateRecovery(SellerUserID, EmailAddress, Code);
+                                            EngineEmailManager.SendingEmailOption(EmailAddress, "Seller Account Created", Code, EngineUserManager.GetUserName(SellerUserID), "Registration", "Seller");
                                             returninfo.addProperty("status", "success");
                                             returninfo.addProperty("msg", msgbdy);
                                         } else {
@@ -619,6 +601,55 @@ public class WUserServlet extends HttpServlet {
                     if (result.equals("success")) {
                         returninfo.addProperty("status", "success");
                         returninfo.addProperty("msg", "Your Password reset was successful. Please try to login with the new password.");
+                    } else {
+                        if (!result.equals("failed")) {
+                            returninfo.addProperty("msg", result);
+                        } else {
+                            returninfo.addProperty("msg", "Something went wrong! Please, try again!");
+                        }
+                        returninfo.addProperty("status", "error");
+                    }
+                    json = new Gson().toJson((JsonElement) returninfo);
+                    break;
+                }
+                case "ValidateAccount": {
+                    String[] data = request.getParameterValues("data[]");
+                    String RecoveryCode = data[0].trim();
+                    String res = EngineUserManager.ConfirmAccount(RecoveryCode);
+                    int UserID = Integer.parseInt(res.split("#")[1]);
+                    result = res.split("#")[0];
+                    JsonObject returninfo = new JsonObject();
+                    if (result.equals("success")) {
+                        returninfo.addProperty("status", "success");
+                        returninfo.addProperty("msg", "Your account has been confirmed. Thank you for being part of Fyngram.");
+                        JsonObject dataobject = new JsonObject();
+                        int usertypeid = EngineUserManager.GetUserTypeIDByUserID("" + UserID);
+                        String usertype = "";
+                        String sessionid = null;
+                        switch (usertypeid) {
+                            case 2: 
+                                session.invalidate();
+                                 session = request.getSession(true);
+                                sessionid = session.getId() + "#S";
+                                usertype = "Seller";
+                                EngineUserManager.CreateOrUpdateSessionID(sessionid, sessionid, "" + UserID, "" + UserID);
+                                break;
+                            case 3:
+                                usertype = "Customer";
+                                session.invalidate();
+                                String OldSessionID = data[1].trim();
+                                session = request.getSession(true);
+                                String LoginID = EngineUserManager.GetLoginIDBySessionID(OldSessionID);
+                                sessionid = session.getId() + "#C";
+                                EngineUserManager.CreateOrUpdateSessionID(OldSessionID, sessionid, LoginID, "" + UserID);
+                                EngineCartManager.UpdateCartUserID(LoginID, "" + UserID);
+                                break;
+                            default:
+                                break;
+                        }
+                        dataobject.addProperty("sessionid", sessionid);
+                        dataobject.addProperty("sessiontype", usertype);
+                        returninfo.add("data", dataobject);
                     } else {
                         if (!result.equals("failed")) {
                             returninfo.addProperty("msg", result);

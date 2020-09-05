@@ -116,7 +116,7 @@ public class EngineStockManager {
         String ProductName = EngineProductManager.GetProductNameByProductID(ProductID);
 
         if (minimumQty >= NewProductTotalQuantity) {
-            String BodyMsg = "Hi " + EngineUserManager.GetUserName(SellerUserID) + ", \nYour Pruduct " + ProductName + " has gotten to its minumum quantity set. Please, restock the product as it has been removed from the store.";
+            String BodyMsg = "Hi " + EngineUserManager.GetUserName(SellerUserID) + ", \n\nYour Product " + ProductName + " has gotten to its minumum quantity set. \n\nPlease, restock the product because it has been disabled.\n\nCheers \nFyngram";
             String Subject = "Fyngram Product ReStock Notification";
             switch (NotyTypeID) {
                 //Email Only

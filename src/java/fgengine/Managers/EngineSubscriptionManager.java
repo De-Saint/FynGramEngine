@@ -105,7 +105,6 @@ public class EngineSubscriptionManager {
         int SellerTypeID = GetSellerTypeIDBySellerUserID(SellerUserID);
         int SubscriptionID = GetSellerSubscriptionIDBySellerUserIDAndSellerTypeIDAndSubscriptionTypeID(SellerUserID, SellerTypeID, SubscriptionTypeID);
 
-//        LocalDate date = LocalDate.now();
         String startDate = GetSubscriptionStartDate(SubscriptionID);
         LocalDate StartDateDate = LocalDate.parse(startDate);
 
@@ -118,7 +117,7 @@ public class EngineSubscriptionManager {
         int AdminUserID = EngineUserManager.GetAdminUserID();
         double SubsAmount = GetSellerSubscriptionAmountBySellerTypeIDAndSubscriptionTypeID(SellerTypeID, SubscriptionTypeID);
         result = EngineWalletManager.ComputeWalletRecord(SellerUserID, AdminUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), SubsAmount, "Activate Supplier Account", "");
-        String msgbdy = "Congratulations!!! \nYour account has been successfully activated. \nThank you for being part of Fyngram Onlne Store";
+        String msgbdy = "Hi "+ EngineUserManager.GetUserName(SellerUserID) + ",\n\nCongratulations!!! \n\nYour account has been successfully activated. \n\nCheers \nFyngram";
         EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), msgbdy, "Seller Account Activated", SellerUserID);
         try {
             String Email = EngineUserManager.GetUserEmail(SellerUserID);

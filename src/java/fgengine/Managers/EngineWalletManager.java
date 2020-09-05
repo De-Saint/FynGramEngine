@@ -104,6 +104,22 @@ public class EngineWalletManager {
         }
         result = UtilityManager.GenerateRandomNumber(2);
         result = result + num;
+        if (result.length() == 4) {
+            return result;
+        } else {
+            if (result.length() == 3) {
+                result = result + "1";
+                return result;
+            }
+            if (result.length() == 2) {
+                result = result + "01";
+            }
+            if (result.length() == 1) {
+                result = result + UtilityManager.GenerateRandomNumber(2);
+                return result;
+            }
+
+        }
         return result;
     }
 
@@ -160,26 +176,26 @@ public class EngineWalletManager {
         String ToWalletName = GetWalletNameByID(ToWalletTypeID);
         if (TransactionTypeName.equals("Subscription Fees")) {
             result = EngineWalletManager.InsertWalletRecord(FromUserID, TransactionAmount, FromWalletTypeID, "Credit");
-            Description = "Hi " + EngineUserManager.GetUserName(ToUserID) + ", \nYou have successfully transferred " + EngineTransactionManager.FormatNumber(TransactionAmount) + " to Fyngram Account as payment for your Subscription";
+            Description = "Hi " + EngineUserManager.GetUserName(ToUserID) + ", \n\nYou have successfully transferred " + EngineTransactionManager.FormatNumber(TransactionAmount) + " to Fyngram Account as payment for your Subscription. \n\nCheers \nFyngram.";
             EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), Description, TransactionTypeName, ToUserID);
         } else if (TransactionTypeName.equals("Activate Supplier Account")) {
             Description = "Seller's Account Activation for " + EngineUserManager.GetUserName(FromUserID);
-            toBodyMsg = "Hi " + EngineUserManager.GetUserName(FromUserID) + ", \nYour Seller's Account has been successfully activated, and your Subscription Fees recieved.";
+            toBodyMsg = "Hi " + EngineUserManager.GetUserName(FromUserID) + ", \n\nYour Seller's Account has been successfully activated, and your Subscription Fees recieved. \n\nCheers \nFyngram.";
             EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), toBodyMsg, TransactionTypeName, FromUserID);
         } else if (TransactionTypeName.equals("Fund Wallet")) {
             result = EngineWalletManager.InsertWalletRecord(FromUserID, TransactionAmount, FromWalletTypeID, "Credit");
-            Description = "Hi " + EngineUserManager.GetUserName(ToUserID) + ", \nYou funded your Wallet - " + EngineWalletManager.GetUserWalletNumber(ToUserID) + " with " + EngineTransactionManager.FormatNumber(TransactionAmount);
+            Description = "Hi " + EngineUserManager.GetUserName(ToUserID) + ", \n\nYou funded your Wallet - " + EngineWalletManager.GetUserWalletNumber(ToUserID) + " with " + EngineTransactionManager.FormatNumber(TransactionAmount);
             EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), Description, TransactionTypeName, ToUserID);
         } else if (TransactionTypeName.equals("Move Fund")) {
             if (FromWalletTypeID == 1) {
-                fromBodyMsg = "Hi " + EngineUserManager.GetUserName(FromUserID) + ", \n" + EngineTransactionManager.FormatNumber(TransactionAmount) + " had been deducted from your " + FromWalletName + " Wallet.";
+                fromBodyMsg = "Hi " + EngineUserManager.GetUserName(FromUserID) + ", \n\n" + EngineTransactionManager.FormatNumber(TransactionAmount) + " had been deducted from your " + FromWalletName + " Wallet. \n\nCheers \nFyngram.";
                 EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), fromBodyMsg, TransactionTypeName, FromUserID);
             }
             if (ToWalletTypeID == 1) {
-                toBodyMsg = "Hi " + EngineUserManager.GetUserName(ToUserID) + ", \n" + EngineTransactionManager.FormatNumber(TransactionAmount) + " had been credited into your " + ToWalletName + " Wallet.";
+                toBodyMsg = "Hi " + EngineUserManager.GetUserName(ToUserID) + ", \n\n" + EngineTransactionManager.FormatNumber(TransactionAmount) + " had been credited into your " + ToWalletName + " Wallet. \n\nCheers \nFyngram.";
                 EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), toBodyMsg, TransactionTypeName, ToUserID);
             }
-            Description = EngineTransactionManager.FormatNumber(TransactionAmount) + " has been transferred from your " + GetWalletNameByID(FromWalletTypeID) + " Wallet to your " + GetWalletNameByID(ToWalletTypeID) + " Wallet. - " + Narration + ". Please, you can also check your messages for details.";
+            Description = EngineTransactionManager.FormatNumber(TransactionAmount) + " has been transferred from your " + GetWalletNameByID(FromWalletTypeID) + " Wallet to your " + GetWalletNameByID(ToWalletTypeID) + " Wallet. - " + Narration + ". \n\nPlease, you can also check your messages for details. \n\nCheers \nFyngram.";
         }
         FromUserOldBalance = GetUserBalance(FromUserID, FromWalletTypeID);
         ToUserOldBalance = GetUserBalance(ToUserID, ToWalletTypeID);
@@ -318,25 +334,23 @@ public class EngineWalletManager {
             if (usertype == 1) {
                 int TotalSellerBalance = GetAllSellersMainBalance();
                 data.put("TotalSellerBalance", "" + TotalSellerBalance);
-                
+
                 int TotalSellersPendingBalance = GetAllSellersPendingBalance();
-                
+
                 int TotalCustomerBalance = GetAllCustomersBalance();
                 data.put("TotalCustomerBalance", "" + TotalCustomerBalance);
-                
+
                 int TotalCustomersPendingBalance = GetAllCustomersPendingBalance();
-                
+
                 int TotalMainWallets = UserBalance + TotalSellerBalance + TotalCustomerBalance;
                 data.put("TotalMainWallets", "" + TotalMainWallets);
-                
+
                 int TotalPendingWallets = UserPendingBalance + TotalSellersPendingBalance + TotalCustomersPendingBalance;
                 data.put("TotalPendingWallets", "" + TotalPendingWallets);
-                
-                
+
                 double TotalShippingEarnings = EngineShippingManager.GetAllShippingBalances();
                 data.put("TotalShippingEarnings", "" + TotalShippingEarnings);
-                
-                
+
             }
         }
 
@@ -373,7 +387,8 @@ public class EngineWalletManager {
         }
         return result;
     }
- /**
+
+    /**
      *
      * @return @throws ClassNotFoundException
      * @throws SQLException
@@ -390,7 +405,7 @@ public class EngineWalletManager {
         }
         return result;
     }
-    
+
     /**
      *
      * @return @throws ClassNotFoundException
@@ -408,7 +423,7 @@ public class EngineWalletManager {
         }
         return result;
     }
-    
+
     /**
      *
      * @return @throws ClassNotFoundException
@@ -426,7 +441,6 @@ public class EngineWalletManager {
         }
         return result;
     }
-
 
     /**
      *

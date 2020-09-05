@@ -41,11 +41,11 @@ public class EnginePaymentManager {
             if (result.equals("success")) {
                 result = EngineSubscriptionManager.CreateSubscription(UserID, Amount);
                 if (result.endsWith("success")) {
-                    String msgbdy = "Congratulations!!! \nYou have successfully paid your subscription fees as a Seller of Fyngram Online Store. \nYour Account would be activated and updated after your payment has been confirmed. \nThank you for being part of Fyngram Onlne Store";
+                    String msgbdy = "Hi" + EngineUserManager.GetUserName(UserID) + ",\n\nCongratulations!!! \n\nYou have successfully paid your subscription fees as a Seller on Fyngram. \n\nYour Account would be activated and updated after your payment has been confirmed. \n\nCheers \nFyngram.";
                     EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), msgbdy, "Seller Account Subscription", UserID);
                     try {
                         String Email = EngineUserManager.GetUserEmail(UserID);
-                        EngineEmailManager.SendEmail(Email, msgbdy, "Seller Account Activated");
+                        EngineEmailManager.SendEmail(Email, msgbdy, "Seller Subscription Payment");
                     } catch (UnsupportedEncodingException | ClassNotFoundException | SQLException ex) {
                     }
                 } else {
@@ -98,16 +98,20 @@ public class EnginePaymentManager {
      * @throws UnsupportedEncodingException
      * @throws ParseException
      */
-    public static String ComputePaymentWithCash(int UserID, double TotalAmount, String TransactionCode, String RefereceCode, String PaymentType) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
+    public static String ComputePaymentWithCash(int UserID, double TotalAmount, String TransactionCode, String RefereceCode, String PaymentType) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException, IOException {
         String result = "failed";//
         result = CreatePayment(UserID, PaymentType, TotalAmount, TransactionCode, RefereceCode);
         if (result.equals("success")) {
             if (PaymentType.equals("CheckOut Payment")) {
                 result = EngineWalletManager.ComputeWalletRecord(EngineUserManager.GetAdminUserID(), UserID, EngineWalletManager.GetMainWalletID(), EngineWalletManager.GetMainWalletID(), TotalAmount, "Fund Wallet", "For placing an Order.");
-                EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), "Hi, " + EngineUserManager.GetUserName(UserID) + ", \nThe Wallet equivalent of " + EngineTransactionManager.FormatNumber(TotalAmount) + " - Order Amount, has been transferred into your wallet and had also been used to pay for the order. \nThe order amount would be refunded into your Main Wallet, if your Order is cancelled.", "CheckOut Payment With Cash", UserID);
+                String body = "Hi, " + EngineUserManager.GetUserName(UserID) + ", \n\nThe Wallet equivalent of " + EngineTransactionManager.FormatNumber(TotalAmount) + " - Order Amount, has been transferred into your wallet and had also been used to pay for the order. \n\nThe order amount would be refunded into your Main Wallet, if your Order is cancelled.\n\nCheers \nFyngram";
+                EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), body, "CheckOut Payment With Cash", UserID);
+                EngineEmailManager.SendEmail(EngineUserManager.GetUserEmail(UserID), body, "Fyngram - CheckOut-Payment With Cash");
             } else {
                 result = EngineWalletManager.ComputeWalletRecord(EngineUserManager.GetAdminUserID(), UserID, EngineWalletManager.GetMainWalletID(), EngineWalletManager.GetMainWalletID(), TotalAmount, PaymentType, "For placing an Order.");
-                EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), "Hi, " + EngineUserManager.GetUserName(UserID) + ", \nThe Wallet equivalent of " + EngineTransactionManager.FormatNumber(TotalAmount) + ", has been transferred into your wallet ", PaymentType, UserID);
+                String msg ="Hi, " + EngineUserManager.GetUserName(UserID) + ", \n\nThe Wallet equivalent of " + EngineTransactionManager.FormatNumber(TotalAmount) + ", has been transferred into your wallet. \n\nCheers \nFyngram";
+                EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), msg , PaymentType, UserID);
+                EngineEmailManager.SendEmail(EngineUserManager.GetUserEmail(UserID), msg, "Wallet Funding");
             }
         }
         return result;//return to the browser

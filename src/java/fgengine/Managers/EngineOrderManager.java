@@ -59,9 +59,9 @@ public class EngineOrderManager {
                 int UserAcctBalance = EngineWalletManager.GetUserBalance(UserID, EngineWalletManager.GetMainWalletID());
                 if (UserAcctBalance >= TotalAmount) {
                     String Reference = ComputeOrderReferenceNumber();
-                    String body = "Hi " + EngineUserManager.GetUserName(UserID) + "," + "\nThe Order with the Reference Number " + Reference + " has been placed and it is awaiting confirmation. You will be notified about the update of your order.";
+                    String body = "Hi " + EngineUserManager.GetUserName(UserID) + ",\n\nThe Order with the Reference Number " + Reference + " has been placed and it is awaiting confirmation. \n\nYou will be notified shortly.\n\nCheers \nFyngram";
                     EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), body, "Placed Order", UserID);
-
+                    EngineEmailManager.SendEmail(EngineUserManager.GetUserEmail(UserID), body, "Placed Order - Fyngram");
                     int PaymentStatusID = GetOrderPaymentStatusID("Awaiting Confirmation");
 
                     result = EngineWalletManager.ComputeWalletRecord(UserID, UserID, EngineWalletManager.GetMainWalletID(), EngineWalletManager.GetPendingWalletID(), TotalAmount, "Move Fund", "For placing an Order.");
@@ -787,7 +787,7 @@ public class EngineOrderManager {
 
             int SellerUserID = GetOrderSellerUserID(OrderID);
             String SellerUserName = EngineUserManager.GetUserName(SellerUserID);
-            body = "Hi " + SellerUserName + "," + "\nThe Order with the Reference Number " + OrderRef + " that involves your product(s) has been cancelled.";
+            body = "Hi " + SellerUserName + ",\n\nThe Order with the Reference Number " + OrderRef + " that involves your product(s) has been cancelled.\n\nCheers \nFyngram";
             EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), body, "Order Cancelled", SellerUserID);
             try {
                 String CustomerUserEmail = EngineUserManager.GetUserEmail(CustomerUserID);
@@ -818,7 +818,7 @@ public class EngineOrderManager {
         String OrderRef = GetOrderReferenceNumber(OrderID);
         int CustomerUserID = GetOrderCustomerUserID(OrderID);
         String CustomerUserName = EngineUserManager.GetUserName(CustomerUserID);
-        String body = "Hi " + CustomerUserName + "," + "\nThe Order with the Ourder Reference Number " + OrderRef + " has been cancelled and your fund had also been refunded into your Main Wallet.";
+        String body = "Hi " + CustomerUserName + "," + "\n\nThe Order with the Ourder Reference Number " + OrderRef + " has been cancelled and your fund had also been refunded into your Main Wallet.\n\nCheers\nFyngram";
 
         ArrayList<Integer> OrderIdsByRef = GetOrderIDsByReferenceNumber(OrderRef);
         double SellerTransactionAmount = GetOrderSellerAmount(OrderID);// 2200
@@ -871,7 +871,7 @@ public class EngineOrderManager {
             EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), body, "Order Cancelled", CustomerUserID);
 
             String SellerUserName = EngineUserManager.GetUserName(SellerUserID);
-            body = "Hi " + SellerUserName + "," + "\nThe Order with the Reference Number " + OrderRef + " that involves your product(s) has been cancelled.";
+            body = "Hi " + SellerUserName + ",\n\nThe Order with the Reference Number " + OrderRef + " that involves your product(s) has been cancelled.\n\nCheers \nFyngram";
             EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), body, "Order Cancelled", SellerUserID);
             try {
                 String CustomerUserEmail = EngineUserManager.GetUserEmail(CustomerUserID);
@@ -909,7 +909,7 @@ public class EngineOrderManager {
         String result = EngineShippingManager.UpdateShippingMethodEarnings(ShippingMethodID, ShippingMethodShippingAmount, "Subtract");
         result = EngineShippingManager.UpdateShippingMethodNumberOfDelivery(ShippingMethodID, "Subtract");
 
-        String body = "Hi " + ShippingMethodName + "," + "\nThe Order with the Reference Number " + OrderRef + " has been cancelled.";
+        String body = "Hi " + ShippingMethodName + ",\n\nThe Order with the Reference Number " + OrderRef + " has been cancelled.\n\nCheers \nFyngram";
         try {
             String ShippingMethodEmail = EngineShippingManager.GetShippingMethodEmail(ShippingMethodID);
             EngineEmailManager.SendEmail(ShippingMethodEmail, body, "Fyngram Order Delivered");
@@ -955,13 +955,12 @@ public class EngineOrderManager {
 
     /**
      *
-     * @param OrderID
-     * @param ShippingMethodID
+     * @param Amount
+     * @param Rule
      * @return
      * @throws ClassNotFoundException
      * @throws SQLException
      * @throws UnsupportedEncodingException
-     * @throws ParseException
      */
     public static String UpdateEnforceCancelFees(double Amount, int Rule) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         String result = DBManager.UpdateDoubleData(Tables.OrderCancelRulesTable.Table, Tables.OrderCancelRulesTable.Percent, Amount, "where " + Tables.OrderCancelRulesTable.ID + " = " + 1);
@@ -996,12 +995,11 @@ public class EngineOrderManager {
         } else {
             result = UpdateOrderShippingMethod(OrderID, ShippingMethodID);
         }
-
         if (result.equals("success")) {
             try {
                 String ShippingMethodEmail = EngineShippingManager.GetShippingMethodEmail(ShippingMethodID);
                 String ShippingMethodName = EngineShippingManager.GetShippingMethodName(ShippingMethodID);
-                body = "Hi " + ShippingMethodName + "," + "\nThe Order with the Order Reference Number " + OrderRef + " has been confirmed and it's pending delivery. \nPlease, contact Fyngram Online Store For Shipping/Delivery Schedules.";
+                body = "Hi " + ShippingMethodName +  ",\n\nThe Order with the Order Reference Number " + OrderRef + " has been confirmed and it's pending delivery. \nPlease, contact Fyngram Sales Team For Shipping/Delivery Schedules.";
                 EngineEmailManager.SendEmail(ShippingMethodEmail, body, "Fyngram Order Confirmation");
             } catch (Exception ex) {
             }
@@ -1074,12 +1072,12 @@ public class EngineOrderManager {
 
                 int CustomerUserID = GetOrderCustomerUserID(OrderID);
                 String CustomerUserName = EngineUserManager.GetUserName(CustomerUserID);
-                body = "Hi " + CustomerUserName + "," + "\nThe Order with the Reference Number " + OrderRef + " has been confirmed and payment has been recieved and is BEING PROCESSED. \nYou will receive shipping/delivery message shortly.";
+                body = "Hi " + CustomerUserName +  ",\n\nThe Order with the Reference Number " + OrderRef + " has been confirmed and payment has been recieved and is BEING PROCESSED. \n\nYou will receive shipping/delivery message shortly.\n\nCheers \nFyngram";
                 EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), body, "Order Cancelled", CustomerUserID);
 
                 int SellerUserID = GetOrderSellerUserID(OrderID);
                 String SellerUserName = EngineUserManager.GetUserName(SellerUserID);
-                body = "Hi " + SellerUserName + "," + "\nThe Order with the Reference Number " + OrderRef + " that involves your product(s) has been confirmed. \nPlease, contact Fyngram Online Store For Shipping/Delivery Schedules.";
+                body = "Hi " + SellerUserName +  ",\n\nThe Order with the Reference Number " + OrderRef + " that involves your product(s) has been confirmed. \n\nPlease, contact Fyngram Sales Team For Shipping/Delivery Schedules.\n\nCheers \nFyngram";
                 EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), body, "Order Cancelled", SellerUserID);
                 CreateOrderStatusHistory(OrderID, PaymentStatusID);
                 try {
@@ -1153,8 +1151,8 @@ public class EngineOrderManager {
             String CustomerPhone = EngineUserManager.GetUserPhone(CustomerUserID);
             int SellerUserID = GetOrderSellerUserID(OrderID);
             String SellerUserName = EngineUserManager.GetUserName(SellerUserID);
-            String body = "Hi " + CustomerUserName + "," + "\nThe Order with the Reference Number " + OrderRef + " has been processed and shipped . \nYou will be contacted by The Delivery Agent.";
-            String sbody = "Hi " + SellerUserName + "," + "\nThe Order with the Reference Number " + OrderRef + " has been processed and shipped/in-delivery . \nPlease, contact the customer on phone: " + CustomerPhone;
+            String body = "Hi " + CustomerUserName +  ",\n\nThe Order with the Reference Number " + OrderRef + " has been processed and shipped . \n\nYou will be contacted by The Delivery Agent.\n\nCheers \nFyngram";
+            String sbody = "Hi " + SellerUserName +  ",\n\nThe Order with the Reference Number " + OrderRef + " has been processed and shipped/in-delivery . \n\nPlease, contact the customer on phone: " + CustomerPhone + "\n\nCheers \nFyngram";
 
             result = UpdateOrderPaymentStatusID(OrderID, PaymentStatusID);
             if (result.equals("success")) {
@@ -1273,15 +1271,15 @@ public class EngineOrderManager {
                 CreateOrderStatusHistory(OrderID, PaymentStatusID);
                 if (result.equals("success")) {
                     String CustomerUserName = EngineUserManager.GetUserName(CustomerUserID);
-                    String body = "Hi " + CustomerUserName + "," + "\nThe Order with the Reference Number " + OrderRef + " has been delivered . \nThank you for being part of Fyngram";
+                    String body = "Hi " + CustomerUserName +  ",\n\nThe Order with the Reference Number " + OrderRef + " has been delivered . \n\nCheers \nFyngram";
                     EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), body, "Order Cancelled", CustomerUserID);
 
                     String SellerUserName = EngineUserManager.GetUserName(SellerUserID);
-                    body = "Hi " + SellerUserName + "," + "\nThe Order with the Reference Number " + OrderRef + " that involves your product(s) has been delivered. \nThank you for being part of Fyngram.";
+                    body = "Hi " + SellerUserName + ",\n\nThe Order with the Reference Number " + OrderRef + " that involves your product(s) has been delivered. \n\nCheers \nFyngram";
                     EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), body, "Order Cancelled", SellerUserID);
 
                     String ShippingMethodName = EngineShippingManager.GetShippingMethodName(ShippingMethodID);
-                    body = "Hi " + ShippingMethodName + "," + "\nThe Order with the Reference Number " + OrderRef + " has been delivered. \nThank you for being part of Fyngram.";
+                    body = "Hi " + ShippingMethodName + ",\n\nThe Order with the Reference Number " + OrderRef + " has been delivered. \n\nCheers \nFyngram";
 
                     try {
                         String CustomerEmail = EngineUserManager.GetUserEmail(CustomerUserID);
@@ -1861,10 +1859,10 @@ public class EngineOrderManager {
             CreateOrderStatusHistory(OrderID, 7);//settled
 
             String SellerUserName = EngineUserManager.GetUserName(SellerUserID);
-            String body = "Hi " + SellerUserName + "," + "\nThe Order Amount of " + EngineTransactionManager.FormatNumber(SellerBalance) + "involved  with the Order Reference Number " + OrderRef + " has been transfered into your Wallet. \nThank you for being part of Fyngram.";
+            String body = "Hi " + SellerUserName + ",\n\nThe Order Amount of " + EngineTransactionManager.FormatNumber(SellerBalance) + "involved  with the Order Reference Number " + OrderRef + " has been transfered into your Wallet. \n\nCheers \nFyngram";
             EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), body, "Order Cancelled", SellerUserID);
             String SellerUserEmail = EngineUserManager.GetUserEmail(SellerUserID);
-            EngineEmailManager.SendEmail(SellerUserEmail, body, "Fyngram Order Delivered");
+            EngineEmailManager.SendEmail(SellerUserEmail, body, "FyngramOrder Delivered");
 
         }
         return result;
