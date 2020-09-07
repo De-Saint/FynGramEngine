@@ -166,7 +166,7 @@ public class WSubscriptionServlet extends HttpServlet {
                     String amount = data[0].trim();
                     int SellerTypeID = Integer.parseInt(sellertypeid);
                     int SubTpeID = Integer.parseInt(subtypeid);
-                    int Amount = Integer.parseInt(amount);
+                    double Amount = Double.parseDouble(amount);
                     result = EngineSubscriptionManager.CreateSubscriptionAmount(SellerTypeID, SubTpeID, Amount);
                     JsonObject returninfo = new JsonObject();
                     if (result.equals("success")) {

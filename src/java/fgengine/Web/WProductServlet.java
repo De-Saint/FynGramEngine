@@ -138,9 +138,9 @@ public class WProductServlet extends HttpServlet {
                     String Condition = data[6];
                     int ProductConditionID = Integer.parseInt(Condition);
                     String sellingprice = data[7];
-                    int SellingPrice = Integer.parseInt(sellingprice);
+                    double SellingPrice = Double.parseDouble(sellingprice);
                     String costprice = data[8];
-                    int CostPrice = Integer.parseInt(costprice);
+                    double CostPrice = Double.parseDouble(costprice);
                     String quantity = data[9];
                     int TotalQuantity = Integer.parseInt(quantity);
                     String quantitymin = data[10];
@@ -403,9 +403,9 @@ public class WProductServlet extends HttpServlet {
                 case "GetProductsByPrices": {//[idmin, idmax, sessionid];
                     String[] data = request.getParameterValues("data[]");
                     String minprice = data[0];
-                    int MinPrice = Integer.parseInt(minprice);
+                    double MinPrice = Double.parseDouble(minprice);
                     String maxprice = data[1];
-                    int MaxPrice = Integer.parseInt(maxprice);
+                    double MaxPrice = Double.parseDouble(maxprice);
                     String sessionid = data[2];
                     String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
                     int UserID = Integer.parseInt(SessionID);
@@ -554,9 +554,9 @@ public class WProductServlet extends HttpServlet {
                 case "GetShopProductsByPricesAndCategoryID": {
                     String[] data = request.getParameterValues("data[]");
                     String minprice = data[0];
-                    int MinPrice = Integer.parseInt(minprice);
+                    double MinPrice = Double.parseDouble(minprice);
                     String maxprice = data[1];
-                    int MaxPrice = Integer.parseInt(maxprice);
+                    double MaxPrice = Double.parseDouble(maxprice);
                     String catid = data[2];
                     int CatID = Integer.parseInt(catid);
                     HashMap<Integer, HashMap<String, String>> List = new HashMap<>();

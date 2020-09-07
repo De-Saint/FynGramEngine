@@ -70,7 +70,7 @@ public class EngineTransactionManager {
      * @throws UnsupportedEncodingException
      * @throws ParseException
      */
-    public static String CreateTransaction(int FromUserID, int ToUserID, double Amount, String TransactionCode, String TransactionRef, String PrimaryWalletNumber, String CreditWalletNumber, String DebitWalletNumber, int ToUserOldBalance, int ToUserNewBalance, int FromUserOldBalance, int FromUserNewBalance, String Description) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
+    public static String CreateTransaction(int FromUserID, int ToUserID, double Amount, String TransactionCode, String TransactionRef, String PrimaryWalletNumber, String CreditWalletNumber, String DebitWalletNumber, double ToUserOldBalance, double ToUserNewBalance, double FromUserOldBalance, double FromUserNewBalance, String Description) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
         String result = "failed";
         HashMap<String, Object> data = new HashMap<>();
         data.put(Tables.TransactionsTable.TransactionCode, TransactionCode);
@@ -124,7 +124,7 @@ public class EngineTransactionManager {
      * @throws UnsupportedEncodingException
      * @throws ParseException
      */
-    public static String ComputeTransaction(int FromUserID, int ToUserID, int FromWalletTypeID, int ToWalletTypeID, double Amount, String TransactionTypeName, int FromUserOldBalance, int ToUserOldBalance, int FromUserNewBalance, int ToUserNewBalance, String Description) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
+    public static String ComputeTransaction(int FromUserID, int ToUserID, int FromWalletTypeID, int ToWalletTypeID, double Amount, String TransactionTypeName, double FromUserOldBalance, double ToUserOldBalance, double FromUserNewBalance, double ToUserNewBalance, String Description) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
         String result = "";
         String TransactionCode = GetTransactionTypeCodeByName(TransactionTypeName);
         String PrimaryWalletNumber = EngineWalletManager.GetUserWalletNumber(FromUserID);

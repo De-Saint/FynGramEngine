@@ -445,7 +445,7 @@ public class WCartServlet extends HttpServlet {
                     int WPin = Integer.parseInt(Pin);
                     JsonObject returninfo = new JsonObject();
                     if (WPin == PIN) {
-                        int bal = EngineWalletManager.GetUserBalance(UserID, EngineWalletManager.GetMainWalletID());
+                        double bal = EngineWalletManager.GetUserBalance(UserID, EngineWalletManager.GetMainWalletID());
                         returninfo.addProperty("walletbalance", bal);
                     } else {
                         returninfo.addProperty("msg", "Invalid Pin: The Wallet Pin provided is invalid. Please, check the pin and try again.");

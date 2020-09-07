@@ -90,9 +90,9 @@ public class EngineCashoutManager {
      * @throws UnsupportedEncodingException
      * @throws ParseException
      */
-    public static String ComputeCashOut(int UserID, int Amount) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
+    public static String ComputeCashOut(int UserID, double Amount) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
         String result = "failed";
-        int UserAmount = EngineWalletManager.GetUserBalance(UserID, EngineWalletManager.GetMainWalletID());
+        double UserAmount = EngineWalletManager.GetUserBalance(UserID, EngineWalletManager.GetMainWalletID());
         int BankDetialID = GetBankDetailsIDByUserID(UserID);
         if (UserAmount >= Amount) {
             if (BankDetialID != 0) {
@@ -119,7 +119,7 @@ public class EngineCashoutManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String CreateCashOut(int UserID, int Amount, int BankDetails) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+    public static String CreateCashOut(int UserID, double Amount, int BankDetails) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         HashMap<String, Object> tableData = new HashMap<>();
         tableData.put(Tables.CashoutTable.UserID, UserID);
         tableData.put(Tables.CashoutTable.Amount, Amount);

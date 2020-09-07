@@ -838,7 +838,7 @@ public class EngineCartManager {
                             for (int WishListProductDetailID : WishListProductDetailIDs) {
                                 WishListProductDetailsData = GetWishListProductDetailsDataByID(WishListProductDetailID);
                                 int ProductID = Integer.parseInt(WishListProductDetailsData.get(Tables.WishlistProductDetailsTable.ProductID));
-                                int ProductPrice = Integer.parseInt(WishListProductDetailsData.get(Tables.WishlistProductDetailsTable.ProductPrice));
+                                double ProductPrice = Double.parseDouble(WishListProductDetailsData.get(Tables.WishlistProductDetailsTable.ProductPrice));
                                 int ProductQuantity = Integer.parseInt(WishListProductDetailsData.get(Tables.WishlistProductDetailsTable.ProductQuantity));
                                 result = ComputeCartProductDetails(CartID, ProductID, ProductPrice, ProductQuantity, "Increase");
                             }

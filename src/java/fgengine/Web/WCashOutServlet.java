@@ -60,7 +60,7 @@ public class WCashOutServlet extends HttpServlet {
                     String amount = data[0].trim();
                     String pin = data[1].trim();
                     String sessionid = data[2].trim();
-                    int Amount = Integer.parseInt(amount);
+                    double Amount = Double.parseDouble(amount);
                     int Pin = Integer.parseInt(pin);
                     String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
                     int UserID = Integer.parseInt(SessionID);

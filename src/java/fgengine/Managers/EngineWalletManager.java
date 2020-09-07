@@ -166,10 +166,10 @@ public class EngineWalletManager {
     public static String ComputeWalletRecord(int FromUserID, int ToUserID, int FromWalletTypeID, int ToWalletTypeID, double TransactionAmount, String TransactionTypeName, String Narration) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
         String result = "failed";
         String Description = "";
-        int ToUserOldBalance = 0;
-        int FromUserOldBalance = 0;
-        int ToUserNewBalance = 0;
-        int FromUserNewBalance = 0;
+        double ToUserOldBalance = 0.0;
+        double FromUserOldBalance = 0.0;
+        double ToUserNewBalance = 0.0;
+        double FromUserNewBalance = 0.0;
         String toBodyMsg = "";
         String fromBodyMsg = "";
         String FromWalletName = GetWalletNameByID(FromWalletTypeID);
@@ -257,18 +257,18 @@ public class EngineWalletManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static int GetUserBalance(int UserID, int WalletType) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        int result = 0;
+    public static Double GetUserBalance(int UserID, int WalletType) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        double result = 0.0;
         String userbalance = DBManager.GetString(Tables.WalletTable.Balance, Tables.WalletTable.Table, "where " + Tables.WalletTable.UserID + " = " + UserID);
         if (userbalance.length() > 0) {
             if (WalletType == 1) {
                 String mainBalRes = userbalance.split(";")[0];//1:0
                 String mainBalValue = mainBalRes.split(":")[1];
-                result = Integer.parseInt(mainBalValue);
-            } else {
+                result = Double.parseDouble(mainBalValue);
+            } else if (WalletType == 2) {
                 String PendingBalRes = userbalance.split(";")[1];//2:0
                 String PendingBalValue = PendingBalRes.split(":")[1];
-                result = Integer.parseInt(PendingBalValue);
+                result = Double.parseDouble(PendingBalValue);
             }
         }
         return result;
@@ -326,26 +326,26 @@ public class EngineWalletManager {
     public static HashMap<String, String> ComputeWalletDetails(int UserID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         HashMap<String, String> data = GetWalletDetailsByUserID(UserID);
         if (!data.isEmpty()) {
-            int UserBalance = GetUserBalance(UserID, GetMainWalletID());
+            double UserBalance = GetUserBalance(UserID, GetMainWalletID());
             data.put("MainBalance", "" + UserBalance);
-            int UserPendingBalance = GetUserBalance(UserID, GetPendingWalletID());
+            double UserPendingBalance = GetUserBalance(UserID, GetPendingWalletID());
             data.put("PendingBalance", "" + UserPendingBalance);
             int usertype = EngineUserManager.GetUserTypeIDByUserID("" + UserID);
             if (usertype == 1) {
-                int TotalSellerBalance = GetAllSellersMainBalance();
+                double TotalSellerBalance = GetAllSellersMainBalance();
                 data.put("TotalSellerBalance", "" + TotalSellerBalance);
 
-                int TotalSellersPendingBalance = GetAllSellersPendingBalance();
+                double TotalSellersPendingBalance = GetAllSellersPendingBalance();
 
-                int TotalCustomerBalance = GetAllCustomersBalance();
+                double TotalCustomerBalance = GetAllCustomersBalance();
                 data.put("TotalCustomerBalance", "" + TotalCustomerBalance);
 
-                int TotalCustomersPendingBalance = GetAllCustomersPendingBalance();
+                double TotalCustomersPendingBalance = GetAllCustomersPendingBalance();
 
-                int TotalMainWallets = UserBalance + TotalSellerBalance + TotalCustomerBalance;
+                double TotalMainWallets = UserBalance + TotalSellerBalance + TotalCustomerBalance;
                 data.put("TotalMainWallets", "" + TotalMainWallets);
 
-                int TotalPendingWallets = UserPendingBalance + TotalSellersPendingBalance + TotalCustomersPendingBalance;
+                double TotalPendingWallets = UserPendingBalance + TotalSellersPendingBalance + TotalCustomersPendingBalance;
                 data.put("TotalPendingWallets", "" + TotalPendingWallets);
 
                 double TotalShippingEarnings = EngineShippingManager.GetAllShippingBalances();
@@ -376,12 +376,12 @@ public class EngineWalletManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static int GetAllSellersMainBalance() throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        int result = 0;
+    public static double GetAllSellersMainBalance() throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        double result = 0.0;
         ArrayList<Integer> SellerIDs = EngineUserManager.GetAllSellerUsers();
         if (!SellerIDs.isEmpty()) {
             for (int sellerid : SellerIDs) {
-                int sellerbal = GetUserBalance(sellerid, GetMainWalletID());
+                double sellerbal = GetUserBalance(sellerid, GetMainWalletID());
                 result = result + sellerbal;
             }
         }
@@ -394,12 +394,12 @@ public class EngineWalletManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static int GetAllSellersPendingBalance() throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        int result = 0;
+    public static double GetAllSellersPendingBalance() throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        double result = 0.0;
         ArrayList<Integer> SellerIDs = EngineUserManager.GetAllSellerUsers();
         if (!SellerIDs.isEmpty()) {
             for (int sellerid : SellerIDs) {
-                int sellerbal = GetUserBalance(sellerid, GetPendingWalletID());
+                double sellerbal = GetUserBalance(sellerid, GetPendingWalletID());
                 result = result + sellerbal;
             }
         }
@@ -412,12 +412,12 @@ public class EngineWalletManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static int GetAllCustomersBalance() throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        int result = 0;
+    public static double GetAllCustomersBalance() throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        double result = 0.0;
         ArrayList<Integer> CustomerIDs = EngineUserManager.GetAllCustomerUsers();
         if (!CustomerIDs.isEmpty()) {
             for (int sellerid : CustomerIDs) {
-                int customerbal = GetUserBalance(sellerid, GetMainWalletID());
+                double customerbal = GetUserBalance(sellerid, GetMainWalletID());
                 result = result + customerbal;
             }
         }
@@ -430,12 +430,12 @@ public class EngineWalletManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static int GetAllCustomersPendingBalance() throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        int result = 0;
+    public static double GetAllCustomersPendingBalance() throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        double result = 0.0;
         ArrayList<Integer> CustomerIDs = EngineUserManager.GetAllCustomerUsers();
         if (!CustomerIDs.isEmpty()) {
             for (int sellerid : CustomerIDs) {
-                int customerbal = GetUserBalance(sellerid, GetPendingWalletID());
+                double customerbal = GetUserBalance(sellerid, GetPendingWalletID());
                 result = result + customerbal;
             }
         }

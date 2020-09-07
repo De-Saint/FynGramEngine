@@ -37,7 +37,7 @@ public class EngineReportManager {
         int GetUserPayments = EnginePaymentManager.GetPaymentIDs(UserID).size();
         UserData.put("payment_count", GetUserPayments);
 
-        int GetUserWalletBalance = EngineWalletManager.GetUserBalance(UserID, EngineWalletManager.GetMainWalletID());
+        double GetUserWalletBalance = EngineWalletManager.GetUserBalance(UserID, EngineWalletManager.GetMainWalletID());
         UserData.put("wallet_balance", GetUserWalletBalance);
 
         int GetUserMessages = EngineMessageManager.GetInboxMessageIDs(UserID).size();

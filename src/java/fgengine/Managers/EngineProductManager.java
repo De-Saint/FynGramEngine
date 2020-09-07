@@ -50,7 +50,7 @@ public class EngineProductManager {
      * @throws UnsupportedEncodingException
      */
     public static int ComputeProduct(int SellerUserID, String ProductName, int ProductConditionID, int ProductUnitID, String ReferenceCode,
-            String UPCBarcode, String Description, String CategoryIDs, String PropertyIDs, int CostPrice, int SellingPrice,
+            String UPCBarcode, String Description, String CategoryIDs, String PropertyIDs, double CostPrice, double SellingPrice,
             int MimimumQuantity, int TotalQuantity, int PackageHeight, int PackageWidth, int PackageDepth,
             int MinimumStockLevel, int NotificationTypeID, String ProductUnitValue, String ProductTags) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         String result = "failed";
@@ -1895,8 +1895,8 @@ public class EngineProductManager {
     public static String GetCategoryMinAndMaxPrice(int CatID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         String result = "";
         ArrayList<Integer> ProdIDs = EngineProductManager.GetProductsByCategoryID(CatID);
-        double minAmount = 0;
-        double maxAmount = 0;
+        double minAmount = 0.0;
+        double maxAmount = 0.0;
         ArrayList<Double> Prices = new ArrayList<>();
         if (!ProdIDs.isEmpty()) {
             for (int ProdID : ProdIDs) {
@@ -1958,7 +1958,7 @@ public class EngineProductManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static ArrayList<Integer> GetProductsByPriceAndCatID(int CatID, int MinPrice, int MaxPrice) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+    public static ArrayList<Integer> GetProductsByPriceAndCatID(int CatID, double MinPrice, double MaxPrice) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         ArrayList<Integer> IDs = new ArrayList<>();
         ArrayList<Integer> ProdIDs = DBManager.GetIntArrayListDescending(Tables.ProductCategoriesTable.ProductID, Tables.ProductCategoriesTable.Table, "where " + Tables.ProductCategoriesTable.CategoryID + " = " + CatID + " ORDER BY id DESC");
         if (!ProdIDs.isEmpty()) {
