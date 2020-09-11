@@ -1412,6 +1412,23 @@ public class EngineOrderManager {
         }
         return IDs;
     }
+    /**
+     *
+     * @param UserID
+     * @return @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static ArrayList<Integer> GetDashBoardOrders(int UserID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        ArrayList<Integer> IDs = new ArrayList<>();
+        String UserType = EngineUserManager.GetUserTypeNameByUserID("" + UserID);
+        if (UserType.equals("Admin")) {
+            IDs = DBManager.GetIntArrayList(Tables.OrdersTable.ID, Tables.OrdersTable.Table, "ORDER BY " + Tables.OrdersTable.ID + " DESC LIMIT " + 0 + ", " + 5);
+        } else if (UserType.equals("Seller")) {
+            IDs = DBManager.GetIntArrayList(Tables.OrdersTable.ID, Tables.OrdersTable.Table, "where " + Tables.OrdersTable.SellerUserID + " = " + UserID + " ORDER BY " + Tables.OrdersTable.ID + " DESC  LIMIT " + 0 + ", " + 5);
+        }
+        return IDs;
+    }
 
     /**
      *

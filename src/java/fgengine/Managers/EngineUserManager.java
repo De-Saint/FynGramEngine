@@ -1379,4 +1379,28 @@ public class EngineUserManager {
         return result + "#" + UserID;
 
     }
+
+    /**
+     *
+     * @param UserID
+     * @param LastName
+     * @param FirstName
+     * @param Phone
+     * @param Newsletter
+     * @param NewPassword
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static String UpdateProfile(int UserID, String LastName, String FirstName, String Phone, int Newsletter, String NewPassword) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        String result = "";
+        result = DBManager.UpdateStringData(Tables.UsersTable.Table, Tables.UsersTable.Password, NewPassword, "where " + Tables.UsersTable.ID + " = " + UserID);
+        DBManager.UpdateStringData(Tables.CustomersTable.Table, Tables.CustomersTable.Firstname, FirstName, "where " + Tables.CustomersTable.UserID + " = " + UserID);
+        DBManager.UpdateStringData(Tables.CustomersTable.Table, Tables.CustomersTable.Lastname, LastName, "where " + Tables.CustomersTable.UserID + " = " + UserID);
+        DBManager.UpdateStringData(Tables.UsersTable.Table, Tables.UsersTable.Phone, Phone, "where " + Tables.UsersTable.ID + " = " + UserID);
+        DBManager.UpdateIntData(Tables.UsersTable.Newsletters, Newsletter, Tables.UsersTable.Table, "where " + Tables.UsersTable.ID + " = " + UserID);
+        return result;
+
+    }
 }

@@ -332,20 +332,20 @@ public class EngineWalletManager {
             data.put("PendingBalance", "" + UserPendingBalance);
             int usertype = EngineUserManager.GetUserTypeIDByUserID("" + UserID);
             if (usertype == 1) {
-                double TotalSellerBalance = GetAllSellersMainBalance();
+
+                double TotalFyngramBalance = UserBalance + UserPendingBalance;
+                data.put("TotalFyngramBalance", "" + TotalFyngramBalance);
+
+                double TotalSellerBalance = GetAllSellersMainBalance() + GetAllSellersPendingBalance();
                 data.put("TotalSellerBalance", "" + TotalSellerBalance);
 
-                double TotalSellersPendingBalance = GetAllSellersPendingBalance();
-
-                double TotalCustomerBalance = GetAllCustomersBalance();
+                double TotalCustomerBalance = GetAllCustomersBalance() + GetAllCustomersPendingBalance();
                 data.put("TotalCustomerBalance", "" + TotalCustomerBalance);
-
-                double TotalCustomersPendingBalance = GetAllCustomersPendingBalance();
 
                 double TotalMainWallets = UserBalance + TotalSellerBalance + TotalCustomerBalance;
                 data.put("TotalMainWallets", "" + TotalMainWallets);
 
-                double TotalPendingWallets = UserPendingBalance + TotalSellersPendingBalance + TotalCustomersPendingBalance;
+                double TotalPendingWallets = UserPendingBalance + GetAllSellersPendingBalance() + GetAllCustomersPendingBalance();
                 data.put("TotalPendingWallets", "" + TotalPendingWallets);
 
                 double TotalShippingEarnings = EngineShippingManager.GetAllShippingBalances();

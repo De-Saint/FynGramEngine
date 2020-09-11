@@ -63,15 +63,6 @@ public class WMessageServlet extends HttpServlet {
                     int UserID = Integer.parseInt(SessionID);
                     HashMap<Integer, HashMap<String, String>> List = new HashMap<>();
                     ArrayList<Integer> IDS = new ArrayList<>();
-//                    if (option.equals("inbox")) {
-//                        if (UserID == 1) {
-//                            IDS = EngineMessageManager.GetAllInboxMessagesTable();
-//                        } else {
-//                            IDS = EngineMessageManager.GetInboxMessageIDs(UserID);
-//                        }
-//                    } else if (option.equals("sent")) {
-//                        IDS = EngineMessageManager.GetSentMessageIDs(UserID);
-//                    } 
                     if (option.equals("All")) {
                         if (UserID == 1) {
                             IDS = EngineMessageManager.GetAllMessagesTable();

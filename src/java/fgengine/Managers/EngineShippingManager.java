@@ -252,6 +252,31 @@ public class EngineShippingManager {
 
     /**
      *
+     * @param ShippingID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static String ResetShipping(int ShippingID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        String result = "failed";
+        HashMap<String, String> Data = GetShippingData(ShippingID);
+        HashMap<String, Object> tableData = new HashMap<>();
+        tableData.put(Tables.ShippingPaymentHistoryTable.ShippingID, ShippingID);
+        tableData.put(Tables.ShippingPaymentHistoryTable.Amount, Data.get(Tables.ShippingTable.TotalEarnings));
+        tableData.put(Tables.ShippingPaymentHistoryTable.DeliveryCount, Data.get(Tables.ShippingTable.NumberOfDelivery));
+        int id = DBManager.insertTableDataReturnID(Tables.ShippingPaymentHistoryTable.Table, tableData, "");
+        DBManager.UpdateCurrentDate(Tables.ShippingPaymentHistoryTable.Table, Tables.ShippingPaymentHistoryTable.Date, "where " + Tables.ShippingPaymentHistoryTable.ID + " = " + id);
+        DBManager.UpdateCurrentTime(Tables.ShippingPaymentHistoryTable.Table, Tables.ShippingPaymentHistoryTable.Time, "where " + Tables.ShippingPaymentHistoryTable.ID + " = " + id);
+
+        result = DBManager.UpdateDoubleData(Tables.ShippingTable.Table, Tables.ShippingTable.TotalEarnings, 0.0, "where " + Tables.ShippingTable.ID + " = " + ShippingID);
+        DBManager.UpdateIntData(Tables.ShippingTable.NumberOfDelivery, 0, Tables.ShippingTable.Table, "where " + Tables.ShippingTable.ID + " = " + ShippingID);
+
+        return result;
+    }
+
+    /**
+     *
      * @param ShippingFeesID
      * @return
      * @throws ClassNotFoundException

@@ -3298,5 +3298,45 @@ public class Tables {
         public static String IpAddress = "ipaddress";
 
     }
+    
+      /**
+     *
+     */
+    public static class ShippingPaymentHistoryTable {
+
+        /**
+         *
+         */
+        public static String Table = "fg_shipping_payment_history";
+
+        /**
+         *
+         */
+        public static String ID = "id";
+
+        /**
+         *
+         */
+        public static String ShippingID = "shippingid";
+
+        /**
+         *
+         */
+        public static String Amount = "amount";
+        /**
+         *
+         */
+        public static String Date = "date";
+        
+         /**
+         *
+         */
+        public static String Time = "time";
+         /**
+         *
+         */
+        public static String DeliveryCount = "delivery_count";
+
+    }
 
 }

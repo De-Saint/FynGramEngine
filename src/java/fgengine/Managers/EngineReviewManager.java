@@ -52,10 +52,8 @@ public class EngineReviewManager {
      * @throws UnsupportedEncodingException
      */
     public static double ComputeObjectAverageReview(int ObjectID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        String result = "failed";
         double totalratevalue = 0.0;
         double averageValue = 0.0;
-        String ratevalue = "";
         ArrayList<Integer> UserRatingIDs = GetObjectRatingIDs(ObjectID);
         if (!UserRatingIDs.isEmpty()) {
             for (int rateid : UserRatingIDs) {
@@ -78,7 +76,11 @@ public class EngineReviewManager {
      */
     public static ArrayList<Integer> GetUserRatingIDsByUserID(int UserID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         ArrayList<Integer> ids = new ArrayList<>();
-        ids = DBManager.GetIntArrayListDescending(Tables.ReviewsTable.ID, Tables.ReviewsTable.Table, "where " + Tables.ReviewsTable.UserID + " = " + UserID + " Order by " + Tables.ReviewsTable.ID);
+        if (UserID == 1) {
+            ids = DBManager.GetIntArrayListDescending(Tables.ReviewsTable.ID, Tables.ReviewsTable.Table, "Order by " + Tables.ReviewsTable.ID);
+        } else {
+            ids = DBManager.GetIntArrayListDescending(Tables.ReviewsTable.ID, Tables.ReviewsTable.Table, "where " + Tables.ReviewsTable.UserID + " = " + UserID + " Order by " + Tables.ReviewsTable.ID);
+        }
         return ids;
     }
 
@@ -95,7 +97,7 @@ public class EngineReviewManager {
         ids = DBManager.GetIntArrayListDescending(Tables.ReviewsTable.ID, Tables.ReviewsTable.Table, "where " + Tables.ReviewsTable.ObjectID + " = " + ObjectID + " Order by " + Tables.ReviewsTable.ID);
         return ids;
     }
-    
+
     /**
      *
      * @param ObjectID
@@ -175,20 +177,20 @@ public class EngineReviewManager {
     public static HashMap<String, String> ReviewData(int ReviewID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         HashMap<String, String> data = DBManager.GetTableData(Tables.ReviewsTable.Table, "where " + Tables.ReviewsTable.ID + " = " + ReviewID);
         if (!data.isEmpty()) {
-            
+
             String userid = data.get(Tables.ReviewsTable.UserID);
             int userID = Integer.parseInt(userid);
             String UserName = EngineUserManager.GetUserName(userID);
             data.put("reviewUsername", UserName);
             data.put("reviewUserImage", "none");
             String prodid = data.get(Tables.ReviewsTable.ObjectID);
-            int ProductID  = Integer.parseInt(prodid);
+            int ProductID = Integer.parseInt(prodid);
             String productName = EngineProductManager.GetProductNameByProductID(ProductID);
             data.put("reviewProductName", productName);
             String productDesc = EngineProductManager.GetProductDescriptionByProductID(ProductID);
             data.put("reviewProductDesc", productDesc);
             data.put("reviewProductImage", "none");
-            
+
             String dt = data.get(Tables.ReviewsTable.Date);
             String date = DateManager.readDate(dt);
             data.put(Tables.ReviewsTable.Date, date);
@@ -199,8 +201,8 @@ public class EngineReviewManager {
         }
         return data;
     }
-    
-      /**
+
+    /**
      *
      * @param UserID
      * @return
@@ -212,12 +214,12 @@ public class EngineReviewManager {
         HashMap<Integer, HashMap<String, String>> ReviewList = new HashMap<>();
         HashMap<String, String> List = new HashMap<>();
         ArrayList<Integer> RatingIDS = new ArrayList<>();
-        if(UserID == 1 ){
+        if (UserID == 1) {
             RatingIDS = GetRatingIDs();
-        }else{
-             RatingIDS = GetUserRatingIDsByUserID(UserID);
+        } else {
+            RatingIDS = GetUserRatingIDsByUserID(UserID);
         }
-       
+
         if (!RatingIDS.isEmpty()) {
             for (int ratingID : RatingIDS) {
                 List = ReviewData(ratingID);
@@ -228,8 +230,8 @@ public class EngineReviewManager {
         }
         return ReviewList;
     }
-    
-      /**
+
+    /**
      *
      * @param ReviewID
      * @return

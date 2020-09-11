@@ -263,6 +263,29 @@ public class WOrderServlet extends HttpServlet {
                     }
                     break;
                 }
+                 case "GetDashBoardOrders": {
+                    String sessionid = request.getParameter("data");
+                    String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
+                    int UserID = Integer.parseInt(SessionID);
+                    HashMap<Integer, HashMap<String, String>> List = new HashMap<>();
+                    ArrayList<Integer> IDS = new ArrayList<>();
+                    IDS = EngineOrderManager.GetDashBoardOrders(UserID);
+                    if (!IDS.isEmpty()) {
+                        for (int id : IDS) {
+                            HashMap<String, String> Details = EngineOrderManager.GetOrderData(id);
+                            if (!Details.isEmpty()) {
+                                List.put(id, Details);
+                            }
+                        }
+                        json1 = new Gson().toJson(IDS);
+                        json2 = new Gson().toJson(List);
+                        json3 = new Gson().toJson(IDS.size());
+                        json = "[" + json1 + "," + json2 + "," + json3 + "]";
+                    } else {
+                        json = new Gson().toJson(empty);
+                    }
+                    break;
+                }
             }
 
             response.setContentType("application/json");

@@ -59,8 +59,14 @@ public class WReportServlet extends HttpServlet {
                     json = new Gson().toJson(datares);
                     break;
                 }
-                case "EditNewUserAddress": {
-
+                case "GetStats": {
+                    String sessionid = request.getParameter("data");
+                    String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
+                    int UserID = Integer.parseInt(SessionID);
+                    HashMap<String, Object> data = EngineReportManager.GetStats(UserID);
+                    JSONObject datares = new JSONObject();
+                    datares.putAll(data);
+                    json = new Gson().toJson(datares);
                     break;
                 }
                 case "DeleteUserAddress": {

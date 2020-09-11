@@ -200,6 +200,38 @@ public class WShippingServlet extends HttpServlet {
                     json = "[" + json1 + "," + json2 + "," + json3 + "]";
                     break;
                 }
+                case "ResetShipping": {
+                    String shippingid = request.getParameter("data");
+                    int ShippingID = Integer.parseInt(shippingid);
+                    result = EngineShippingManager.ResetShipping(ShippingID);
+                    HashMap<Integer, HashMap<String, String>> DetailsList = new HashMap<>();
+                    JsonObject returninfo = new JsonObject();
+                    ArrayList<Integer> IDs = EngineShippingManager.GetShippingIDs();
+                    if (result.equals("success")) {
+                        returninfo.addProperty("status", "success");
+                        returninfo.addProperty("msg", "The shipping method has been reset successfully.");
+                        if (!IDs.isEmpty()) {
+                            for (int ID : IDs) {
+                                HashMap<String, String> details = EngineShippingManager.GetShippingData(ID);
+                                if (!details.isEmpty()) {
+                                    DetailsList.put(ID, details);
+                                }
+                            }
+                        }
+                    } else {
+                        if (!result.equals("failed")) {
+                            returninfo.addProperty("msg", result);
+                        } else {
+                            returninfo.addProperty("msg", "Something went wrong! Please, try again!");
+                        }
+                        returninfo.addProperty("status", "error");
+                    }
+                    json1 = new Gson().toJson(IDs);
+                    json2 = new Gson().toJson(DetailsList);
+                    json3 = new Gson().toJson(returninfo);
+                    json = "[" + json1 + "," + json2 + "," + json3 + "]";
+                    break;
+                }
                 case "DeleteShippingFees": {
                     String shippingfeesid = request.getParameter("data");
                     int ShippingFeesID = Integer.parseInt(shippingfeesid);

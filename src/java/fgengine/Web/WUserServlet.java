@@ -600,7 +600,7 @@ public class WUserServlet extends HttpServlet {
                     JsonObject returninfo = new JsonObject();
                     if (result.equals("success")) {
                         returninfo.addProperty("status", "success");
-                        returninfo.addProperty("msg", "Your Password reset was successful. Please try to login with the new password.");
+                        returninfo.addProperty("msg", "Your Password reset was successful. Please try logging in with the new password.");
                     } else {
                         if (!result.equals("failed")) {
                             returninfo.addProperty("msg", result);
@@ -609,6 +609,42 @@ public class WUserServlet extends HttpServlet {
                         }
                         returninfo.addProperty("status", "error");
                     }
+                    json = new Gson().toJson((JsonElement) returninfo);
+                    break;
+                }
+                case "UpdateProfile": {//uLastName, uFirstName, uNewsletter, uPhone, uOldPass, uNewPass
+                    String[] data = request.getParameterValues("data[]");
+                    String sessionid = data[0].trim();
+                    String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
+                    int UserID = Integer.parseInt(SessionID);
+                    String uLastName = data[1].trim();
+                    String uFirstName = data[2].trim();
+                    String uNewsletter = data[3].trim();
+                    String uPhone = data[4].trim();
+                    String uOldPass = data[5].trim();
+                    String uNewPass = data[6].trim();
+                    String currentPass = EngineUserManager.GetUserPasswordl(UserID);
+                    JsonObject returninfo = new JsonObject();
+                    int Newsletter = Integer.parseInt(uNewsletter);
+                    if (currentPass.equals(uOldPass)) {
+                        result = EngineUserManager.UpdateProfile(UserID, uLastName, uFirstName, uPhone, Newsletter, uNewPass);
+
+                        if (result.equals("success")) {
+                            returninfo.addProperty("status", "success");
+                            returninfo.addProperty("msg", "Your Profile details has been updated successfully.");
+                        } else {
+                            if (!result.equals("failed")) {
+                                returninfo.addProperty("msg", result);
+                            } else {
+                                returninfo.addProperty("msg", "Something went wrong! Please, try again!");
+                            }
+                            returninfo.addProperty("status", "error");
+                        }
+                    } else {
+                        returninfo.addProperty("msg", "Your current password is incorrect. Consider requesting for a new password!");
+                        returninfo.addProperty("status", "error");
+                    }
+
                     json = new Gson().toJson((JsonElement) returninfo);
                     break;
                 }
@@ -627,9 +663,9 @@ public class WUserServlet extends HttpServlet {
                         String usertype = "";
                         String sessionid = null;
                         switch (usertypeid) {
-                            case 2: 
+                            case 2:
                                 session.invalidate();
-                                 session = request.getSession(true);
+                                session = request.getSession(true);
                                 sessionid = session.getId() + "#S";
                                 usertype = "Seller";
                                 EngineUserManager.CreateOrUpdateSessionID(sessionid, sessionid, "" + UserID, "" + UserID);

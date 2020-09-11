@@ -353,7 +353,7 @@ public class WProductServlet extends HttpServlet {
                     }
                     break;
                 }
-                case "GetProductsByIDs": {//[idmin, idmax, sessionid];
+                case "GetProductsByIDs": {
                     String[] data = request.getParameterValues("data[]");
                     String minid = data[0];
                     int MinID = Integer.parseInt(minid);
@@ -363,7 +363,7 @@ public class WProductServlet extends HttpServlet {
                     String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
                     int UserID = Integer.parseInt(SessionID);
                     HashMap<Integer, HashMap<String, String>> List = new HashMap<>();
-                    ArrayList<Integer> IDS = EngineProductManager.GetProductIDsByPrice(UserID, MinID, MaxID);
+                    ArrayList<Integer> IDS = EngineProductManager.GetProductByIDs(UserID, MinID, MaxID);
                     if (!IDS.isEmpty()) {
                         for (int id : IDS) {
                             HashMap<String, String> details = EngineProductManager.GetProductData(id);
@@ -660,7 +660,7 @@ public class WProductServlet extends HttpServlet {
                 }
                 case "GetRecentlyAddedProducts": {//[idmin, idmax, sessionid];
                     HashMap<Integer, HashMap<String, String>> List = new HashMap<>();
-                    ArrayList<Integer> IDS = EngineProductManager.GetRecentlyAddedProducts();
+                    ArrayList<Integer> IDS = EngineProductManager.GetRecentlyAddedProducts(6);
                     if (!IDS.isEmpty()) {
                         for (int id : IDS) {
                             HashMap<String, String> details = EngineProductManager.GetProductData(id);
@@ -827,6 +827,28 @@ public class WProductServlet extends HttpServlet {
                         returninfo.addProperty("status", "error");
                     }
                     json = new Gson().toJson((JsonElement) returninfo);
+                    break;
+                }
+                case "GetDashBoardProducts": {
+                    String sessionid = request.getParameter("data");
+                    String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
+                    int UserID = Integer.parseInt(SessionID);
+
+                    HashMap<Integer, HashMap<String, String>> List = new HashMap<>();
+                    ArrayList<Integer> IDS = EngineProductManager.GetDashBoardProducts(UserID);
+                    if (!IDS.isEmpty()) {
+                        for (int id : IDS) {
+                            HashMap<String, String> details = EngineProductManager.GetProductData(id);
+                            if (!details.isEmpty()) {
+                                List.put(id, details);
+                            }
+                        }
+                        json1 = new Gson().toJson(IDS);
+                        json2 = new Gson().toJson(List);
+                        json = "[" + json1 + "," + json2 + "]";
+                    } else {
+                        json = new Gson().toJson(empty);
+                    }
                     break;
                 }
             }
