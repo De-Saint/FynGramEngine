@@ -253,7 +253,7 @@ public class WOrderServlet extends HttpServlet {
                                 List.put(id, Details);
                             }
                         }
-                         
+
                         json1 = new Gson().toJson(IDS);
                         json2 = new Gson().toJson(List);
                         json3 = new Gson().toJson(IDS.size());
@@ -263,7 +263,7 @@ public class WOrderServlet extends HttpServlet {
                     }
                     break;
                 }
-                 case "GetDashBoardOrders": {
+                case "GetDashBoardOrders": {
                     String sessionid = request.getParameter("data");
                     String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
                     int UserID = Integer.parseInt(SessionID);

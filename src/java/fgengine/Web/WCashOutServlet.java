@@ -92,14 +92,13 @@ public class WCashOutServlet extends HttpServlet {
                         }
                     } else {
                         returninfo.addProperty("status", "error");
-                        returninfo.addProperty("msg", "Invalid Wallet Pin!");
+                        returninfo.addProperty("msg", "Invalid FynPay Account Pin!");
                     }
 
                     json1 = new Gson().toJson(IDS);
                     json2 = new Gson().toJson(List);
                     json3 = new Gson().toJson(returninfo);
                     json = "[" + json1 + "," + json2 + "," + json3 + "]";
-
                     break;
                 }
                 case "GetBanks": {

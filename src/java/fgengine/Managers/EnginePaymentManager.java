@@ -104,16 +104,15 @@ public class EnginePaymentManager {
         if (result.equals("success")) {
             if (PaymentType.equals("CheckOut Payment")) {
                 result = EngineWalletManager.ComputeWalletRecord(EngineUserManager.GetAdminUserID(), UserID, EngineWalletManager.GetMainWalletID(), EngineWalletManager.GetMainWalletID(), TotalAmount, "Fund Wallet", "For placing an Order.");
-                String body = "Hi, " + EngineUserManager.GetUserName(UserID) + ", \n\nThe Wallet equivalent of " + EngineTransactionManager.FormatNumber(TotalAmount) + " - Order Amount, has been transferred into your wallet and had also been used to pay for the order. \n\nThe order amount would be refunded into your Main Wallet, if your Order is cancelled.\n\nCheers \nFyngram";
+                String body = "Hi, " + EngineUserManager.GetUserName(UserID) + ", \n\nThe FynPay Account Fund equivalent of " + EngineTransactionManager.FormatNumber(TotalAmount) + " - Order Amount, has been transferred into your FynPay Account and had also been used to pay for the order. \n\nThe order amount would be refunded into your Main FynPay Account, if your Order is cancelled.\n\nCheers \nFyngram";
                 EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), body, "CheckOut Payment With Cash", UserID);
                 try {
                     EngineEmailManager.SendEmail(EngineUserManager.GetUserEmail(UserID), body, "Fyngram - CheckOut-Payment With Cash");
                 } catch (Exception ex) {
                 }
-                EngineEmailManager.SendEmail(EngineUserManager.GetUserEmail(UserID), body, "Fyngram - CheckOut-Payment With Cash");
             } else {
                 result = EngineWalletManager.ComputeWalletRecord(EngineUserManager.GetAdminUserID(), UserID, EngineWalletManager.GetMainWalletID(), EngineWalletManager.GetMainWalletID(), TotalAmount, PaymentType, "For placing an Order.");
-                String msg = "Hi, " + EngineUserManager.GetUserName(UserID) + ", \n\nThe Wallet equivalent of " + EngineTransactionManager.FormatNumber(TotalAmount) + ", has been transferred into your wallet. \n\nCheers \nFyngram";
+                String msg = "Hi, " + EngineUserManager.GetUserName(UserID) + ", \n\nThe FynPay Account Fund equivalent of " + EngineTransactionManager.FormatNumber(TotalAmount) + ", has been transferred into your FynPay Account. \n\nCheers \nFyngram";
                 EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), msg, PaymentType, UserID);
                 try {
                     EngineEmailManager.SendEmail(EngineUserManager.GetUserEmail(UserID), msg, "Wallet Funding");

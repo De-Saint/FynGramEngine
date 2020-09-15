@@ -184,18 +184,18 @@ public class EngineWalletManager {
             EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), toBodyMsg, TransactionTypeName, FromUserID);
         } else if (TransactionTypeName.equals("Fund Wallet")) {
             result = EngineWalletManager.InsertWalletRecord(FromUserID, TransactionAmount, FromWalletTypeID, "Credit");
-            Description = "Hi " + EngineUserManager.GetUserName(ToUserID) + ", \n\nYou funded your Wallet - " + EngineWalletManager.GetUserWalletNumber(ToUserID) + " with " + EngineTransactionManager.FormatNumber(TransactionAmount);
+            Description = "Hi " + EngineUserManager.GetUserName(ToUserID) + ", \n\nYou funded your FynPay Account - " + EngineWalletManager.GetUserWalletNumber(ToUserID) + " with " + EngineTransactionManager.FormatNumber(TransactionAmount);
             EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), Description, TransactionTypeName, ToUserID);
         } else if (TransactionTypeName.equals("Move Fund")) {
             if (FromWalletTypeID == 1) {
-                fromBodyMsg = "Hi " + EngineUserManager.GetUserName(FromUserID) + ", \n\n" + EngineTransactionManager.FormatNumber(TransactionAmount) + " had been deducted from your " + FromWalletName + " Wallet. \n\nCheers \nFyngram.";
+                fromBodyMsg = "Hi " + EngineUserManager.GetUserName(FromUserID) + ", \n\n" + EngineTransactionManager.FormatNumber(TransactionAmount) + " had been deducted from your " + FromWalletName + " FynPay Account. \n\nCheers \nFyngram.";
                 EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), fromBodyMsg, TransactionTypeName, FromUserID);
             }
             if (ToWalletTypeID == 1) {
-                toBodyMsg = "Hi " + EngineUserManager.GetUserName(ToUserID) + ", \n\n" + EngineTransactionManager.FormatNumber(TransactionAmount) + " had been credited into your " + ToWalletName + " Wallet. \n\nCheers \nFyngram.";
+                toBodyMsg = "Hi " + EngineUserManager.GetUserName(ToUserID) + ", \n\n" + EngineTransactionManager.FormatNumber(TransactionAmount) + " had been credited into your " + ToWalletName + " FynPay Account. \n\nCheers \nFyngram.";
                 EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), toBodyMsg, TransactionTypeName, ToUserID);
             }
-            Description = EngineTransactionManager.FormatNumber(TransactionAmount) + " has been transferred from your " + GetWalletNameByID(FromWalletTypeID) + " Wallet to your " + GetWalletNameByID(ToWalletTypeID) + " Wallet. - " + Narration + ". \n\nPlease, you can also check your messages for details. \n\nCheers \nFyngram.";
+            Description = EngineTransactionManager.FormatNumber(TransactionAmount) + " has been transferred from your " + GetWalletNameByID(FromWalletTypeID) + " FynPay Account to your " + GetWalletNameByID(ToWalletTypeID) + " FynPay Account. - " + Narration + ". \n\nPlease, you can also check your messages for details. \n\nCheers \nFyngram.";
         }
         FromUserOldBalance = GetUserBalance(FromUserID, FromWalletTypeID);
         ToUserOldBalance = GetUserBalance(ToUserID, ToWalletTypeID);

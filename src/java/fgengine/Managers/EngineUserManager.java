@@ -13,6 +13,8 @@ import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.json.simple.JSONObject;
 
 /**
@@ -81,6 +83,9 @@ public class EngineUserManager {
         return result;
     }
 
+    
+    
+    
     /**
      *
      * @param UserID
@@ -98,6 +103,33 @@ public class EngineUserManager {
         tableData.put(Tables.AdminTable.Lastname, LastName);
         String result = DBManager.insertTableData(Tables.AdminTable.Table, tableData, "");
         return result;
+    }
+    
+    /**
+     *
+     * @param UserID
+     * @param FirstName
+     * @param LastName
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static void CreateAdmin1() throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        try {
+            int auid = EngineUserManager.CreateUser("support@fyngram.com", "0904000000", "admin", 1, 1, "Male", "");
+            System.out.println(auid);
+            EngineUserManager.CreateAdmin(auid, "FynGram", "Admin");
+            EngineWalletManager.CreateWallet(auid);
+            String msgbdy = "Congratulations!!! \nYour account has been successfully created. Thanks for being part of FynGram Web Store.";
+            EngineMessageManager.sendMessage(1, msgbdy, "Admin Account Created", auid);
+            String result4 = EngineEmailManager.SendEmail("support@fyngram.com", msgbdy, "Admin Account Created");
+            System.out.println(result4);
+             EngineUserManager.CreateSeller(auid, "Fyngram", "Fyngram", 3, 2);
+              EngineUserManager.CreateSellerInformation(auid, "Fyngram", "sales@fyngram.com", "07017085741", 3, 5);
+        } catch (IOException ex) {
+            Logger.getLogger(EngineUserManager.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
@@ -581,6 +613,12 @@ public class EngineUserManager {
         } else if (Option.equals("U")) {
             result = DBManager.UpdateIntData(Tables.UsersTable.Newsletters, 1, Tables.UsersTable.Table, "where " + Tables.UsersTable.ID + " = " + LoginID);
         }
+        String body = "Your Email address has been added to the list. You will receive an Email from us shortly. Thank you for subscribing to our Newsletter...";
+        try {
+            EngineEmailManager.SendEmail(Email, body, "Fyngram Newsletter Subscriptions");
+        } catch (IOException ex) {
+            Logger.getLogger(EngineUserManager.class.getName()).log(Level.SEVERE, null, ex);
+        }
         return result;
     }
 
@@ -611,8 +649,8 @@ public class EngineUserManager {
      */
     public static String CreateOrUpdateSessionID(String OldSessionID, String NewSessionID, String OldLoginID, String NewLoginID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         String result = "";
-        int ExistingID = GetSessionIDByLoginID(OldLoginID);
-        if (ExistingID == 0) {
+//        int ExistingID = GetSessionIDByLoginID(OldLoginID);
+//        if (ExistingID == 0) {
             HashMap<String, Object> tableData = new HashMap<>();
             tableData.put(Tables.SessionTable.SessionID, NewSessionID);
             tableData.put(Tables.SessionTable.LoginID, NewLoginID);
@@ -620,9 +658,9 @@ public class EngineUserManager {
             int id = DBManager.insertTableDataReturnID(Tables.SessionTable.Table, tableData, "");
             result = DBManager.UpdateCurrentTime(Tables.SessionTable.Table, Tables.SessionTable.Time, "where " + Tables.SessionTable.ID + " = " + id);
             DBManager.UpdateCurrentDate(Tables.SessionTable.Table, Tables.SessionTable.Date, "where " + Tables.SessionTable.ID + " = " + id);
-        } else {
-            result = UpdateLoginSession(NewSessionID, ExistingID, NewLoginID);
-        }
+//        } else {
+//            result = UpdateLoginSession(NewSessionID, ExistingID, NewLoginID);
+//        }
         return result;
     }
 
@@ -960,7 +998,7 @@ public class EngineUserManager {
         String userName = "No User";
         String userPhone = "No Phone";
         String userEmail = "No Email";
-        String userAcctNumber = "No Wallet No.";
+        String userAcctNumber = "No Account No.";
         int resultID = 0;
         if (!UserInput.equals("")) {
             int memberID = checkVerifyingEmail(UserInput);

@@ -11,57 +11,7 @@ package fgengine.Tables;
  */
 public class Tables {
 
-    /**
-     *
-     */
-    public static class ActivityTable {
-
-        /**
-         *
-         */
-        public static String Table = "fg_activities";
-
-        /**
-         *
-         */
-        public static String ID = "id";
-
-        /**
-         *
-         */
-        public static String UserID = "userid";
-
-        /**
-         *
-         */
-        public static String Category = "category";
-
-        /**
-         *
-         */
-        public static String Topic = "topic";
-
-        /**
-         *
-         */
-        public static String Details = "details";
-
-        /**
-         *
-         */
-        public static String Date = "date";
-
-        /**
-         *
-         */
-        public static String Time = "time";
-
-        /**
-         *
-         */
-        public static String Deleted = "deleted";
-    }
-
+ 
     /**
      *
      */
@@ -387,11 +337,6 @@ public class Tables {
          *
          */
         public static String Lastname = "lastname";
-
-        /**
-         *
-         */
-        public static String PermissionGroupID = "permission_group_id";
     }
 
     /**
@@ -1683,54 +1628,6 @@ public class Tables {
         public static String SendGridKey = "sendgrid_key";
 
     }
-
-    /**
-     *
-     */
-    public static class PermissionGroupsTable {
-
-        /**
-         *
-         */
-        public static String Table = "fg_permission_groups";
-
-        /**
-         *
-         */
-        public static String ID = "id";
-
-        /**
-         *
-         */
-        public static String Name = "name";
-
-        /**
-         *
-         */
-        public static String Permissions = "permissions";
-    }
-
-    /**
-     *
-     */
-    public static class PermissionsTable {
-
-        /**
-         *
-         */
-        public static String Table = "fg_permissions";
-
-        /**
-         *
-         */
-        public static String ID = "id";
-
-        /**
-         *
-         */
-        public static String Name = "name";
-    }
-
     /**
      *
      */

@@ -5,15 +5,16 @@
  */
 package fgengine.Managers;
 
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import fgengine.Tables.Tables;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.json.simple.JSONObject;
 
 /**
@@ -495,7 +496,15 @@ public class EngineProductManager {
         } else if (Status.equals("Deleted") && !SellerProdStatus.equals("Activated")) {
             result = DeleteProduct(ProductID);
         }
-
+       int SellerUserID =  GetProductSellerUserIDByProductID(ProductID);
+       String email = EngineUserManager.GetUserEmail(SellerUserID);
+        try {
+            String body = "Hi "+ EngineUserManager.GetUserName(SellerUserID)+", \n\n"+Note + "\n\n Cheers \nFyngram.";
+            EngineEmailManager.SendEmail(email, body, Status + "- Product");
+            EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), body, Status + "- Product", SellerUserID);
+        } catch (IOException ex) {
+            Logger.getLogger(EngineProductManager.class.getName()).log(Level.SEVERE, null, ex);
+        }
         return result;
     }
 
@@ -752,9 +761,11 @@ public class EngineProductManager {
      */
     public static HashMap<String, String> GetProductSellerData(int SellerProductID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         HashMap<String, String> Details = DBManager.GetTableData(Tables.SellerProductsTable.Table, "where " + Tables.SellerProductsTable.ID + " = " + SellerProductID);
-        int SellerUserID = Integer.parseInt(Details.get(Tables.SellerProductsTable.SellerUserID));
-        HashMap<String, String> InfoDetails = GetSellerInfoData(SellerUserID);
-        Details.putAll(InfoDetails);
+        if (!Details.isEmpty()) {
+            int SellerUserID = Integer.parseInt(Details.get(Tables.SellerProductsTable.SellerUserID));
+            HashMap<String, String> InfoDetails = GetSellerInfoData(SellerUserID);
+            Details.putAll(InfoDetails);
+        }
         return Details;
     }
 
@@ -768,17 +779,20 @@ public class EngineProductManager {
      */
     public static HashMap<String, String> GetSellerInfoData(int SellerID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         HashMap<String, String> Details = DBManager.GetTableData(Tables.SellerInfoTable.Table, "where " + Tables.SellerInfoTable.SellerUserID + " = " + SellerID);
-        Details.put("SellerUserName", Details.get(Tables.SellerInfoTable.BusinessName));
-        int shipmin = Integer.parseInt(Details.get(Tables.SellerInfoTable.MinimumShippingDays));
-        int shipmax = Integer.parseInt(Details.get(Tables.SellerInfoTable.MaximumShippingDays));
+        if (!Details.isEmpty()) {
+            Details.put("SellerUserName", Details.get(Tables.SellerInfoTable.BusinessName));
+            int shipmin = Integer.parseInt(Details.get(Tables.SellerInfoTable.MinimumShippingDays));
+            int shipmax = Integer.parseInt(Details.get(Tables.SellerInfoTable.MaximumShippingDays));
 
-        LocalDate CurrentDate = LocalDate.now();
-        LocalDate startDate = CurrentDate.plusDays(shipmin);
-        LocalDate endDate = CurrentDate.plusDays(shipmax);
-        String sdate = DateManager.readDate("" + startDate);
-        Details.put("shipStartDate", sdate);
-        String eDate = DateManager.readDate("" + endDate);
-        Details.put("shipEndDate", eDate);
+            LocalDate CurrentDate = LocalDate.now();
+            LocalDate startDate = CurrentDate.plusDays(shipmin);
+            LocalDate endDate = CurrentDate.plusDays(shipmax);
+            String sdate = DateManager.readDate("" + startDate);
+            Details.put("shipStartDate", sdate);
+            String eDate = DateManager.readDate("" + endDate);
+            Details.put("shipEndDate", eDate);
+        }
+
         return Details;
     }
 
@@ -1648,6 +1662,7 @@ public class EngineProductManager {
         ArrayList<Integer> IDs = DBManager.GetIntArrayListDescending(Tables.ProductsTable.ID, Tables.ProductsTable.Table, "where " + Tables.ProductsTable.Active + " = " + 1 + " ORDER BY " + Tables.ProductsTable.ID + " DESC LIMIT " + Limit);
         return IDs;
     }
+
     /**
      *
      * @return @throws ClassNotFoundException

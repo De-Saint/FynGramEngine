@@ -93,7 +93,7 @@ public class WPaymentServlet extends HttpServlet {
                             result = EnginePaymentManager.ComputePaymentWithCash(UserID, Amount, TransCode, RefereceCode, PaymentType);
                             if (result.equals("success")) {
                                 returninfo.addProperty("status", "success");
-                                returninfo.addProperty("msg", "Your Payment was Successful. Please check your wallet.");
+                                returninfo.addProperty("msg", "Your Payment was Successful. Please check your FynPay Account.");
                                 HashMap<String, String> paymentdata = EngineWalletManager.ComputeWalletDetails(UserID);
                                 datares.put("paymentdata", paymentdata);
                             } else {
@@ -116,7 +116,7 @@ public class WPaymentServlet extends HttpServlet {
                                 }
                             } else {
                                 returninfo.addProperty("status", "error");
-                                message = "An error occured while updating your wallet, Please contact the support team if your bank account was debited and send the debit advise!";
+                                message = "An error occured while updating your FynPay Account, Please contact the support team if your bank account was debited and send the debit advise!";
                                 returninfo.addProperty("msg", message);
                             }
                             json = new Gson().toJson(returninfo);
@@ -124,7 +124,7 @@ public class WPaymentServlet extends HttpServlet {
                             result = EnginePaymentManager.ComputeSubscriptionFees(UserID, PaymentType, Amount, TransCode, RefereceCode);
                             if (result.equals("success")) {
                                 returninfo.addProperty("status", "success");
-                                returninfo.addProperty("msg", "Your Payment was Successful. Please check your wallet.");
+                                returninfo.addProperty("msg", "Your Payment was Successful. Please check your FynPay Wallet.");
                                 HashMap<String, Object> userdata = EngineUserManager.GetUserDetails(UserID);
                                 datares.put("userdata", userdata);
                             } else {

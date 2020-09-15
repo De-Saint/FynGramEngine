@@ -628,7 +628,6 @@ public class WUserServlet extends HttpServlet {
                     int Newsletter = Integer.parseInt(uNewsletter);
                     if (currentPass.equals(uOldPass)) {
                         result = EngineUserManager.UpdateProfile(UserID, uLastName, uFirstName, uPhone, Newsletter, uNewPass);
-
                         if (result.equals("success")) {
                             returninfo.addProperty("status", "success");
                             returninfo.addProperty("msg", "Your Profile details has been updated successfully.");

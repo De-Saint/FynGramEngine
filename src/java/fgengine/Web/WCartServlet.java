@@ -448,7 +448,7 @@ public class WCartServlet extends HttpServlet {
                         double bal = EngineWalletManager.GetUserBalance(UserID, EngineWalletManager.GetMainWalletID());
                         returninfo.addProperty("walletbalance", bal);
                     } else {
-                        returninfo.addProperty("msg", "Invalid Pin: The Wallet Pin provided is invalid. Please, check the pin and try again.");
+                        returninfo.addProperty("msg", "Invalid Pin: The FynPay Account Pin provided is invalid. Please, check the pin and try again.");
                         returninfo.addProperty("status", "error");
                     }
                     json = new Gson().toJson(returninfo);
