@@ -49,7 +49,7 @@ public class EngineUserManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static int CreateUser(String EmailAddress, String PhoneNumber, String Password, int UserType, int NewsLetter, String Gender, String DeviceToken) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+    public static int CreateUser(String EmailAddress, String PhoneNumber, String Password, int UserType, int NewsLetter, String Gender, String DeviceToken, String Title) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         HashMap<String, Object> tableData = new HashMap<>();
         tableData.put(Tables.UsersTable.Email, EmailAddress);
         tableData.put(Tables.UsersTable.Phone, PhoneNumber);
@@ -58,6 +58,7 @@ public class EngineUserManager {
         tableData.put(Tables.UsersTable.UserType, UserType);
         tableData.put(Tables.UsersTable.Gender, Gender);
         tableData.put(Tables.UsersTable.DeviceToken, DeviceToken);
+        tableData.put(Tables.UsersTable.Title, Title);
         int userId = DBManager.insertTableDataReturnID(Tables.UsersTable.Table, tableData, "");
         DBManager.UpdateCurrentDate(Tables.UsersTable.Table, Tables.UsersTable.Date, "where " + Tables.UsersTable.ID + " = " + userId);
         DBManager.UpdateCurrentTime(Tables.UsersTable.Table, Tables.UsersTable.Time, "where " + Tables.UsersTable.ID + " = " + userId);
@@ -83,9 +84,6 @@ public class EngineUserManager {
         return result;
     }
 
-    
-    
-    
     /**
      *
      * @param UserID
@@ -104,7 +102,7 @@ public class EngineUserManager {
         String result = DBManager.insertTableData(Tables.AdminTable.Table, tableData, "");
         return result;
     }
-    
+
     /**
      *
      * @param UserID
@@ -117,7 +115,7 @@ public class EngineUserManager {
      */
     public static void CreateAdmin1() throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         try {
-            int auid = EngineUserManager.CreateUser("support@fyngram.com", "0904000000", "admin", 1, 1, "Male", "");
+            int auid = EngineUserManager.CreateUser("support@fyngram.com", "0904000000", "admin", 1, 1, "Male", "", "Mr");
             System.out.println(auid);
             EngineUserManager.CreateAdmin(auid, "FynGram", "Admin");
             EngineWalletManager.CreateWallet(auid);
@@ -125,8 +123,8 @@ public class EngineUserManager {
             EngineMessageManager.sendMessage(1, msgbdy, "Admin Account Created", auid);
             String result4 = EngineEmailManager.SendEmail("support@fyngram.com", msgbdy, "Admin Account Created");
             System.out.println(result4);
-             EngineUserManager.CreateSeller(auid, "Fyngram", "Fyngram", 3, 2);
-              EngineUserManager.CreateSellerInformation(auid, "Fyngram", "sales@fyngram.com", "07017085741", 3, 5);
+            EngineUserManager.CreateSeller(auid, "Fyngram", "Fyngram", 3, 2);
+            EngineUserManager.CreateSellerInformation(auid, "Fyngram", "sales@fyngram.com", "07017085741", 3, 5, "RC1629598");
         } catch (IOException ex) {
             Logger.getLogger(EngineUserManager.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -170,7 +168,7 @@ public class EngineUserManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String CreateSellerInformation(int SellerUserID, String Name, String Email, String Phone, int MinShippingDays, int MaxShippingDays) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+    public static String CreateSellerInformation(int SellerUserID, String Name, String Email, String Phone, int MinShippingDays, int MaxShippingDays, String CACNumber) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         HashMap<String, Object> tableData = new HashMap<>();
         tableData.put(Tables.SellerInfoTable.SellerUserID, SellerUserID);
         tableData.put(Tables.SellerInfoTable.BusinessName, Name);
@@ -178,6 +176,7 @@ public class EngineUserManager {
         tableData.put(Tables.SellerInfoTable.BusinessPhone, Phone);
         tableData.put(Tables.SellerInfoTable.MinimumShippingDays, MinShippingDays);
         tableData.put(Tables.SellerInfoTable.MaximumShippingDays, MaxShippingDays);
+        tableData.put(Tables.SellerInfoTable.CAC_Number, CACNumber);
         String result = DBManager.insertTableData(Tables.SellerInfoTable.Table, tableData, "");
         return result;
     }
@@ -552,11 +551,11 @@ public class EngineUserManager {
     public static String GetGuestComputerName() {
         String result = "failed";
         try {
-
+            
             InetAddress inetAddress = InetAddress.getLocalHost();
             result = inetAddress.getHostName();
             System.out.println("Host Name: " + result);
-
+            
         } catch (UnknownHostException e) {
         }
         return result;
@@ -569,11 +568,11 @@ public class EngineUserManager {
     public static String GetGuestSystemIPAddress() {
         String result = "failed";
         try {
-
+            
             InetAddress inetAddress = InetAddress.getLocalHost();
             result = inetAddress.getHostAddress();
             System.out.println("Host Name: " + result);
-
+            
         } catch (UnknownHostException e) {
         }
         return result;
@@ -589,9 +588,9 @@ public class EngineUserManager {
         try {
             result = System.getProperty(name);
         } catch (Exception e) {
-
+            
         }
-
+        
         return result;
     }
 
@@ -609,7 +608,7 @@ public class EngineUserManager {
         String result = "failed";
         if (Option.equals("G")) {//Guest
             result = DBManager.UpdateStringData(Tables.GuestTable.Table, Tables.GuestTable.Email, Email, "where " + Tables.GuestTable.ID + " = " + LoginID);
-
+            
         } else if (Option.equals("U")) {
             result = DBManager.UpdateIntData(Tables.UsersTable.Newsletters, 1, Tables.UsersTable.Table, "where " + Tables.UsersTable.ID + " = " + LoginID);
         }
@@ -651,13 +650,13 @@ public class EngineUserManager {
         String result = "";
 //        int ExistingID = GetSessionIDByLoginID(OldLoginID);
 //        if (ExistingID == 0) {
-            HashMap<String, Object> tableData = new HashMap<>();
-            tableData.put(Tables.SessionTable.SessionID, NewSessionID);
-            tableData.put(Tables.SessionTable.LoginID, NewLoginID);
-            tableData.put(Tables.SessionTable.IPAddress, OldLoginID);
-            int id = DBManager.insertTableDataReturnID(Tables.SessionTable.Table, tableData, "");
-            result = DBManager.UpdateCurrentTime(Tables.SessionTable.Table, Tables.SessionTable.Time, "where " + Tables.SessionTable.ID + " = " + id);
-            DBManager.UpdateCurrentDate(Tables.SessionTable.Table, Tables.SessionTable.Date, "where " + Tables.SessionTable.ID + " = " + id);
+        HashMap<String, Object> tableData = new HashMap<>();
+        tableData.put(Tables.SessionTable.SessionID, NewSessionID);
+        tableData.put(Tables.SessionTable.LoginID, NewLoginID);
+        tableData.put(Tables.SessionTable.IPAddress, OldLoginID);
+        int id = DBManager.insertTableDataReturnID(Tables.SessionTable.Table, tableData, "");
+        result = DBManager.UpdateCurrentTime(Tables.SessionTable.Table, Tables.SessionTable.Time, "where " + Tables.SessionTable.ID + " = " + id);
+        DBManager.UpdateCurrentDate(Tables.SessionTable.Table, Tables.SessionTable.Date, "where " + Tables.SessionTable.ID + " = " + id);
 //        } else {
 //            result = UpdateLoginSession(NewSessionID, ExistingID, NewLoginID);
 //        }
@@ -729,7 +728,7 @@ public class EngineUserManager {
             String IPAddress = GetGuestSystemIPAddress();
             userid = GetLoginIDByIPAddress(IPAddress);
         }
-
+        
         return userid;
     }
 
@@ -803,7 +802,7 @@ public class EngineUserManager {
         UserTableData.put("UserType", usertype);
         UserTableData.put("UserID", UserID);
         UserTableData.put("UserName", username);
-
+        
         int TransactionPin = EngineWalletManager.GetUserWalletPIN(UserID);
         UserTableData.put("TransactionPin", TransactionPin);
         HashMap<String, String> userData = GetUserTypeDetails(UserID, usertype);
@@ -922,6 +921,11 @@ public class EngineUserManager {
         HashMap<String, String> Data = new HashMap<>();
         Data = DBManager.GetTableData(Tables.SellersTable.Table, "where " + Tables.SellersTable.UserID + " = " + UserID);
         if (!Data.isEmpty()) {
+            HashMap<String, String> Data2 = EngineProductManager.GetSellerInfoData(UserID);
+            if (!Data2.isEmpty()) {
+                Data.putAll(Data2);
+            }
+            
             int SellerTypeID = EngineSubscriptionManager.GetSellerTypeIDBySellerUserID(UserID);
             String SellerTypeName = EngineSubscriptionManager.GetSellerTypeNameBySellerTypeID(SellerTypeID);
             Data.put("SellerTypeName", SellerTypeName);
@@ -954,8 +958,6 @@ public class EngineUserManager {
             ArrayList<Integer> orderCount = EngineOrderManager.GetOrderIDsBySellerUserID(UserID);
             Data.put("ordercount", "" + orderCount.size());
 //            //category
-//            ArrayList<Integer> categoryCount = EngineCategoryManager.GetSellerCategoryIDs(UserID);
-//            Data.put("categorycount", "" + categoryCount.size());
 
             //products 
             ArrayList<Integer> productCount = EngineProductManager.GetSellerProducts(UserID);
@@ -1026,7 +1028,7 @@ public class EngineUserManager {
                 userEmail = GetUserEmail(memberID);
                 userAcctNumber = EngineWalletManager.GetUserWalletNumber(UserID);
                 resultID = memberID;
-
+                
             }
         } else {
             userName = GetUserName(UserID);
@@ -1155,7 +1157,7 @@ public class EngineUserManager {
         ids = UtilityManager.removeDuplicatesIntegerArrayList(ids);
         return ids;
     }
-
+    
     public static String UpdateUserSessionDetails(String OldSessionID, String NewSessionID, String UserID, String App) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         String result = "";
         String LoginID = "";
@@ -1167,7 +1169,7 @@ public class EngineUserManager {
         if ((!App.equals("FyngramManager"))) {
             EngineCartManager.UpdateCartUserID(LoginID, "" + UserID);
         }
-
+        
         return result;
     }
 
@@ -1210,7 +1212,7 @@ public class EngineUserManager {
             String dt = Details.get(Tables.ComplaintTable.Date);
             String date = DateManager.readDate(dt);
             Details.put(Tables.ComplaintTable.Date, date);
-
+            
             String tm = Details.get(Tables.ComplaintTable.Time);
             String time = DateManager.readTime(tm);
             Details.put(Tables.ComplaintTable.Time, time);
@@ -1229,11 +1231,11 @@ public class EngineUserManager {
     public static HashMap<String, String> GetNewfeatureSuggestionData(int NewFeatureID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         HashMap<String, String> Details = DBManager.GetTableData(Tables.NewFeatureRequestTable.Table, "where " + Tables.NewFeatureRequestTable.ID + " = " + NewFeatureID);
         if (!Details.isEmpty()) {
-
+            
             String dt = Details.get(Tables.NewFeatureRequestTable.Date);
             String date = DateManager.readDate(dt);
             Details.put(Tables.NewFeatureRequestTable.Date, date);
-
+            
             String tm = Details.get(Tables.NewFeatureRequestTable.Time);
             String time = DateManager.readTime(tm);
             Details.put(Tables.NewFeatureRequestTable.Time, time);
@@ -1318,21 +1320,21 @@ public class EngineUserManager {
 //        ids = DBManager.GetIntArrayList(Tables.GuestTable.ID, Tables.GuestTable.Table, "where " + Tables.GuestTable.Email + " != " + "");
         return ids;
     }
-
+    
     public static HashMap<String, String> GetGuestData(int GuestID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         HashMap<String, String> Data = DBManager.GetTableData(Tables.GuestTable.Table, "where " + Tables.GuestTable.ID + " = " + GuestID);
         if (!Data.isEmpty()) {
             String dt = Data.get(Tables.GuestTable.Date);
             String date = DateManager.readDate(dt);
             Data.put(Tables.GuestTable.Date, date);
-
+            
             String tm = Data.get(Tables.GuestTable.Time);
             String time = DateManager.readTime(tm);
             Data.put(Tables.GuestTable.Time, time);
         }
         return Data;
     }
-
+    
     public static String ComputeResetPassword(String Email) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, IOException {
         String result = "failed";
         int UserID = DBManager.GetInt(Tables.UsersTable.ID, Tables.UsersTable.Table, "where " + Tables.UsersTable.Email + " = '" + Email + "'");
@@ -1388,7 +1390,7 @@ public class EngineUserManager {
             result = "Invalid Validation Code. Please check and try again";
         }
         return result;
-
+        
     }
 
     /**
@@ -1415,7 +1417,7 @@ public class EngineUserManager {
             result = "Invalid Validation Code. Please check and try again";
         }
         return result + "#" + UserID;
-
+        
     }
 
     /**
@@ -1439,6 +1441,6 @@ public class EngineUserManager {
         DBManager.UpdateStringData(Tables.UsersTable.Table, Tables.UsersTable.Phone, Phone, "where " + Tables.UsersTable.ID + " = " + UserID);
         DBManager.UpdateIntData(Tables.UsersTable.Newsletters, Newsletter, Tables.UsersTable.Table, "where " + Tables.UsersTable.ID + " = " + UserID);
         return result;
-
+        
     }
 }

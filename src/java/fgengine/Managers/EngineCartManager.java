@@ -1201,14 +1201,18 @@ public class EngineCartManager {
         Data = DBManager.GetTableData(Tables.CartTable.Table, "where " + Tables.CartTable.ID + " = " + CartID);
         if (!Data.isEmpty()) {
             String userName = "";
+            String userPhone = "";
             String userid = Data.get(Tables.CartTable.UserID);
             if (EngineAddressManager.isNumeric(userid)) {
                 int UserID = Integer.parseInt(userid);
                 userName = EngineUserManager.GetUserName(UserID);
+                userPhone = EngineUserManager.GetUserPhone(UserID);
             } else {
                 userName = "Guest " + userid;
+                userPhone = "No Phone Yet";
             }
             Data.put("cartUsername", userName);
+            Data.put("cartPhone", userPhone);
             String dt = Data.get(Tables.CartTable.Date);
             String date = DateManager.readDate(dt);
             Data.put(Tables.CartTable.Date, date);

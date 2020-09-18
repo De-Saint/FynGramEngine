@@ -2263,6 +2263,10 @@ public class Tables {
          *
          */
         public static String MaximumShippingDays = "shipping_days_max";
+        /**
+         *
+         */
+        public static String CAC_Number = "cac_number";
 
     }
 
@@ -2861,6 +2865,10 @@ public class Tables {
          *
          */
         public static String DeviceToken = "device_token";
+        /**
+         *
+         */
+        public static String Title = "title";
          /**
          *
          */

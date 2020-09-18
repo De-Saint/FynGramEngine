@@ -217,12 +217,13 @@ public class WUserServlet extends HttpServlet {
                     String PhoneNumber = data[4].trim();
                     String Password = data[5].trim();
                     String newsletter = data[6].trim();
+                     String title = data[7].trim();
                     int NewsLetter = Integer.parseInt(newsletter);
                     int CustomerUserID = 0;
                     JsonObject returninfo = new JsonObject();
                     if (!EngineUserManager.checkEmailAddressOrPhoneNumberExist(EmailAddress)) {
                         if (!EngineUserManager.checkEmailAddressOrPhoneNumberExist(PhoneNumber)) {
-                            CustomerUserID = EngineUserManager.CreateUser(EmailAddress, PhoneNumber, Password, 3, NewsLetter, Gender, "");
+                            CustomerUserID = EngineUserManager.CreateUser(EmailAddress, PhoneNumber, Password, 3, NewsLetter, Gender, "", title);
                             if (CustomerUserID != 0) {
                                 result = EngineUserManager.CreateCustomer(CustomerUserID, Frstname, Lastname);
                                 if (result.equals("success")) {
@@ -377,12 +378,14 @@ public class WUserServlet extends HttpServlet {
                     String BizPhone = data[10].trim();
                     String minshippingdays = data[11].trim();
                     String maxshippingdays = data[12].trim();
+                    String title = data[13].trim();
+                    String cacnumber = data[14].trim();
 
                     int SellerUserID = 0;
                     JsonObject returninfo = new JsonObject();
                     if (!EngineUserManager.checkEmailAddressOrPhoneNumberExist(EmailAddress) || !EngineUserManager.checkEmailAddressOrPhoneNumberExist(BizName)) {
                         if (!EngineUserManager.checkEmailAddressOrPhoneNumberExist(PhoneNumber) || !EngineUserManager.checkEmailAddressOrPhoneNumberExist(BizPhone)) {
-                            SellerUserID = EngineUserManager.CreateUser(EmailAddress, PhoneNumber, Password, 2, 1, Gender, "");
+                            SellerUserID = EngineUserManager.CreateUser(EmailAddress, PhoneNumber, Password, 2, 1, Gender, "", title);
                             if (SellerUserID != 0) {
                                 int SubscriptionTypeID = Integer.parseInt(subscriptiontypeid);
                                 int SellerTypeID = Integer.parseInt(sellertypid);
@@ -392,7 +395,7 @@ public class WUserServlet extends HttpServlet {
                                     if (result.equals("success")) {
                                         int MinShippingDays = Integer.parseInt(minshippingdays);
                                         int MaxShippingDays = Integer.parseInt(maxshippingdays);
-                                        result = EngineUserManager.CreateSellerInformation(SellerUserID, BizName, BizEmail, BizPhone, MinShippingDays, MaxShippingDays);
+                                        result = EngineUserManager.CreateSellerInformation(SellerUserID, BizName, BizEmail, BizPhone, MinShippingDays, MaxShippingDays, cacnumber);
                                         if (result.equals("success")) {
                                             String msgbdy = "Congratulations!!! \n\nYou have been successfully registered as a Seller on Fyngram, a verification code email has been sent to the Seller's registered email.";
                                             EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), msgbdy, "Seller Account Created", SellerUserID);

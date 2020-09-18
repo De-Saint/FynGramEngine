@@ -1315,7 +1315,7 @@ public class EngineOrderManager {
                     result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, SellerUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetPendingWalletID(), SellerAmountAfterDiscount, "Move Fund", "For delivered Order.");
                     if (result.equals("success")) {
                         double AdminAmountAfterDiscountwithShippingMethodBalance = AdminBalanceAndShippingMethodBalance - DiscountAmountToRefund;
-//                        result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, AdminUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), AdminAmountAfterDiscountwithShippingMethodBalance, "Move Fund", "For delivered Order.");
+                        result = EngineWalletManager.ComputeWalletRecord(CustomerUserID, AdminUserID, EngineWalletManager.GetPendingWalletID(), EngineWalletManager.GetMainWalletID(), AdminAmountAfterDiscountwithShippingMethodBalance, "Move Fund", "For delivered Order.");
                     }
                 }
 
@@ -1327,11 +1327,11 @@ public class EngineOrderManager {
                 if (result.equals("success")) {
                     String CustomerUserName = EngineUserManager.GetUserName(CustomerUserID);
                     String body = "Hi " + CustomerUserName + ",\n\nThe Order with the Reference Number " + OrderRef + " has been delivered . \n\nCheers \nFyngram";
-                    EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), body, "Order Cancelled", CustomerUserID);
+                    EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), body, "Fyngram Order Delivered", CustomerUserID);
 
                     String SellerUserName = EngineUserManager.GetUserName(SellerUserID);
                     body = "Hi " + SellerUserName + ",\n\nThe Order with the Reference Number " + OrderRef + " that involves your product(s) has been delivered. \n\nCheers \nFyngram";
-                    EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), body, "Order Cancelled", SellerUserID);
+                    EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), body, "Fyngram Order Delivered", SellerUserID);
 
                     String ShippingMethodName = EngineShippingManager.GetShippingMethodName(ShippingMethodID);
                     body = "Hi " + ShippingMethodName + ",\n\nThe Order with the Reference Number " + OrderRef + " has been delivered. \n\nCheers \nFyngram";
@@ -1934,8 +1934,8 @@ public class EngineOrderManager {
                 CreateOrderStatusHistory(OrderID, 7);//settled
 
                 String SellerUserName = EngineUserManager.GetUserName(SellerUserID);
-                String body = "Hi " + SellerUserName + ",\n\nThe Order Amount of " + EngineTransactionManager.FormatNumber(SellerBalance) + "involved  with the Order Reference Number " + OrderRef + " has been transfered into your FynPay Account. \n\nCheers \nFyngram";
-                EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), body, "Order Cancelled", SellerUserID);
+                String body = "Hi " + SellerUserName + ",\n\nThe Order Amount of " + EngineTransactionManager.FormatNumber(SellerBalance) + " involved  with the Order Reference Number " + OrderRef + " has been transfered into your FynPay Account. \n\nCheers \nFyngram";
+                EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), body, "Fyngram Order Delivered", SellerUserID);
                 String SellerUserEmail = EngineUserManager.GetUserEmail(SellerUserID);
                 EngineEmailManager.SendEmail(SellerUserEmail, body, "Fyngram Order Delivered");
 
