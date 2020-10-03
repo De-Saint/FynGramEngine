@@ -269,7 +269,7 @@ public class WProductServlet extends HttpServlet {
                     result = EngineProductManager.ProcessProductStatus(ProductID, Status, Notes, Option, ProductIDs);
                     if (result.equals("success")) {
                         returninfo.addProperty("status", "success");
-                        returninfo.addProperty("msg", More + Status + " successfully.");
+                        returninfo.addProperty("msg", More + " " + Status + " successfully.");
                     } else {
                         if (!result.equals("failed")) {
                             returninfo.addProperty("msg", result);

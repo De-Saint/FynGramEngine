@@ -237,6 +237,26 @@ public class WOrderServlet extends HttpServlet {
                     json = new Gson().toJson(OrderDetails);
                     break;
                 }
+                case "DeleteOrder": {
+                    String orderid = request.getParameter("data");
+                    int OrderID = Integer.parseInt(orderid);
+                    result = EngineOrderManager.DeleteOrder(OrderID);
+                    JsonObject returninfo = new JsonObject();
+                    if (result.equals("success")) {
+                        returninfo.addProperty("status", "success");
+                        returninfo.addProperty("msg", "The order has been deleted successfully.");
+                    } else {
+                        returninfo.addProperty("status", "error");
+                        if (!result.equals("failed")) {
+                            returninfo.addProperty("msg", result);
+                        } else {
+                            returninfo.addProperty("msg", "Something went wrong. Please try again.");
+                        }
+                    }
+                    json = new Gson().toJson(returninfo);
+                    break;
+                }
+
                 case "UpdateSellerPayment": {
                     result = EngineOrderManager.UpdateSellerPayment();
                     json = new Gson().toJson(result);

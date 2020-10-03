@@ -300,7 +300,7 @@ public class WAddressServlet extends HttpServlet {
                     if (result.equals("success")) {
                         returninfo.addProperty("status", "success");
                         returninfo.addProperty("msg", "You have successfully added a new address.");
-                        IDS = EngineAddressManager.GetUserAddresstIDs(UserID);
+                        IDS = EngineAddressManager.GetUserAddressIDs(UserID);
                         for (int id : IDS) {
                             HashMap<String, String> details = EngineAddressManager.GetAddressData(id);
                             if (!details.isEmpty()) {
@@ -327,7 +327,7 @@ public class WAddressServlet extends HttpServlet {
                     String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
                     int UserID = Integer.parseInt(SessionID);
                     HashMap<Integer, HashMap<String, String>> List = new HashMap<>();
-                    ArrayList<Integer> IDS = EngineAddressManager.GetUserAddresstIDs(UserID);
+                    ArrayList<Integer> IDS = EngineAddressManager.GetUserAddressIDs(UserID);
                     if (!IDS.isEmpty()) {
                         for (int id : IDS) {
                             HashMap<String, String> details = EngineAddressManager.GetAddressData(id);
@@ -357,7 +357,7 @@ public class WAddressServlet extends HttpServlet {
                         returninfo.addProperty("status", "success");
                         returninfo.addProperty("msg", "You have successfully deleted the address.");
                         int uid = Integer.parseInt(UserID);
-                        IDS = EngineAddressManager.GetUserAddresstIDs(uid);
+                        IDS = EngineAddressManager.GetUserAddressIDs(uid);
                         for (int id : IDS) {
                             HashMap<String, String> details = EngineAddressManager.GetAddressData(id);
                             if (!details.isEmpty()) {
@@ -392,7 +392,7 @@ public class WAddressServlet extends HttpServlet {
                         returninfo.addProperty("status", "success");
                         returninfo.addProperty("msg", "Address has been successfully set to the default address..");
                         int uid = Integer.parseInt(UserID);
-                        IDS = EngineAddressManager.GetUserAddresstIDs(uid);
+                        IDS = EngineAddressManager.GetUserAddressIDs(uid);
                         for (int id : IDS) {
                             HashMap<String, String> details = EngineAddressManager.GetAddressData(id);
                             if (!details.isEmpty()) {

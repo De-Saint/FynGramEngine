@@ -687,7 +687,7 @@ public class EngineAddressManager {
         return IDs;
     }
 
-    public static ArrayList<Integer> GetUserAddresstIDs(int UserID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+    public static ArrayList<Integer> GetUserAddressIDs(int UserID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         ArrayList<Integer> IDs = new ArrayList<>();
         if (UserID == 1) {
             IDs = DBManager.GetIntArrayListDescending(Tables.AddressDetailsTable.ID, Tables.AddressDetailsTable.Table, "Order by " + Tables.AddressDetailsTable.ID);
@@ -703,7 +703,7 @@ public class EngineAddressManager {
         }
         try {
             double d = Double.parseDouble(strNum);
-        } catch (NumberFormatException nfe) {
+        } catch (NumberFormatException d) {
             return false;
         }
         return true;

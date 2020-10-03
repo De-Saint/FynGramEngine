@@ -551,11 +551,11 @@ public class EngineUserManager {
     public static String GetGuestComputerName() {
         String result = "failed";
         try {
-            
+
             InetAddress inetAddress = InetAddress.getLocalHost();
             result = inetAddress.getHostName();
             System.out.println("Host Name: " + result);
-            
+
         } catch (UnknownHostException e) {
         }
         return result;
@@ -568,11 +568,11 @@ public class EngineUserManager {
     public static String GetGuestSystemIPAddress() {
         String result = "failed";
         try {
-            
+
             InetAddress inetAddress = InetAddress.getLocalHost();
             result = inetAddress.getHostAddress();
             System.out.println("Host Name: " + result);
-            
+
         } catch (UnknownHostException e) {
         }
         return result;
@@ -588,9 +588,9 @@ public class EngineUserManager {
         try {
             result = System.getProperty(name);
         } catch (Exception e) {
-            
+
         }
-        
+
         return result;
     }
 
@@ -608,7 +608,7 @@ public class EngineUserManager {
         String result = "failed";
         if (Option.equals("G")) {//Guest
             result = DBManager.UpdateStringData(Tables.GuestTable.Table, Tables.GuestTable.Email, Email, "where " + Tables.GuestTable.ID + " = " + LoginID);
-            
+
         } else if (Option.equals("U")) {
             result = DBManager.UpdateIntData(Tables.UsersTable.Newsletters, 1, Tables.UsersTable.Table, "where " + Tables.UsersTable.ID + " = " + LoginID);
         }
@@ -728,7 +728,7 @@ public class EngineUserManager {
             String IPAddress = GetGuestSystemIPAddress();
             userid = GetLoginIDByIPAddress(IPAddress);
         }
-        
+
         return userid;
     }
 
@@ -802,7 +802,7 @@ public class EngineUserManager {
         UserTableData.put("UserType", usertype);
         UserTableData.put("UserID", UserID);
         UserTableData.put("UserName", username);
-        
+
         int TransactionPin = EngineWalletManager.GetUserWalletPIN(UserID);
         UserTableData.put("TransactionPin", TransactionPin);
         HashMap<String, String> userData = GetUserTypeDetails(UserID, usertype);
@@ -925,7 +925,7 @@ public class EngineUserManager {
             if (!Data2.isEmpty()) {
                 Data.putAll(Data2);
             }
-            
+
             int SellerTypeID = EngineSubscriptionManager.GetSellerTypeIDBySellerUserID(UserID);
             String SellerTypeName = EngineSubscriptionManager.GetSellerTypeNameBySellerTypeID(SellerTypeID);
             Data.put("SellerTypeName", SellerTypeName);
@@ -1028,7 +1028,7 @@ public class EngineUserManager {
                 userEmail = GetUserEmail(memberID);
                 userAcctNumber = EngineWalletManager.GetUserWalletNumber(UserID);
                 resultID = memberID;
-                
+
             }
         } else {
             userName = GetUserName(UserID);
@@ -1157,7 +1157,7 @@ public class EngineUserManager {
         ids = UtilityManager.removeDuplicatesIntegerArrayList(ids);
         return ids;
     }
-    
+
     public static String UpdateUserSessionDetails(String OldSessionID, String NewSessionID, String UserID, String App) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         String result = "";
         String LoginID = "";
@@ -1169,7 +1169,7 @@ public class EngineUserManager {
         if ((!App.equals("FyngramManager"))) {
             EngineCartManager.UpdateCartUserID(LoginID, "" + UserID);
         }
-        
+
         return result;
     }
 
@@ -1190,8 +1190,41 @@ public class EngineUserManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
+    public static ArrayList<Integer> GetUserComplaintIDs(int UserID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        ArrayList<Integer> ids = DBManager.GetIntArrayListDescending(Tables.ComplaintTable.ID, Tables.ComplaintTable.Table, "where " + Tables.ComplaintTable.UserID + " = " + UserID);
+        return ids;
+    }
+
+    /**
+     *
+     * @return @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
     public static ArrayList<Integer> GetNewFeatureSuggestionIDs() throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         ArrayList<Integer> ids = DBManager.GetIntArrayListDescending(Tables.NewFeatureRequestTable.ID, Tables.NewFeatureRequestTable.Table, "ORDER BY id DESC");
+        return ids;
+    }
+
+    /**
+     *
+     * @return @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static ArrayList<Integer> GetUserNewFeatureSuggestionIDs(String email) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        ArrayList<Integer> ids = DBManager.GetIntArrayListDescending(Tables.NewFeatureRequestTable.ID, Tables.NewFeatureRequestTable.Table, "where " + Tables.NewFeatureRequestTable.Email + " = '" + email + "'");
+        return ids;
+    }
+
+    /**
+     *
+     * @return @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static ArrayList<Integer> GetUserPasswordRecIDs(int UserID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        ArrayList<Integer> ids = DBManager.GetIntArrayListDescending(Tables.PasswordRecoveryTable.ID, Tables.PasswordRecoveryTable.Table, "where " + Tables.PasswordRecoveryTable.UserID + " = " + UserID);
         return ids;
     }
 
@@ -1212,7 +1245,7 @@ public class EngineUserManager {
             String dt = Details.get(Tables.ComplaintTable.Date);
             String date = DateManager.readDate(dt);
             Details.put(Tables.ComplaintTable.Date, date);
-            
+
             String tm = Details.get(Tables.ComplaintTable.Time);
             String time = DateManager.readTime(tm);
             Details.put(Tables.ComplaintTable.Time, time);
@@ -1231,11 +1264,11 @@ public class EngineUserManager {
     public static HashMap<String, String> GetNewfeatureSuggestionData(int NewFeatureID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         HashMap<String, String> Details = DBManager.GetTableData(Tables.NewFeatureRequestTable.Table, "where " + Tables.NewFeatureRequestTable.ID + " = " + NewFeatureID);
         if (!Details.isEmpty()) {
-            
+
             String dt = Details.get(Tables.NewFeatureRequestTable.Date);
             String date = DateManager.readDate(dt);
             Details.put(Tables.NewFeatureRequestTable.Date, date);
-            
+
             String tm = Details.get(Tables.NewFeatureRequestTable.Time);
             String time = DateManager.readTime(tm);
             Details.put(Tables.NewFeatureRequestTable.Time, time);
@@ -1320,21 +1353,21 @@ public class EngineUserManager {
 //        ids = DBManager.GetIntArrayList(Tables.GuestTable.ID, Tables.GuestTable.Table, "where " + Tables.GuestTable.Email + " != " + "");
         return ids;
     }
-    
+
     public static HashMap<String, String> GetGuestData(int GuestID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         HashMap<String, String> Data = DBManager.GetTableData(Tables.GuestTable.Table, "where " + Tables.GuestTable.ID + " = " + GuestID);
         if (!Data.isEmpty()) {
             String dt = Data.get(Tables.GuestTable.Date);
             String date = DateManager.readDate(dt);
             Data.put(Tables.GuestTable.Date, date);
-            
+
             String tm = Data.get(Tables.GuestTable.Time);
             String time = DateManager.readTime(tm);
             Data.put(Tables.GuestTable.Time, time);
         }
         return Data;
     }
-    
+
     public static String ComputeResetPassword(String Email) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, IOException {
         String result = "failed";
         int UserID = DBManager.GetInt(Tables.UsersTable.ID, Tables.UsersTable.Table, "where " + Tables.UsersTable.Email + " = '" + Email + "'");
@@ -1390,7 +1423,7 @@ public class EngineUserManager {
             result = "Invalid Validation Code. Please check and try again";
         }
         return result;
-        
+
     }
 
     /**
@@ -1417,7 +1450,7 @@ public class EngineUserManager {
             result = "Invalid Validation Code. Please check and try again";
         }
         return result + "#" + UserID;
-        
+
     }
 
     /**
@@ -1441,6 +1474,297 @@ public class EngineUserManager {
         DBManager.UpdateStringData(Tables.UsersTable.Table, Tables.UsersTable.Phone, Phone, "where " + Tables.UsersTable.ID + " = " + UserID);
         DBManager.UpdateIntData(Tables.UsersTable.Newsletters, Newsletter, Tables.UsersTable.Table, "where " + Tables.UsersTable.ID + " = " + UserID);
         return result;
-        
+
     }
+
+    /**
+     *
+     * @param UserID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static String DeleteSeller(int UserID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        String result = "";
+
+        //Sellers details
+        result = DBManager.DeleteObject(Tables.SellersTable.Table, "where " + Tables.SellersTable.UserID + " = " + UserID);
+
+        //info details
+        DBManager.DeleteObject(Tables.SellerInfoTable.Table, "where " + Tables.SellerInfoTable.SellerUserID + " = " + UserID);
+
+        //wallet details
+        DBManager.DeleteObject(Tables.WalletTable.Table, "where " + Tables.WalletTable.UserID + " = " + UserID);
+
+        //bank details
+        DBManager.DeleteObject(Tables.BankDetailsTable.Table, "where " + Tables.BankDetailsTable.UserID + " = " + UserID);
+
+        //messages
+        ArrayList<Integer> messageIds = EngineMessageManager.GetInboxMessageIDs(UserID);
+        if (!messageIds.isEmpty()) {
+            for (int id : messageIds) {
+                DBManager.DeleteObject(Tables.MessagesTable.Table, "where " + Tables.MessagesTable.ID + " = " + id);
+            }
+        }
+
+        //reviews
+        ArrayList<Integer> reviewIds = EngineReviewManager.GetUserRatingIDsByUserID(UserID);
+        if (!reviewIds.isEmpty()) {
+            for (int id : reviewIds) {
+                DBManager.DeleteObject(Tables.ReviewsTable.Table, "where " + Tables.ReviewsTable.ID + " = " + id);
+            }
+        }
+
+        //cashout
+        ArrayList<Integer> cashoutIds = EngineCashoutManager.GetCashOutIDs(UserID);
+        if (!cashoutIds.isEmpty()) {
+            for (int id : cashoutIds) {
+                DBManager.DeleteObject(Tables.CashoutTable.Table, "where " + Tables.CashoutTable.ID + " = " + id);
+            }
+        }
+
+        //orders
+        ArrayList<Integer> orderIds = EngineOrderManager.GetOrderIDsBySellerUserID(UserID);
+        if (!orderIds.isEmpty()) {
+            for (int id : orderIds) {
+                String orderRef = EngineOrderManager.GetOrderReferenceNumber(id);
+                DBManager.DeleteObject(Tables.OrdersTable.Table, "where " + Tables.OrdersTable.ID + " = " + id);
+
+                ArrayList<Integer> HIds = EngineOrderManager.GetOrderHistoryIDs(id);
+                if (!HIds.isEmpty()) {
+                    for (int hid : HIds) {
+                        DBManager.DeleteObject(Tables.OrderHistoryTable.Table, "where " + Tables.OrderHistoryTable.ID + " = " + hid);
+                    }
+                }
+
+                DBManager.DeleteObject(Tables.OrderShippingMethodTable.Table, "where " + Tables.OrderShippingMethodTable.OrderID + " = " + id);
+                DBManager.DeleteObject(Tables.OrderPaymentsTable.Table, "where " + Tables.OrderPaymentsTable.OrderReference + " = '" + orderRef + "'");
+                DBManager.DeleteObject(Tables.OrderInvoicesTable.Table, "where " + Tables.OrderInvoicesTable.OrderID + " = " + id);
+
+                ArrayList<Integer> HSIds = EngineOrderManager.GetOrderStatusHistoryIDs(id);
+                if (!HSIds.isEmpty()) {
+                    for (int hsid : HSIds) {
+                        DBManager.DeleteObject(Tables.OrderStatusHistoryTable.Table, "where " + Tables.OrderStatusHistoryTable.ID + " = " + hsid);
+                    }
+                }
+
+            }
+        }
+
+        //products 
+        ArrayList<Integer> sProductIds = EngineProductManager.GetSellerProducts(UserID);
+        if (!sProductIds.isEmpty()) {
+            for (int id : sProductIds) {
+                int prodid = DBManager.GetInt(Tables.SellerProductsTable.ProductID, Tables.SellerProductsTable.Table, "where " + Tables.SellerProductsTable.ID + " = " + id);
+       
+                EngineProductManager.DeleteProduct(prodid, 0, "Deleted");
+                DBManager.DeleteObject(Tables.SellerProductsTable.Table, "where " + Tables.SellerProductsTable.ID + " = " + id);
+            }
+        }
+
+        //address
+        ArrayList<Integer> addressIds = EngineAddressManager.GetUserAddressIDs(UserID);
+        if (!addressIds.isEmpty()) {
+            for (int id : addressIds) {
+                DBManager.DeleteObject(Tables.AddressDetailsTable.Table, "where " + Tables.AddressDetailsTable.ID + " = " + id);
+            }
+        }
+
+        //payments
+        ArrayList<Integer> paymentIds = EnginePaymentManager.GetPaymentIDs(UserID);
+        if (!paymentIds.isEmpty()) {
+            for (int id : paymentIds) {
+                DBManager.DeleteObject(Tables.PaymentsTable.Table, "where " + Tables.PaymentsTable.ID + " = " + id);
+            }
+        }
+
+        //transactions
+        ArrayList<Integer> transactionIds = EngineTransactionManager.GetTransactionIDs(UserID);
+        if (!transactionIds.isEmpty()) {
+            for (int id : transactionIds) {
+                DBManager.DeleteObject(Tables.TransactionsTable.Table, "where " + Tables.TransactionsTable.ID + " = " + id);
+            }
+        }
+
+        //subscription
+        ArrayList<Integer> subscriptionsIds = EngineSubscriptionManager.GetAllSubscriptionIDs(UserID);
+        if (!subscriptionsIds.isEmpty()) {
+            for (int id : subscriptionsIds) {
+                DBManager.DeleteObject(Tables.SellerSubscriptionTable.Table, "where " + Tables.SellerSubscriptionTable.ID + " = " + id);
+            }
+        }
+
+        //Delete password recovery data
+        ArrayList<Integer> passIds = EngineUserManager.GetUserPasswordRecIDs(UserID);
+        if (!passIds.isEmpty()) {
+            for (int id : passIds) {
+                DBManager.DeleteObject(Tables.PasswordRecoveryTable.Table, "where " + Tables.PasswordRecoveryTable.ID + " = " + id);
+            }
+        }
+
+        //Update stock movement
+        ArrayList<Integer> stockIds = EngineStockManager.GetStockIDs(UserID);
+        if (!stockIds.isEmpty()) {
+            for (int id : stockIds) {
+                DBManager.DeleteObject(Tables.StockMovementTable.Table, "where " + Tables.StockMovementTable.ID + " = " + id);
+            }
+        }
+        //Delete from the user table
+        result = DBManager.DeleteObject(Tables.UsersTable.Table, "where " + Tables.UsersTable.ID + " = " + UserID);
+
+        return result;
+    }
+
+    /**
+     *
+     * @param UserID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static String DeleteCustomer(int UserID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        String result = "";
+        //address
+        ArrayList<Integer> GetUserAddressIds = EngineAddressManager.GetUserAddressIDs(UserID);
+        if (!GetUserAddressIds.isEmpty()) {
+            for (int id : GetUserAddressIds) {
+                DBManager.DeleteObject(Tables.AddressDetailsTable.Table, "where " + Tables.AddressDetailsTable.ID + " = " + id);
+            }
+        }
+
+        //reviews
+        ArrayList<Integer> reviewIds = EngineReviewManager.GetUserRatingIDsByUserID(UserID);
+        if (!reviewIds.isEmpty()) {
+            for (int id : reviewIds) {
+                DBManager.DeleteObject(Tables.ReviewsTable.Table, "where " + Tables.ReviewsTable.ID + " = " + id);
+            }
+        }
+
+        //payments
+        ArrayList<Integer> paymentIds = EnginePaymentManager.GetPaymentIDs(UserID);
+        if (!paymentIds.isEmpty()) {
+            for (int id : paymentIds) {
+                DBManager.DeleteObject(Tables.PaymentsTable.Table, "where " + Tables.PaymentsTable.ID + " = " + id);
+            }
+        }
+
+        //orders
+        ArrayList<Integer> orderIds = EngineOrderManager.GetOrderIDsByCustomerUserID(UserID);
+        if (!orderIds.isEmpty()) {
+            for (int id : orderIds) {
+                String orderRef = EngineOrderManager.GetOrderReferenceNumber(id);
+                DBManager.DeleteObject(Tables.OrdersTable.Table, "where " + Tables.OrdersTable.ID + " = " + id);
+
+                ArrayList<Integer> HIds = EngineOrderManager.GetOrderHistoryIDs(id);
+                if (!HIds.isEmpty()) {
+                    for (int hid : HIds) {
+                        DBManager.DeleteObject(Tables.OrderHistoryTable.Table, "where " + Tables.OrderHistoryTable.ID + " = " + hid);
+                    }
+                }
+
+                DBManager.DeleteObject(Tables.OrderShippingMethodTable.Table, "where " + Tables.OrderShippingMethodTable.OrderID + " = " + id);
+                DBManager.DeleteObject(Tables.OrderPaymentsTable.Table, "where " + Tables.OrderPaymentsTable.OrderReference + " = '" + orderRef + "'");
+                DBManager.DeleteObject(Tables.OrderInvoicesTable.Table, "where " + Tables.OrderInvoicesTable.OrderID + " = " + id);
+
+                ArrayList<Integer> HSIds = EngineOrderManager.GetOrderStatusHistoryIDs(id);
+                if (!HSIds.isEmpty()) {
+                    for (int hsid : HSIds) {
+                        DBManager.DeleteObject(Tables.OrderStatusHistoryTable.Table, "where " + Tables.OrderStatusHistoryTable.ID + " = " + hsid);
+                    }
+                }
+
+            }
+        }
+
+        //Delete customer suggestions
+        String Email = GetUserEmail(UserID);
+        ArrayList<Integer> nfIDs = EngineUserManager.GetUserNewFeatureSuggestionIDs(Email);
+        if (!nfIDs.isEmpty()) {
+            for (int id : nfIDs) {
+                DBManager.DeleteObject(Tables.NewFeatureRequestTable.Table, "where " + Tables.NewFeatureRequestTable.ID + " = " + id);
+            }
+        }
+
+        //Delete password recovery data
+        ArrayList<Integer> passIds = EngineUserManager.GetUserPasswordRecIDs(UserID);
+        if (!passIds.isEmpty()) {
+            for (int id : passIds) {
+                DBManager.DeleteObject(Tables.PasswordRecoveryTable.Table, "where " + Tables.PasswordRecoveryTable.ID + " = " + id);
+            }
+        }
+
+        //Update stock movement
+        ArrayList<Integer> stockIds = EngineStockManager.GetStockIDs(UserID);
+        if (!stockIds.isEmpty()) {
+            for (int id : stockIds) {
+                DBManager.DeleteObject(Tables.StockMovementTable.Table, "where " + Tables.StockMovementTable.ID + " = " + id);
+            }
+        }
+
+        //discount
+        ArrayList<Integer> discountsIds = EngineDiscountManager.GetCustomerDiscountCodeIDsByCustomerUserID(UserID);
+        if (!discountsIds.isEmpty()) {
+            for (int id : discountsIds) {
+                DBManager.DeleteObject(Tables.CustomerDiscountCodesTable.Table, "where " + Tables.CustomerDiscountCodesTable.ID + " = " + id);
+            }
+        }
+
+        //wallet details
+        result = DBManager.DeleteObject(Tables.WalletTable.Table, "where " + Tables.WalletTable.UserID + " = " + UserID);
+
+        //messages
+        ArrayList<Integer> messageIds = EngineMessageManager.GetInboxMessageIDs(UserID);
+        if (!messageIds.isEmpty()) {
+            for (int id : messageIds) {
+                DBManager.DeleteObject(Tables.MessagesTable.Table, "where " + Tables.MessagesTable.ID + " = " + id);
+            }
+        }
+
+        //transactions
+        ArrayList<Integer> transactionIds = EngineTransactionManager.GetTransactionIDs(UserID);
+        if (!transactionIds.isEmpty()) {
+            for (int id : transactionIds) {
+                DBManager.DeleteObject(Tables.TransactionsTable.Table, "where " + Tables.TransactionsTable.ID + " = " + id);
+            }
+        }
+
+        //bank details
+        result = DBManager.DeleteObject(Tables.BankDetailsTable.Table, "where " + Tables.BankDetailsTable.UserID + " = " + UserID);
+
+        //cashout
+        ArrayList<Integer> cashoutIds = EngineCashoutManager.GetCashOutIDs(UserID);
+        if (!cashoutIds.isEmpty()) {
+            for (int id : cashoutIds) {
+                DBManager.DeleteObject(Tables.CashoutTable.Table, "where " + Tables.CashoutTable.ID + " = " + id);
+            }
+        }
+
+        //cart
+        result = EngineCartManager.DeleteCartByUserID("" + UserID);
+
+        //wishlist
+        result = EngineCartManager.DeleteWishListByUserID("" + UserID);
+
+        //complaint
+        ArrayList<Integer> compIds = EngineUserManager.GetUserComplaintIDs(UserID);
+        if (!compIds.isEmpty()) {
+            for (int id : compIds) {
+                DBManager.DeleteObject(Tables.ComplaintTable.Table, "where " + Tables.ComplaintTable.ID + " = " + id);
+            }
+        }
+
+        //customer
+        result = DBManager.DeleteObject(Tables.CustomersTable.Table, "where " + Tables.CustomersTable.UserID + " = " + UserID);
+
+        //Delete the user
+        result = DBManager.DeleteObject(Tables.UsersTable.Table, "where " + Tables.UsersTable.ID + " = " + UserID);
+
+        return result;
+    }
+    
+    
+   
+
 }

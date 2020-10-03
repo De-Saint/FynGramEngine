@@ -494,12 +494,13 @@ public class EngineProductManager {
             DBManager.UpdateIntData(Tables.ProductsTable.Active, 0, Tables.ProductsTable.Table, "where " + Tables.ProductsTable.ID + " = " + ProductID);
             DBManager.UpdateStringData(Tables.SellerProductsTable.Table, Tables.SellerProductsTable.Note, Note, "where " + Tables.SellerProductsTable.ProductID + " = " + ProductID);
         } else if (Status.equals("Deleted") && !SellerProdStatus.equals("Activated")) {
-            result = DeleteProduct(ProductID);
+            int ProductStatus = GetProductStatus(ProductID);
+            result = DeleteProduct(ProductID, ProductStatus, SellerProdStatus);
         }
-       int SellerUserID =  GetProductSellerUserIDByProductID(ProductID);
-       String email = EngineUserManager.GetUserEmail(SellerUserID);
+        int SellerUserID = GetProductSellerUserIDByProductID(ProductID);
+        String email = EngineUserManager.GetUserEmail(SellerUserID);
         try {
-            String body = "Hi "+ EngineUserManager.GetUserName(SellerUserID)+", \n\n"+Note + "\n\n Cheers \nFyngram.";
+            String body = "Hi " + EngineUserManager.GetUserName(SellerUserID) + ", \n\n" + Note + "\n\n Cheers \nFyngram.";
             EngineEmailManager.SendEmail(email, body, Status + "- Product");
             EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), body, Status + "- Product", SellerUserID);
         } catch (IOException ex) {
@@ -1390,12 +1391,11 @@ public class EngineProductManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String DeleteProduct(int ProductID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+    public static String DeleteProduct(int ProductID, int ProductStatus, String SellerProdStatus) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         String result = "failed";
 
-        int Status = GetProductStatus(ProductID);
-        String SellerProdStatus = GetSellerProductStatus(ProductID);
-        if (Status == 0 && SellerProdStatus.equals("Deactivated")) {
+//        
+        if (ProductStatus == 0 && !SellerProdStatus.equals("Activated")) {
 
             ArrayList<Integer> ImageIDS = EngineImageManager.GetImageIDs(ProductID, "Product");
             if (!ImageIDS.isEmpty()) {
@@ -1437,6 +1437,15 @@ public class EngineProductManager {
             DBManager.DeleteObject(Tables.ProductPriceTable.Table, "where " + Tables.ProductPriceTable.ProductID + " = " + ProductID);
 
             DBManager.DeleteObject(Tables.ProductInfoTable.Table, "where " + Tables.ProductInfoTable.ProductID + " = " + ProductID);
+
+            DBManager.DeleteObject(Tables.ProductsTable.Table, "where " + Tables.ProductsTable.ID + " = " + ProductID);
+
+            ArrayList<Integer> ViewIDs = DBManager.GetIntArrayList(Tables.ProductViewedTable.ID, Tables.ProductViewedTable.Table, "where " + Tables.ProductViewedTable.ProductID + " = " + ProductID);
+            if (!ViewIDs.isEmpty()) {
+                for (int id : ViewIDs) {
+                    result = DBManager.DeleteObject(Tables.ProductViewedTable.Table, "where " + Tables.ProductViewedTable.ID + " = " + id);
+                }
+            }
         } else {
             result = "Please Update the Product Status to Deactivate";
         }

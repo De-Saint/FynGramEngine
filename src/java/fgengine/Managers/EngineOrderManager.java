@@ -1944,4 +1944,29 @@ public class EngineOrderManager {
 
         return result;
     }
+
+    public static String DeleteOrder(int OrderID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException, IOException {
+        String result = "";
+        String orderRef = EngineOrderManager.GetOrderReferenceNumber(OrderID);
+
+        ArrayList<Integer> HIds = EngineOrderManager.GetOrderHistoryIDs(OrderID);
+        if (!HIds.isEmpty()) {
+            for (int hid : HIds) {
+                DBManager.DeleteObject(Tables.OrderHistoryTable.Table, "where " + Tables.OrderHistoryTable.ID + " = " + hid);
+            }
+        }
+
+        DBManager.DeleteObject(Tables.OrderShippingMethodTable.Table, "where " + Tables.OrderShippingMethodTable.OrderID + " = " + OrderID);
+        DBManager.DeleteObject(Tables.OrderPaymentsTable.Table, "where " + Tables.OrderPaymentsTable.OrderReference + " = '" + orderRef + "'");
+        DBManager.DeleteObject(Tables.OrderInvoicesTable.Table, "where " + Tables.OrderInvoicesTable.OrderID + " = " + OrderID);
+
+        ArrayList<Integer> HSIds = EngineOrderManager.GetOrderStatusHistoryIDs(OrderID);
+        if (!HSIds.isEmpty()) {
+            for (int hsid : HSIds) {
+                DBManager.DeleteObject(Tables.OrderStatusHistoryTable.Table, "where " + Tables.OrderStatusHistoryTable.ID + " = " + hsid);
+            }
+        }
+        result = DBManager.DeleteObject(Tables.OrdersTable.Table, "where " + Tables.OrdersTable.ID + " = " + OrderID);
+        return result;
+    }
 }

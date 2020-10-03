@@ -25,7 +25,7 @@ public class EngineReportManager {
      */
     public static HashMap<String, Object> GetCustomerStats(int UserID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         HashMap<String, Object> UserData = new HashMap<>();
-        int GetUserAddress = EngineAddressManager.GetUserAddresstIDs(UserID).size();
+        int GetUserAddress = EngineAddressManager.GetUserAddressIDs(UserID).size();
         UserData.put("address_count", GetUserAddress);
 
         int GetUserReviews = EngineReviewManager.GetUserRatingIDsByUserID(UserID).size();
@@ -65,7 +65,7 @@ public class EngineReportManager {
     public static HashMap<String, Object> GetStats(int UserID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         HashMap<String, Object> UserData = new HashMap<>();
         if (UserID == 1) {
-            int GetUserAddress = EngineAddressManager.GetUserAddresstIDs(UserID).size();
+            int GetUserAddress = EngineAddressManager.GetUserAddressIDs(UserID).size();
             UserData.put("address_count", GetUserAddress);
 
             int GetUserDiscounts = EngineDiscountManager.GetDiscountCodeIDs().size();

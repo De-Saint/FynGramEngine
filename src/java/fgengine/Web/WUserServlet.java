@@ -217,7 +217,7 @@ public class WUserServlet extends HttpServlet {
                     String PhoneNumber = data[4].trim();
                     String Password = data[5].trim();
                     String newsletter = data[6].trim();
-                     String title = data[7].trim();
+                    String title = data[7].trim();
                     int NewsLetter = Integer.parseInt(newsletter);
                     int CustomerUserID = 0;
                     JsonObject returninfo = new JsonObject();
@@ -348,6 +348,36 @@ public class WUserServlet extends HttpServlet {
                     json = new Gson().toJson(datares);
                     break;
                 }
+                case "DeleteSeller": {
+                    String selleruserid = request.getParameter("data");
+                    int SellerUserID = Integer.parseInt(selleruserid);
+                    result = EngineUserManager.DeleteSeller(SellerUserID);
+                    JsonObject returninfo = new JsonObject();
+                    if (result.equals("success")) {
+                        returninfo.addProperty("status", "success");
+                        returninfo.addProperty("msg", "The seller account has been deleted.");
+                    } else {
+                        returninfo.addProperty("status", "error");
+                        returninfo.addProperty("msg", "Oh No! Please try again.");
+                    }
+                    json = new Gson().toJson((JsonElement) returninfo);
+                    break;
+                }
+                case "DeleteCustomer": {
+                    String customeruserid = request.getParameter("data");
+                    int CustomerUserID = Integer.parseInt(customeruserid);
+                    result = EngineUserManager.DeleteCustomer(CustomerUserID);
+                    JsonObject returninfo = new JsonObject();
+                    if (result.equals("success")) {
+                        returninfo.addProperty("status", "success");
+                        returninfo.addProperty("msg", "The customer account has been deleted.");
+                    } else {
+                        returninfo.addProperty("status", "error");
+                        returninfo.addProperty("msg", "Oh No! Please try again.");
+                    }
+                    json = new Gson().toJson((JsonElement) returninfo);
+                    break;
+                }
                 case "ActivateSellerSubscrition": {
                     String selleruserid = request.getParameter("data");
                     int SellerUserID = Integer.parseInt(selleruserid);
@@ -358,7 +388,7 @@ public class WUserServlet extends HttpServlet {
                         returninfo.addProperty("msg", "Congratulations!!! \nYour account has been successfully activated. \nThank you for being part of Fyngram Onlne Store");
                     } else {
                         returninfo.addProperty("status", "error");
-                        returninfo.addProperty("msg", "Oh No! It's our problem not yours. Please try again.");
+                        returninfo.addProperty("msg", "Oh No! Please try again.");
                     }
                     json = new Gson().toJson((JsonElement) returninfo);
                     break;

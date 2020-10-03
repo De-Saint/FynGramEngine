@@ -70,7 +70,7 @@ public class EngineCartManager {
                 NewProductPrice = OldProductPrice - ProductPrice;
                 NewProductQuantity = OldProductQuantity - ProductQuantity;
             }
-            result = UpdateCartProductPrice(CartProductDetailsID,  NewProductPrice);
+            result = UpdateCartProductPrice(CartProductDetailsID, NewProductPrice);
             if (result.equals("success")) {
                 result = UpdateCartProductQuantity(CartProductDetailsID, NewProductQuantity);
                 if (result.equals("success")) {
@@ -591,7 +591,7 @@ public class EngineCartManager {
                 }
                 result = UpdateWishListProductCount(ExistingWishListID, NewProductCount);
                 if (result.equals("success")) {
-                    result = UpdateWishListAmount(ExistingWishListID,NewAmount);
+                    result = UpdateWishListAmount(ExistingWishListID, NewAmount);
                 } else {
                     result = "WishList total product count could not be updated";
                 }
@@ -738,7 +738,7 @@ public class EngineCartManager {
         DBManager.DeleteObject(Tables.CartProductDetailsTable.Table, "where " + Tables.CartProductDetailsTable.ID + " = " + CartProductDetailsID);
 
         double CartAmount = GetCartAmountByCartID(CartID);
-        double CartTotalAmount =GetCartTotalAmountByCartID(CartID);
+        double CartTotalAmount = GetCartTotalAmountByCartID(CartID);
         int OldCartProductCount = GetCartProductCountByCartID(CartID);
         double NewCartAmount = CartAmount - CartProductPrice;
         double NewTotalCartAmount = CartTotalAmount - CartProductPrice;
@@ -775,7 +775,7 @@ public class EngineCartManager {
     public static String DeleteWishListProduct(int WishlistID, int ProductID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         String result = "failed";
         int WishlistProductDetailsID = DBManager.GetInt(Tables.WishlistProductDetailsTable.ID, Tables.WishlistProductDetailsTable.Table, "where " + Tables.WishlistProductDetailsTable.WishlistID + " = " + WishlistID + " And " + Tables.CartProductDetailsTable.ProductID + " = " + ProductID);
-        double WishListProductPrice =GetWishListProductPriceByID(WishlistProductDetailsID);
+        double WishListProductPrice = GetWishListProductPriceByID(WishlistProductDetailsID);
         int WishListProductQuantity = GetWishListProductQuantityByID(WishlistProductDetailsID);
 
         DBManager.DeleteObject(Tables.WishlistProductDetailsTable.Table, "where " + Tables.WishlistProductDetailsTable.ID + " = " + WishlistProductDetailsID);
@@ -794,7 +794,7 @@ public class EngineCartManager {
         } else {
             result = "WishList Product Count could not be updated";
         }
-         if (NewWishListProductCount == 0) {
+        if (NewWishListProductCount == 0) {
             result = DBManager.DeleteObject(Tables.WishlistTable.Table, "where " + Tables.WishlistTable.ID + " = " + WishlistID);
 
         }
@@ -821,7 +821,7 @@ public class EngineCartManager {
         if (CartID != 0) {
             //update the amount in the cart table
             double CartAmount = GetCartAmountByUserID(UserID);
-            double CartTotalAmount =GetCartTotalAmountByUserID(UserID);
+            double CartTotalAmount = GetCartTotalAmountByUserID(UserID);
             double NewCartAmount = CartAmount + WishListAmount;
             double NewCartTotalAmount = CartTotalAmount += WishListAmount;
             result = UpdateCartAmount(CartID, NewCartAmount);
@@ -973,10 +973,10 @@ public class EngineCartManager {
                     result = DBManager.UpdateDoubleData(Tables.CartTable.Table, Tables.CartTable.DiscountAmount, DiscountAmt, "where " + Tables.CartTable.ID + " = " + CartID);
                 } else if (DiscountDeductionTypeID == 2) {//amount
                     CartDiscountedAmount = CartAmount - DiscountDeductionValue;
-                    result = DBManager.UpdateDoubleData(Tables.CartTable.Table, Tables.CartTable.DiscountAmount, DiscountDeductionValue,  "where " + Tables.CartTable.ID + " = " + CartID);
+                    result = DBManager.UpdateDoubleData(Tables.CartTable.Table, Tables.CartTable.DiscountAmount, DiscountDeductionValue, "where " + Tables.CartTable.ID + " = " + CartID);
                 }
                 if (result.equals("success")) {
-                    result = DBManager.UpdateDoubleData(Tables.CartTable.Table, Tables.CartTable.DiscountedAmount,  CartDiscountedAmount, "where " + Tables.CartTable.ID + " = " + CartID);
+                    result = DBManager.UpdateDoubleData(Tables.CartTable.Table, Tables.CartTable.DiscountedAmount, CartDiscountedAmount, "where " + Tables.CartTable.ID + " = " + CartID);
                     if (result.equals("success")) {
                         result = DBManager.UpdateIntData(Tables.CartTable.DiscountCodeID, DiscountCodeID, Tables.CartTable.Table, "where " + Tables.CartTable.ID + " = " + CartID);
                         if (result.equals("success")) {
@@ -1297,6 +1297,36 @@ public class EngineCartManager {
 
         }
         return Data;
+    }
+
+    public static String DeleteWishListByUserID(String UserID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        String result = "failed";
+        int wid = DBManager.GetInt(Tables.WishlistTable.ID, Tables.WishlistTable.Table, "where " + Tables.WishlistTable.UserID + " = '" + UserID + "'");
+        ArrayList<Integer> WishListProductDetailIDs = GetWishListProductDetailsIDsByWishListID(wid);
+        if (!WishListProductDetailIDs.isEmpty()) {
+            for (int WishListProductDetailsID : WishListProductDetailIDs) {
+                result = DBManager.DeleteObject(Tables.WishlistProductDetailsTable.Table, "where " + Tables.WishlistProductDetailsTable.ID + " = " + WishListProductDetailsID);
+            }
+        }
+        if (result.equals("success")) {
+            result = DBManager.DeleteObject(Tables.WishlistTable.Table, "where " + Tables.WishlistTable.ID + " = " + wid);
+        }
+        return result;
+    }
+
+    public static String DeleteCartByUserID(String UserID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        String result = "failed";
+        int cartid = DBManager.GetInt(Tables.CartTable.ID, Tables.CartTable.Table, "where " + Tables.CartTable.UserID + " = '" + UserID + "'");
+        ArrayList<Integer> CartProductDetailIDs = GetCartProductDetailsIDsByCartID(cartid);
+        if (!CartProductDetailIDs.isEmpty()) {
+            for (int CartProductDetailsID : CartProductDetailIDs) {
+                result = DBManager.DeleteObject(Tables.CartProductDetailsTable.Table, "where " + Tables.CartProductDetailsTable.ID + " = " + CartProductDetailsID);
+            }
+        }
+        if (result.equals("success")) {
+            result = DBManager.DeleteObject(Tables.CartTable.Table, "where " + Tables.CartTable.ID + " = " + cartid);
+        }
+        return result;
     }
 
     /**
