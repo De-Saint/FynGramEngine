@@ -497,15 +497,18 @@ public class EngineProductManager {
             int ProductStatus = GetProductStatus(ProductID);
             result = DeleteProduct(ProductID, ProductStatus, SellerProdStatus);
         }
-        int SellerUserID = GetProductSellerUserIDByProductID(ProductID);
-        String email = EngineUserManager.GetUserEmail(SellerUserID);
-        try {
-            String body = "Hi " + EngineUserManager.GetUserName(SellerUserID) + ", \n\n" + Note + "\n\n Cheers \nFyngram.";
-            EngineEmailManager.SendEmail(email, body, Status + "- Product");
-            EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), body, Status + "- Product", SellerUserID);
-        } catch (IOException ex) {
-            Logger.getLogger(EngineProductManager.class.getName()).log(Level.SEVERE, null, ex);
+        if (!Status.equals("Deleted")) {
+            int SellerUserID = GetProductSellerUserIDByProductID(ProductID);
+            String email = EngineUserManager.GetUserEmail(SellerUserID);
+            try {
+                String body = "Hi " + EngineUserManager.GetUserName(SellerUserID) + ", \n\n" + Note + "\n\n Cheers \nFyngram.";
+                EngineEmailManager.SendEmail(email, body, Status + "- Product");
+                EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), body, Status + "- Product", SellerUserID);
+            } catch (IOException ex) {
+                Logger.getLogger(EngineProductManager.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
+
         return result;
     }
 
@@ -1379,13 +1382,15 @@ public class EngineProductManager {
      * @throws UnsupportedEncodingException
      */
     public static String GetSellerProductStatus(int ProductID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        String result = DBManager.GetString(Tables.SellerProductsTable.Status, Tables.SellerProductsTable.Table, "where " + Tables.SellerProductsTable.ID + " = " + ProductID);
+        String result = DBManager.GetString(Tables.SellerProductsTable.Status, Tables.SellerProductsTable.Table, "where " + Tables.SellerProductsTable.ProductID + " = " + ProductID);
         return result;
     }
 
     /**
      *
      * @param ProductID
+     * @param ProductStatus
+     * @param SellerProdStatus
      * @return
      * @throws ClassNotFoundException
      * @throws SQLException
@@ -1393,8 +1398,6 @@ public class EngineProductManager {
      */
     public static String DeleteProduct(int ProductID, int ProductStatus, String SellerProdStatus) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         String result = "failed";
-
-//        
         if (ProductStatus == 0 && !SellerProdStatus.equals("Activated")) {
 
             ArrayList<Integer> ImageIDS = EngineImageManager.GetImageIDs(ProductID, "Product");
