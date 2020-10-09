@@ -989,6 +989,108 @@ public class EngineProductManager {
         return Details;
     }
 
+    
+      /**
+     *
+     * @param ProductID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static HashMap<String, String> GetMiniProductData(int ProductID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+
+        HashMap<String, String> Details = DBManager.GetTableData(Tables.ProductsTable.Table, "where " + Tables.ProductsTable.ID + " = " + ProductID);
+        if (!Details.isEmpty()) {
+            int CondtionID = Integer.parseInt(Details.get(Tables.ProductsTable.ProductConditionID));
+            JSONObject ConditionDet = new JSONObject();
+            ConditionDet.put("CondionDetails", GetProductCondtionData(CondtionID));
+            if (!ConditionDet.isEmpty()) {
+                Details.putAll(ConditionDet);
+            }
+
+            String addeddate = Details.get(Tables.ProductsTable.Date);
+            LocalDate AddedDate = LocalDate.parse(addeddate);
+            int showconditioncount = GetProductConditionCount(CondtionID);
+            if (showconditioncount != 0) {
+                LocalDate CurrentDate = LocalDate.now();
+                if (AddedDate.plusDays(showconditioncount).isBefore(CurrentDate)) {
+                    Details.put(Tables.ProductsTable.ShowCondition, "" + 0);
+                }
+            }
+            Details.put("ProductID", "" + ProductID);
+            //Get Unit Details
+
+
+            int FirstCatID = GetProductFirstRootCatID(ProductID);
+            int FirstCatRootID = EngineCategoryManager.GetCategoryRootIDByCategoryID(FirstCatID);
+            if (FirstCatID != 0 || FirstCatRootID != 0) {
+                String RootCatName = "";
+                if (FirstCatRootID == 0) {
+                    RootCatName = EngineCategoryManager.GetCategoryName(FirstCatRootID);
+                    Details.put("RootCatID", "" + FirstCatRootID);
+                } else {
+                    RootCatName = EngineCategoryManager.GetCategoryName(FirstCatID);
+                    Details.put("RootCatID", "" + FirstCatID);
+                }
+                Details.put("RootCatName", RootCatName);
+            }
+
+
+            //Get Image Details
+            HashMap<Integer, HashMap<String, String>> ImageList2 = GetProductImageList2(ProductID);
+            JSONObject ImageDet2 = new JSONObject();
+            ImageDet2.put("ImageDetails2", ImageList2);
+            if (!ImageDet2.isEmpty()) {
+                Details.putAll(ImageDet2);
+            }
+
+            HashMap<String, String> ImageList = GetProductImageList(ProductID);
+            JSONObject ImageDet = new JSONObject();
+            ImageDet.put("ImageDetails", ImageList);
+            if (!ImageDet.isEmpty()) {
+                Details.putAll(ImageDet);
+            }
+
+            int FirstImageID = EngineImageManager.GetFirstImageID(ProductID, "Product");
+            if (FirstCatID != 0 || FirstCatRootID != 0) {
+                String FirstImage = EngineImageManager.GetImageTextByImageID(FirstImageID);
+                Details.put("FirstImage", FirstImage);
+            }
+            int SecondImageID = EngineImageManager.GetSecondImageID(ProductID, "Product");
+            if (SecondImageID != 0 || SecondImageID != 0) {
+                String SecondImage = EngineImageManager.GetImageTextByImageID(SecondImageID);
+                Details.put("SecondImage", SecondImage);
+            }
+
+
+            //Get Info
+            int InfoID = GetProductInfoIDByProductID(ProductID);
+            JSONObject InfoDet = new JSONObject();
+            InfoDet.put("InfoDetails", GetProductInfoData(InfoID));
+            if (!InfoDet.isEmpty()) {
+                Details.putAll(InfoDet);
+            }
+
+            //Get Price
+            int PriceID = GetProductPriceIDByProductID(ProductID);
+            JSONObject PriceDet = new JSONObject();
+            PriceDet.put("PriceDetails", GetProductPriceData(PriceID));
+            if (!PriceDet.isEmpty()) {
+                Details.putAll(PriceDet);
+            }
+
+            String date = Details.get(Tables.ProductsTable.Date);
+            String Date = DateManager.readDate(date);
+            Details.put(Tables.ProductsTable.Date, Date);
+            String time = Details.get(Tables.ProductsTable.Time);
+            String Time = DateManager.readTime(time);
+            Details.put(Tables.ProductsTable.Time, Time);
+
+        }
+        return Details;
+    }
+
     /**
      *
      * @param ProductID

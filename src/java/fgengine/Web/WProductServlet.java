@@ -663,7 +663,7 @@ public class WProductServlet extends HttpServlet {
                     ArrayList<Integer> IDS = EngineProductManager.GetRecentlyAddedProducts(6);
                     if (!IDS.isEmpty()) {
                         for (int id : IDS) {
-                            HashMap<String, String> details = EngineProductManager.GetProductData(id);
+                            HashMap<String, String> details = EngineProductManager.GetMiniProductData(id);
                             if (!details.isEmpty()) {
                                 List.put(id, details);
                             }
@@ -681,7 +681,7 @@ public class WProductServlet extends HttpServlet {
                     ArrayList<Integer> IDS = EngineProductManager.GetTopSellingProducts();
                     if (!IDS.isEmpty()) {
                         for (int id : IDS) {
-                            HashMap<String, String> details = EngineProductManager.GetProductData(id);
+                            HashMap<String, String> details = EngineProductManager.GetMiniProductData(id);
                             if (!details.isEmpty()) {
                                 List.put(id, details);
                             }
@@ -719,7 +719,7 @@ public class WProductServlet extends HttpServlet {
                     ArrayList<Integer> IDS = EngineProductManager.GetBestSellersProducts();
                     if (!IDS.isEmpty()) {
                         for (int id : IDS) {
-                            HashMap<String, String> details = EngineProductManager.GetProductData(id);
+                            HashMap<String, String> details = EngineProductManager.GetMiniProductData(id);
                             if (!details.isEmpty()) {
                                 List.put(id, details);
                             }
@@ -737,7 +737,7 @@ public class WProductServlet extends HttpServlet {
                     ArrayList<Integer> IDS = EngineProductManager.GetFeaturedProducts();
                     if (!IDS.isEmpty()) {
                         for (int id : IDS) {
-                            HashMap<String, String> details = EngineProductManager.GetProductData(id);
+                            HashMap<String, String> details = EngineProductManager.GetMiniProductData(id);
                             if (!details.isEmpty()) {
                                 List.put(id, details);
                             }
@@ -755,7 +755,7 @@ public class WProductServlet extends HttpServlet {
                     ArrayList<Integer> IDS = EngineProductManager.GetMostViewed();
                     if (!IDS.isEmpty()) {
                         for (int id : IDS) {
-                            HashMap<String, String> details = EngineProductManager.GetProductData(id);
+                            HashMap<String, String> details = EngineProductManager.GetMiniProductData(id);
                             if (!details.isEmpty()) {
                                 List.put(id, details);
                             }
