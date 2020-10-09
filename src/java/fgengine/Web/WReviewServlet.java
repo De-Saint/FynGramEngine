@@ -84,8 +84,13 @@ public class WReviewServlet extends HttpServlet {
                     int UserID = Integer.parseInt(SessionID);
                     HashMap<Integer, HashMap<String, String>> List = EngineReviewManager.GetUserReviewList(UserID);
                     JSONObject datares = new JSONObject();
-                    datares.putAll(List);
-                    json = new Gson().toJson(datares);
+                    if (!List.isEmpty()) {
+                        datares.putAll(List);
+                        json = new Gson().toJson(datares);
+                    } else {
+                        json = new Gson().toJson("none");
+                    }
+
                     break;
                 }
                 case "DeleteReview": {
@@ -93,12 +98,12 @@ public class WReviewServlet extends HttpServlet {
                     int ReviewID = Integer.parseInt(reviewid);
                     result = EngineReviewManager.DeleteReview(ReviewID);
                     JsonObject returninfo = new JsonObject();
-                     JSONObject datares = new JSONObject();
+                    JSONObject datares = new JSONObject();
                     if (result.equals("success")) {
                         returninfo.addProperty("status", "success");
                         returninfo.addProperty("msg", "The review has been deleted successfully.");
                         HashMap<Integer, HashMap<String, String>> List = EngineReviewManager.GetUserReviewList(1);
-                       
+
                         datares.put("reviewdata", List);
                     } else {
                         if (!result.equals("failed")) {
@@ -108,7 +113,7 @@ public class WReviewServlet extends HttpServlet {
                         }
                         returninfo.addProperty("status", "error");
                     }
-                    
+
                     datares.put("result", returninfo);
                     json = new Gson().toJson(datares);
                     break;
