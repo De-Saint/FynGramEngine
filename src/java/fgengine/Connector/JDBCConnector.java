@@ -26,11 +26,7 @@ public class JDBCConnector {
 //    private static final String LOGIN = "root";
 //    private static final String PASSWORD = "@FG123";
     
-    
-//    private static final String JDBC_LOADER = "com.mysql.jdbc.Driver";
-//    private static final String URL = "jdbc:mysql://167.99.192.8:3306/fyngramdb?characterEncoding=utf8";
-//    private static final String LOGIN = "root";
-//    private static final String PASSWORD = "@FG123";
+
   
     
     private Connection connection;

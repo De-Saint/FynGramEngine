@@ -1037,21 +1037,6 @@ public class EngineProductManager {
             }
 
 
-            //Get Image Details
-            HashMap<Integer, HashMap<String, String>> ImageList2 = GetProductImageList2(ProductID);
-            JSONObject ImageDet2 = new JSONObject();
-            ImageDet2.put("ImageDetails2", ImageList2);
-            if (!ImageDet2.isEmpty()) {
-                Details.putAll(ImageDet2);
-            }
-
-            HashMap<String, String> ImageList = GetProductImageList(ProductID);
-            JSONObject ImageDet = new JSONObject();
-            ImageDet.put("ImageDetails", ImageList);
-            if (!ImageDet.isEmpty()) {
-                Details.putAll(ImageDet);
-            }
-
             int FirstImageID = EngineImageManager.GetFirstImageID(ProductID, "Product");
             if (FirstCatID != 0 || FirstCatRootID != 0) {
                 String FirstImage = EngineImageManager.GetImageTextByImageID(FirstImageID);
@@ -1079,13 +1064,6 @@ public class EngineProductManager {
             if (!PriceDet.isEmpty()) {
                 Details.putAll(PriceDet);
             }
-
-            String date = Details.get(Tables.ProductsTable.Date);
-            String Date = DateManager.readDate(date);
-            Details.put(Tables.ProductsTable.Date, Date);
-            String time = Details.get(Tables.ProductsTable.Time);
-            String Time = DateManager.readTime(time);
-            Details.put(Tables.ProductsTable.Time, Time);
 
         }
         return Details;
