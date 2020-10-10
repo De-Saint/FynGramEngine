@@ -28,7 +28,6 @@ public class JDBCConnector {
     
 
   
-    
     private Connection connection;
 
     /**
