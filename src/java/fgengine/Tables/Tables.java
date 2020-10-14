@@ -11,6 +11,8 @@ package fgengine.Tables;
  */
 public class Tables {
 
+    //This file is the exact replica of the database tables and fields. 
+    //Database Name: fyngramdb
  
     /**
      *
