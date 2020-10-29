@@ -9,10 +9,6 @@
         <servlet-class>fgengine.Mobile.MAddressServlet</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>MUserServlet</servlet-name>
-        <servlet-class>fgengine.Mobile.MUserServlet</servlet-class>
-    </servlet>
-    <servlet>
         <servlet-name>WAddressServlet</servlet-name>
         <servlet-class>fgengine.Web.WAddressServlet</servlet-class>
     </servlet>
@@ -88,6 +84,14 @@
         <servlet-name>WCartServlet</servlet-name>
         <servlet-class>fgengine.Web.WCartServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>MProductServlet</servlet-name>
+        <servlet-class>fgengine.Mobile.MProductServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>MUserServlet</servlet-name>
+        <servlet-class>fgengine.Mobile.MUserServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>DispatcherSerlvet</servlet-name>
         <url-pattern>/DispatcherSerlvet</url-pattern>
@@ -95,10 +99,6 @@
     <servlet-mapping>
         <servlet-name>MAddressServlet</servlet-name>
         <url-pattern>/MAddressServlet</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>MUserServlet</servlet-name>
-        <url-pattern>/MUserServlet</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>WAddressServlet</servlet-name>
@@ -175,6 +175,14 @@
     <servlet-mapping>
         <servlet-name>WCartServlet</servlet-name>
         <url-pattern>/WCartServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>MProductServlet</servlet-name>
+        <url-pattern>/MProductServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>MUserServlet</servlet-name>
+        <url-pattern>/MUserServlet</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
