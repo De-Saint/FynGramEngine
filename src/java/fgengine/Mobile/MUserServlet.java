@@ -70,6 +70,7 @@ public class MUserServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
+            HttpSession session = request.getSession(true);
             String ans = "";
             String json = "";
             StringBuilder sb = new StringBuilder();
@@ -101,7 +102,7 @@ public class MUserServlet extends HttpServlet {
                     String Password = (String) jsonParameter.get("password");
                     int UserID = 0;
                     String OldSessionID = (String) jsonParameter.get("oldsession");
-                    HttpSession session = request.getSession(true);
+
                     JsonObject returninfo = new JsonObject();
                     if (EngineUserManager.checkEmailAddressOrPhoneNumberExist(Email_PhoneNumber)) {
                         UserID = EngineUserManager.checkPasswordEmailMatch(Password, Email_PhoneNumber);
@@ -130,20 +131,30 @@ public class MUserServlet extends HttpServlet {
                             }
                             EngineUserManager.UpdateUserSessionDetails(OldSessionID, NewSessionID, "" + UserID, "FynGramShop");
                             JsonObject dataobject = new JsonObject();
-                            dataobject.addProperty("sessionid", NewSessionID);
-                            dataobject.addProperty("sessiontype", usertype);
+                            dataobject.addProperty("sid", NewSessionID);
+                            dataobject.addProperty("usertype", usertype);
+                            dataobject.addProperty("name", EngineUserManager.GetUserName(UserID));
                             returninfo.add("data", dataobject);
-                            returninfo.addProperty("status", "success");
+                            returninfo.addProperty("code", 200);
                             returninfo.addProperty("msg", "Successful Login");
                         } else {
-                            returninfo.addProperty("status", "error");
+                            returninfo.addProperty("code", 400);
                             returninfo.addProperty("msg", "Incorrect Login Details.");
                         }
                     } else {
-                        returninfo.addProperty("status", "error");
+                        returninfo.addProperty("code", 400);
                         returninfo.addProperty("msg", "Email or Phone Number Entered Doesn't Exist.");
                     }
                     json = new Gson().toJson((JsonElement) returninfo);
+                    break;
+                }
+                case "SaveGuest": {
+                    String IPaddress = (String) jsonParameter.get("ipaddress");
+                    String Location = (String) jsonParameter.get("location");
+                    String sessionid = session.getId() + "#G";
+                    EngineUserManager.ComputeGuest(sessionid, Location, IPaddress);
+                    json = new Gson().toJson(sessionid);
+                    break;
                 }
             }
             response.setContentType("application/json");
