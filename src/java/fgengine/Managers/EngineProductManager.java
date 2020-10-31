@@ -52,7 +52,7 @@ public class EngineProductManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static int ComputeProduct(int SellerUserID, String ProductName, int ProductConditionID, int ProductUnitID, String ReferenceCode,
+    public static int ComputeProduct2(int SellerUserID, String ProductName, int ProductConditionID, int ProductUnitID, String ReferenceCode,
             String UPCBarcode, String Description, String CategoryIDs, String PropertyIDs, double CostPrice, double SellingPrice,
             int MimimumQuantity, int TotalQuantity, int PackageHeight, int PackageWidth, int PackageDepth,
             int MinimumStockLevel, int NotificationTypeID, String ProductUnitValue, String ProductTags) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
@@ -109,6 +109,57 @@ public class EngineProductManager {
                 result = "Oops! Some product details were not created. Please contact the support team. - unit";
             }
 
+        } else {
+            result = "Oops! The Product was not created.";
+        }
+        result = result;
+        return ProductID;
+    }
+
+    /**
+     *
+     * @param SellerUserID
+     * @param ProductName
+     * @param ProductConditionID
+     * @param ProductUnitID
+     * @param ReferenceCode
+     * @param UPCBarcode
+     * @param Description
+     * @param CategoryIDs
+     * @param PropertyIDs
+     * @param CostPrice
+     * @param SellingPrice
+     * @param MimimumQuantity
+     * @param TotalQuantity
+     * @param PackageHeight
+     * @param PackageWidth
+     * @param PackageDepth
+     * @param MinimumStockLevel
+     * @param NotificationTypeID
+     * @param ProductUnitValue
+     * @param ProductTags
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static int ComputeProduct(int SellerUserID, String ProductName, int ProductConditionID, int ProductUnitID, String ReferenceCode,
+            String UPCBarcode, String Description, String CategoryIDs, String PropertyIDs, double CostPrice, double SellingPrice,
+            int MimimumQuantity, int TotalQuantity, int PackageHeight, int PackageWidth, int PackageDepth,
+            int MinimumStockLevel, int NotificationTypeID, String ProductUnitValue, String ProductTags) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        String result = "failed";
+        int ProductID = CreateProduct(ProductConditionID); //product
+        if (ProductID != 0) {
+            CreateProductPrices(ProductID, CostPrice, SellingPrice); //price
+            CreateProductQuantity(ProductID, MimimumQuantity, TotalQuantity);//quantity
+            CreateProductUnit(ProductID, ProductUnitID, ProductUnitValue); //unit
+            CreateSellerProducts(SellerUserID, ProductID); //seller
+            CreateProductInformation(ProductID, ProductName, ReferenceCode, UPCBarcode, Description);//info
+            ComputeProductCategory(CategoryIDs, ProductID);//category
+            ComputeProductProperties(PropertyIDs, ProductID); //properties
+            CreateProductShippingPackage(ProductID, PackageHeight, PackageWidth, PackageDepth);//shipping package
+            CreateProductStockLevel(ProductID, MinimumStockLevel, NotificationTypeID);//stock
+            result = ComputeObjectTags(ProductTags, ProductID, "Product");
         } else {
             result = "Oops! The Product was not created.";
         }
@@ -989,8 +1040,7 @@ public class EngineProductManager {
         return Details;
     }
 
-    
-      /**
+    /**
      *
      * @param ProductID
      * @return
@@ -1021,7 +1071,6 @@ public class EngineProductManager {
             Details.put("ProductID", "" + ProductID);
             //Get Unit Details
 
-
             int FirstCatID = GetProductFirstRootCatID(ProductID);
             int FirstCatRootID = EngineCategoryManager.GetCategoryRootIDByCategoryID(FirstCatID);
             if (FirstCatID != 0 || FirstCatRootID != 0) {
@@ -1036,7 +1085,6 @@ public class EngineProductManager {
                 Details.put("RootCatName", RootCatName);
             }
 
-
             int FirstImageID = EngineImageManager.GetFirstImageID(ProductID, "Product");
             if (FirstCatID != 0 || FirstCatRootID != 0) {
                 String FirstImage = EngineImageManager.GetImageTextByImageID(FirstImageID);
@@ -1047,7 +1095,6 @@ public class EngineProductManager {
                 String SecondImage = EngineImageManager.GetImageTextByImageID(SecondImageID);
                 Details.put("SecondImage", SecondImage);
             }
-
 
             //Get Info
             int InfoID = GetProductInfoIDByProductID(ProductID);
@@ -1990,9 +2037,7 @@ public class EngineProductManager {
             result = DBManager.UpdateDoubleData(Tables.ProductPriceTable.Table, Tables.ProductPriceTable.SellingPrice, SellingPrice, "where " + Tables.ProductPriceTable.ProductID + " = " + ProductID);
             result = DBManager.UpdateDoubleData(Tables.ProductPriceTable.Table, Tables.ProductPriceTable.BasePrice, SellingPrice, "where " + Tables.ProductPriceTable.ProductID + " = " + ProductID);
         }
-        if (!ProductName.equals("")) {
-            result = DBManager.UpdateStringData(Tables.ProductInfoTable.Table, Tables.ProductInfoTable.Name, ProductName, "where " + Tables.ProductInfoTable.ProductID + " = " + ProductID);
-        }
+
         if (!Description.equals("")) {
             result = DBManager.UpdateStringData(Tables.ProductInfoTable.Table, Tables.ProductInfoTable.Description, Description, "where " + Tables.ProductInfoTable.ProductID + " = " + ProductID);
         }
@@ -2024,7 +2069,9 @@ public class EngineProductManager {
         if (catids.length > 0) {
             result = ComputeProductCategory(CategoryIDs, ProductID);
         }
-
+        if (!ProductName.equals("")) {
+            result = DBManager.UpdateStringData(Tables.ProductInfoTable.Table, Tables.ProductInfoTable.Name, ProductName, "where " + Tables.ProductInfoTable.ProductID + " = " + ProductID);
+        }
         return ProductID;
 
     }

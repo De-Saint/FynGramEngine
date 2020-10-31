@@ -100,27 +100,47 @@ public class MProductServlet extends HttpServlet {
             String result = "";
             switch (type) {
                 case "GetRootCategories": {
-                    HashMap<Integer, HashMap<String, String>> List = new HashMap<>();
                     ArrayList<Integer> IDS = EngineCategoryManager.GetRootCategoryIDs();
-                    JsonObject returninfo = new JsonObject();
-                     JSONObject datares = new JSONObject();
+                    ArrayList<HashMap<String, String>> list = new ArrayList<>();
+                    JSONObject datares = new JSONObject();
                     if (!IDS.isEmpty()) {
                         for (int id : IDS) {
                             HashMap<String, String> details = EngineCategoryManager.GetCategoryData(id);
                             if (!details.isEmpty()) {
-                                List.put(id, details);
+                                list.add(details);
                             }
                         }
-                       
-                        returninfo.addProperty("code", 200);
-                        datares.putAll(List);
-                        returninfo.addProperty("msg", "Categories found.");
+                        datares.put("code", 200);
+                        datares.put("data", list);
+                        datares.put("msg", "Categories found.");
 
                     } else {
-                        returninfo.addProperty("code", 400);
-                        returninfo.addProperty("msg", "No categories found");
+                        datares.put("code", 400);
+                        datares.put("msg", "No categories found");
                     }
-                    datares.put("res", returninfo);
+                    json = new Gson().toJson(datares);
+                    break;
+                }
+                case "GetShopProductsByCategoryID": {
+                    String catid = (String) jsonParameter.get("catid");
+                    int CatID = Integer.parseInt(catid);
+                    ArrayList<HashMap<String, String>> list = new ArrayList<>();
+                    JSONObject datares = new JSONObject();
+                    ArrayList<Integer> IDS = EngineProductManager.GetProductsByCategoryID(CatID);
+                    if (!IDS.isEmpty()) {
+                        for (int id : IDS) {
+                            HashMap<String, String> details = EngineProductManager.GetProductData(id);
+                            if (!details.isEmpty()) {
+                                list.add(details);
+                            }
+                        }
+                        datares.put("code", 200);
+                        datares.put("data", list);
+                        datares.put("msg", "Products found.");
+                    } else {
+                        datares.put("code", 400);
+                        datares.put("msg", "No Products found");
+                    }
                     json = new Gson().toJson(datares);
                     break;
                 }
