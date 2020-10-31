@@ -8,7 +8,7 @@ package fgengine.Mobile;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import fgengine.Managers.EngineUserManager;
+import fgengine.Managers.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -83,7 +83,7 @@ public class MUserServlet extends HttpServlet {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
+            
             JSONParser parser = new JSONParser();
             JSONObject jsonParameter = null;
             try {
@@ -101,8 +101,8 @@ public class MUserServlet extends HttpServlet {
                     String Email_PhoneNumber = (String) jsonParameter.get("emailphone");
                     String Password = (String) jsonParameter.get("password");
                     int UserID = 0;
-                    String OldSessionID = (String) jsonParameter.get("oldsession");
-
+                    String OldSessionID = (String) jsonParameter.get("oldsid");
+                    
                     JsonObject returninfo = new JsonObject();
                     if (EngineUserManager.checkEmailAddressOrPhoneNumberExist(Email_PhoneNumber)) {
                         UserID = EngineUserManager.checkPasswordEmailMatch(Password, Email_PhoneNumber);
@@ -153,7 +153,134 @@ public class MUserServlet extends HttpServlet {
                     String Location = (String) jsonParameter.get("location");
                     String sessionid = session.getId() + "#G";
                     EngineUserManager.ComputeGuest(sessionid, Location, IPaddress);
-                    json = new Gson().toJson(sessionid);
+                    JsonObject returninfo = new JsonObject();
+                    JsonObject dataobject = new JsonObject();
+                    dataobject.addProperty("sid", sessionid);
+                    dataobject.addProperty("usertype", "Guest");
+                    dataobject.addProperty("name", "Guest");
+                    returninfo.add("data", dataobject);
+                    returninfo.addProperty("code", 200);
+                    returninfo.addProperty("msg", "Guest User");
+                    json = new Gson().toJson((JsonElement) returninfo);
+                    break;
+                }
+                case "ResetPassword": {
+                    String EmailAddress = (String) jsonParameter.get("email");
+                    if (EngineUserManager.checkEmailAddressOrPhoneNumberExist(EmailAddress)) {
+                        result = EngineUserManager.ComputeResetPassword(EmailAddress);
+                    } else {
+                        result = "The email provided does not exist. Please, try again.";
+                    }
+                    JsonObject returninfo = new JsonObject();
+                    if (result.equals("success")) {
+                        returninfo.addProperty("code", 200);
+                        returninfo.addProperty("msg", "Please, check the email provided for verification code.");
+                    } else {
+                        if (!result.equals("failed")) {
+                            returninfo.addProperty("msg", result);
+                        } else {
+                            returninfo.addProperty("msg", "Something went wrong! Please, try again!");
+                        }
+                        returninfo.addProperty("code", 400);
+                    }
+                    
+                    json = new Gson().toJson((JsonElement) returninfo);
+                    break;
+                }
+                case "PasswordRecovery": {
+                    String RecoveryCode = (String) jsonParameter.get("code");
+                    String NewPassword = (String) jsonParameter.get("password");
+                    result = EngineUserManager.UpdateRecoveryPassword(RecoveryCode, NewPassword);
+                    JsonObject returninfo = new JsonObject();
+                    if (result.equals("success")) {
+                        returninfo.addProperty("code", 200);
+                        returninfo.addProperty("msg", "Your Password reset was successful. Please try logging in with the new password.");
+                    } else {
+                        if (!result.equals("failed")) {
+                            returninfo.addProperty("msg", result);
+                        } else {
+                            returninfo.addProperty("msg", "Something went wrong! Please, try again!");
+                        }
+                        returninfo.addProperty("code", 400);
+                    }
+                    json = new Gson().toJson((JsonElement) returninfo);
+                    break;
+                }
+                case "RegisterCustomer": {
+                    String Gender = (String) jsonParameter.get("gender");
+                    String Frstname = (String) jsonParameter.get("firstname");
+                    String Lastname = (String) jsonParameter.get("lastname");
+                    String EmailAddress = (String) jsonParameter.get("email");
+                    String PhoneNumber = (String) jsonParameter.get("phone");
+                    String Password = (String) jsonParameter.get("password");
+                    String title = (String) jsonParameter.get("title");
+                    int CustomerUserID = 0;
+                    JsonObject returninfo = new JsonObject();
+                    if (!EngineUserManager.checkEmailAddressOrPhoneNumberExist(EmailAddress)) {
+                        if (!EngineUserManager.checkEmailAddressOrPhoneNumberExist(PhoneNumber)) {
+                            CustomerUserID = EngineUserManager.CreateUser(EmailAddress, PhoneNumber, Password, 3, 1, Gender, "", title);
+                            if (CustomerUserID != 0) {
+                                result = EngineUserManager.CreateCustomer(CustomerUserID, Frstname, Lastname);
+                                if (result.equals("success")) {
+                                    result = EngineWalletManager.CreateWallet(CustomerUserID);
+                                    if (result.equals("success")) {
+                                        String msgbdy = "Congratulations!!! \n\nYou have been successfully registered as a customer on Fyngram.";
+                                        EngineMessageManager.sendMessage(1, msgbdy, "Customer Account Created", CustomerUserID);
+                                        String Code = "FG-" + UtilityManager.randomAlphaNumeric(7) + "#C";
+                                        EngineUserManager.CreateRecovery(CustomerUserID, EmailAddress, Code);
+                                        EngineEmailManager.SendingEmailOption(EmailAddress, "Customer Account Created", Code, EngineUserManager.GetUserName(CustomerUserID), "Registration", "Customer");
+                                        
+                                        returninfo.addProperty("code", 200);
+                                        returninfo.addProperty("msg", msgbdy);
+                                    } else {
+                                        returninfo.addProperty("code", 400);
+                                        returninfo.addProperty("msg", "Oh No! Something went wrong while creating User Account. Please try again.");
+                                    }
+                                } else {
+                                    returninfo.addProperty("code", 400);
+                                    returninfo.addProperty("msg", "Oh No! Something went wrong while creating User Account. Please try again.");
+                                    
+                                }
+                            } else {
+                                returninfo.addProperty("code", 400);
+                                returninfo.addProperty("msg", "Oh No! Something went wrong while creating User Account. Please try again.");
+                                
+                            }
+                        } else {
+                            returninfo.addProperty("code", 400);
+                            returninfo.addProperty("msg", "Oh No! An account with the same Phone Number already Exists. Please use another Phone Number.");
+                            
+                        }
+                    } else {
+                        returninfo.addProperty("code", 400);
+                        returninfo.addProperty("msg", "Oh No! An account with the same Email already Exists. Please use another Email.");
+                        
+                    }
+                    json = new Gson().toJson((JsonElement) returninfo);
+                    break;
+                }
+                case "ValidateAccount": {
+                    String RecoveryCode = (String) jsonParameter.get("code");
+                    String res = EngineUserManager.ConfirmAccount(RecoveryCode);
+                    JsonObject returninfo = new JsonObject();
+                    result = res.split("#")[0];
+                    int UserID = Integer.parseInt(res.split("#")[1]);
+                    if (result.equals("success")) {
+                        returninfo.addProperty("code", 200);
+                        JsonObject dataobject = new JsonObject();
+                        dataobject.addProperty("email", EngineUserManager.GetUserEmail(UserID));
+                        dataobject.addProperty("password", EngineUserManager.GetUserPasswordl(UserID));
+                        returninfo.add("data", dataobject);
+                        returninfo.addProperty("msg", "Your account has been confirmed. Thank you for being part of Fyngram.");
+                    } else {
+                        if (!result.equals("failed")) {
+                            returninfo.addProperty("msg", result);
+                        } else {
+                            returninfo.addProperty("msg", "Something went wrong! Please, try again!");
+                        }
+                        returninfo.addProperty("code", 400);
+                    }
+                    json = new Gson().toJson((JsonElement) returninfo);
                     break;
                 }
             }
@@ -161,7 +288,7 @@ public class MUserServlet extends HttpServlet {
             response.setCharacterEncoding("UTF-8");
             response.getWriter().write(json);
         } catch (Exception ex) {
-
+            
         }
     }
 

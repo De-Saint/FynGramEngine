@@ -5,12 +5,22 @@
  */
 package fgengine.Mobile;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import fgengine.Managers.*;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.HashMap;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 /**
  *
@@ -31,7 +41,7 @@ public class MProductServlet extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            
+
         }
     }
 
@@ -61,7 +71,67 @@ public class MProductServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        try {
+            HttpSession session = request.getSession(true);
+            String ans = "";
+            String json = "";
+            StringBuilder sb = new StringBuilder();
+            try {
+                BufferedReader br = request.getReader();
+                String str = null;
+                while ((str = br.readLine()) != null) {
+                    sb.append(str);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            JSONParser parser = new JSONParser();
+            JSONObject jsonParameter = null;
+            try {
+                jsonParameter = (JSONObject) parser.parse(sb.toString());
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            String type = (String) jsonParameter.get("type");
+            String json1 = "";
+            String json2 = "";
+            String json3 = "";
+            String result = "";
+            switch (type) {
+                case "GetRootCategories": {
+                    HashMap<Integer, HashMap<String, String>> List = new HashMap<>();
+                    ArrayList<Integer> IDS = EngineCategoryManager.GetRootCategoryIDs();
+                    JsonObject returninfo = new JsonObject();
+                     JSONObject datares = new JSONObject();
+                    if (!IDS.isEmpty()) {
+                        for (int id : IDS) {
+                            HashMap<String, String> details = EngineCategoryManager.GetCategoryData(id);
+                            if (!details.isEmpty()) {
+                                List.put(id, details);
+                            }
+                        }
+                       
+                        returninfo.addProperty("code", 200);
+                        datares.putAll(List);
+                        returninfo.addProperty("msg", "Categories found.");
+
+                    } else {
+                        returninfo.addProperty("code", 400);
+                        returninfo.addProperty("msg", "No categories found");
+                    }
+                    datares.put("res", returninfo);
+                    json = new Gson().toJson(datares);
+                    break;
+                }
+
+            }
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            response.getWriter().write(json);
+        } catch (Exception ex) {
+
+        }
     }
 
     /**
