@@ -144,6 +144,113 @@ public class MProductServlet extends HttpServlet {
                     json = new Gson().toJson(datares);
                     break;
                 }
+                case "GetTopSellingProducts": {//[idmin, idmax, sessionid];
+                    ArrayList<HashMap<String, String>> list = new ArrayList<>();
+                    JSONObject datares = new JSONObject();
+                    ArrayList<Integer> IDS = EngineProductManager.GetTopSellingProducts();
+                    if (!IDS.isEmpty()) {
+                        for (int id : IDS) {
+                            HashMap<String, String> details = EngineProductManager.GetMobileMiniProductData(id);
+                            if (!details.isEmpty()) {
+                                list.add(details);
+                            }
+                        }
+                        datares.put("code", 200);
+                        datares.put("data", list);
+                        datares.put("msg", "Top Products found.");
+                    } else {
+                        datares.put("code", 400);
+                        datares.put("msg", "No Top Products found");
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
+                case "GetRecentlyAddedProducts": {//[idmin, idmax, sessionid];
+                    ArrayList<HashMap<String, String>> list = new ArrayList<>();
+                    JSONObject datares = new JSONObject();
+                    ArrayList<Integer> IDS = EngineProductManager.GetRecentlyAddedProducts(6);
+                    if (!IDS.isEmpty()) {
+                        for (int id : IDS) {
+                            HashMap<String, String> details = EngineProductManager.GetMobileMiniProductData(id);
+                            if (!details.isEmpty()) {
+                                list.add(details);
+                            }
+                        }
+                        datares.put("code", 200);
+                        datares.put("data", list);
+                        datares.put("msg", "Recently Added Products found.");
+                    } else {
+                        datares.put("code", 400);
+                        datares.put("msg", "No Recently Added Products found");
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
+                case "GetFeaturedProducts": {//[idmin, idmax, sessionid];
+                    ArrayList<HashMap<String, String>> list = new ArrayList<>();
+                    JSONObject datares = new JSONObject();
+                    ArrayList<Integer> IDS = EngineProductManager.GetFeaturedProducts();
+                    if (!IDS.isEmpty()) {
+                        for (int id : IDS) {
+                            HashMap<String, String> details = EngineProductManager.GetMobileMiniProductData(id);
+                            if (!details.isEmpty()) {
+                                list.add(details);
+                            }
+                        }
+                        datares.put("code", 200);
+                        datares.put("data", list);
+                        datares.put("msg", "Featured Products found.");
+                    } else {
+                        datares.put("code", 400);
+                        datares.put("msg", "No Featured Products found");
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
+                case "GetBestSellersProducts": {//[idmin, idmax, sessionid];
+                    ArrayList<HashMap<String, String>> list = new ArrayList<>();
+                    JSONObject datares = new JSONObject();
+                    ArrayList<Integer> IDS = EngineProductManager.GetBestSellersProducts();
+                    if (!IDS.isEmpty()) {
+                        for (int id : IDS) {
+                            HashMap<String, String> details = EngineProductManager.GetMobileMiniProductData(id);
+                            if (!details.isEmpty()) {
+                                list.add(details);
+                            }
+                        }
+                        datares.put("code", 200);
+                        datares.put("data", list);
+                        datares.put("msg", "BestSellers Products found.");
+                    } else {
+                        datares.put("code", 400);
+                        datares.put("msg", "No BestSellers Products found");
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
+                case "GetRelatedProducts": {//[idmin, idmax, sessionid];
+                    String productid = (String) jsonParameter.get("productid");
+                    int ProductID = Integer.parseInt(productid);
+                    ArrayList<HashMap<String, String>> list = new ArrayList<>();
+                    JSONObject datares = new JSONObject();
+                    ArrayList<Integer> IDS = EngineProductManager.GetRelatedProductsByCategoryID(ProductID);
+                    if (!IDS.isEmpty()) {
+                        for (int id : IDS) {
+                            HashMap<String, String> details = EngineProductManager.GetMobileMiniProductData(id);
+                            if (!details.isEmpty()) {
+                                list.add(details);
+                            }
+                        }
+                        datares.put("code", 200);
+                        datares.put("data", list);
+                        datares.put("msg", "Related Products found.");
+                    } else {
+                        datares.put("code", 400);
+                        datares.put("msg", "No Related Products found");
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
 
             }
             response.setContentType("application/json");

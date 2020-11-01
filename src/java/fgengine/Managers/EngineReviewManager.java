@@ -168,6 +168,30 @@ public class EngineReviewManager {
 
     /**
      *
+     * @param ObjectID
+     * @param ObectType
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static ArrayList<HashMap<String, String>> GetObjectReviewList2(int ObjectID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        ArrayList<HashMap<String, String>> list = new ArrayList<>();
+        HashMap<String, String> List = new HashMap<>();
+        ArrayList<Integer> RatingIDS = GetObjectRatingIDs(ObjectID);
+        if (!RatingIDS.isEmpty()) {
+            for (int ratingID : RatingIDS) {
+                List = ReviewData(ratingID);
+                if (!List.isEmpty()) {
+                    list.add(List);
+                }
+            }
+        }
+        return list;
+    }
+
+    /**
+     *
      * @param ReviewID
      * @return
      * @throws ClassNotFoundException

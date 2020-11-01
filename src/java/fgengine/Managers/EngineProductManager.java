@@ -956,6 +956,12 @@ public class EngineProductManager {
             if (!ImageDet2.isEmpty()) {
                 Details.putAll(ImageDet2);
             }
+            ArrayList<HashMap<String, String>> ImageList3 = GetProductImageList3(ProductID);
+            JSONObject ImageDet3 = new JSONObject();
+            ImageDet3.put("ImageDetails3", ImageList3);
+            if (!ImageDet3.isEmpty()) {
+                Details.putAll(ImageDet3);
+            }
 
             HashMap<String, String> ImageList = GetProductImageList(ProductID);
             JSONObject ImageDet = new JSONObject();
@@ -1096,6 +1102,12 @@ public class EngineProductManager {
                 Details.put("SecondImage", SecondImage);
             }
 
+            ArrayList<HashMap<String, String>> ImageList3 = GetProductImageList3(ProductID);
+            JSONObject ImageDet3 = new JSONObject();
+            ImageDet3.put("ImageDetails3", ImageList3);
+            if (!ImageDet3.isEmpty()) {
+                Details.putAll(ImageDet3);
+            }
             //Get Info
             int InfoID = GetProductInfoIDByProductID(ProductID);
             JSONObject InfoDet = new JSONObject();
@@ -1104,12 +1116,119 @@ public class EngineProductManager {
                 Details.putAll(InfoDet);
             }
 
+            //Get avarage ratings Details
+            JSONObject RatingsDet = new JSONObject();
+            RatingsDet.put("RatingDetails", EngineReviewManager.ObjectReviews(ProductID));
+            Details.putAll(RatingsDet);
+
+            //Get Rating Details
+            HashMap<Integer, HashMap<String, String>> ReviewList = EngineReviewManager.GetObjectReviewList(ProductID);
+            JSONObject ReviewDet = new JSONObject();
+            ReviewDet.put("ReviewDetails", ReviewList);
+            if (!ReviewDet.isEmpty()) {
+                Details.putAll(ReviewDet);
+            }
+
             //Get Price
             int PriceID = GetProductPriceIDByProductID(ProductID);
             JSONObject PriceDet = new JSONObject();
             PriceDet.put("PriceDetails", GetProductPriceData(PriceID));
             if (!PriceDet.isEmpty()) {
                 Details.putAll(PriceDet);
+            }
+
+        }
+        return Details;
+    }
+
+    /**
+     *
+     * @param ProductID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static HashMap<String, String> GetMobileMiniProductData(int ProductID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+
+        HashMap<String, String> Details = DBManager.GetTableData(Tables.ProductsTable.Table, "where " + Tables.ProductsTable.ID + " = " + ProductID);
+        if (!Details.isEmpty()) {
+            Details.put("ProductID", "" + ProductID);
+
+            int FirstCatID = GetProductFirstRootCatID(ProductID);
+            int FirstCatRootID = EngineCategoryManager.GetCategoryRootIDByCategoryID(FirstCatID);
+            if (FirstCatID != 0 || FirstCatRootID != 0) {
+                String RootCatName = "";
+                if (FirstCatRootID == 0) {
+                    RootCatName = EngineCategoryManager.GetCategoryName(FirstCatRootID);
+                    Details.put("RootCatID", "" + FirstCatRootID);
+                } else {
+                    RootCatName = EngineCategoryManager.GetCategoryName(FirstCatID);
+                    Details.put("RootCatID", "" + FirstCatID);
+                }
+                Details.put("RootCatName", RootCatName);
+            }
+
+            int FirstImageID = EngineImageManager.GetFirstImageID(ProductID, "Product");
+            if (FirstCatID != 0 || FirstCatRootID != 0) {
+                String FirstImage = EngineImageManager.GetImageTextByImageID(FirstImageID);
+                Details.put("FirstImage", FirstImage);
+            }
+
+            ArrayList<HashMap<String, String>> ImageList3 = GetProductImageList3(ProductID);
+            JSONObject ImageDet3 = new JSONObject();
+            ImageDet3.put("ImageDetails3", ImageList3);
+            if (!ImageDet3.isEmpty()) {
+                Details.putAll(ImageDet3);
+            }
+            //Get Info
+            int InfoID = GetProductInfoIDByProductID(ProductID);
+            JSONObject InfoDet = new JSONObject();
+            InfoDet.put("InfoDetails", GetProductInfoData(InfoID));
+            if (!InfoDet.isEmpty()) {
+                Details.putAll(InfoDet);
+            }
+
+            JSONObject UnitDet = new JSONObject();
+            UnitDet.put("UnitDetails", GetProductUnitData(ProductID));
+            if (!UnitDet.isEmpty()) {
+                Details.putAll(UnitDet);
+            }
+            //Get avarage ratings Details
+            JSONObject RatingsDet = new JSONObject();
+            RatingsDet.put("RatingDetails", EngineReviewManager.ObjectReviews(ProductID));
+            Details.putAll(RatingsDet);
+
+            //Get Rating Details
+            ArrayList<HashMap<String, String>> ReviewList = EngineReviewManager.GetObjectReviewList2(ProductID);
+            JSONObject ReviewDet = new JSONObject();
+            ReviewDet.put("ReviewDetails", ReviewList);
+            if (!ReviewDet.isEmpty()) {
+                Details.putAll(ReviewDet);
+            }
+
+            //Get Price
+            int PriceID = GetProductPriceIDByProductID(ProductID);
+            JSONObject PriceDet = new JSONObject();
+            PriceDet.put("PriceDetails", GetProductPriceData(PriceID));
+            if (!PriceDet.isEmpty()) {
+                Details.putAll(PriceDet);
+            }
+
+            //Get Quantity
+            int QuantityID = GetProductQuantityIDByProductID(ProductID);
+            JSONObject QuantityDet = new JSONObject();
+            QuantityDet.put("QuantityDetails", GetProductQuantityData(QuantityID));
+            if (!QuantityDet.isEmpty()) {
+                Details.putAll(QuantityDet);
+            }
+
+            //Get Sellers
+            int SellerProdID = GetSellerProductIDByProductID(ProductID);
+            JSONObject SellerDet = new JSONObject();
+            SellerDet.put("SellerDetails", GetProductSellerData(SellerProdID));
+            if (!SellerDet.isEmpty()) {
+                Details.putAll(SellerDet);
             }
 
         }
@@ -1160,6 +1279,29 @@ public class EngineProductManager {
             }
         }
         return ImageList;
+    }
+
+    /**
+     *
+     * @param ProductID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static ArrayList<HashMap<String, String>> GetProductImageList3(int ProductID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        ArrayList<HashMap<String, String>> list = new ArrayList<>();
+        HashMap<String, String> ImageDetailList = new HashMap<>();
+        ArrayList<Integer> ImageIDS = EngineImageManager.GetImageIDs(ProductID, "Product");
+        if (!ImageIDS.isEmpty()) {
+            for (int ImageID : ImageIDS) {
+                ImageDetailList = EngineImageManager.GetImageData(ImageID);
+                if (!ImageDetailList.isEmpty()) {
+                    list.add(ImageDetailList);
+                }
+            }
+        }
+        return list;
     }
 
     /**
