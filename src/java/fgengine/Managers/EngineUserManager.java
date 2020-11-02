@@ -526,6 +526,7 @@ public class EngineUserManager {
      *
      * @param NewSessionID
      * @param Location
+     * @param IPAddress
      * @return
      * @throws ClassNotFoundException
      * @throws SQLException
@@ -534,11 +535,12 @@ public class EngineUserManager {
     public static String ComputeGuest(String NewSessionID, String Location, String IPAddress) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         String result = "failed";
         String ComputerName = GetGuestComputerName();
-//        String IPAddress = GetGuestSystemIPAddress();
         String OperatingSystemName = GetGuestComputerOS();
         int GuestID = GetGuestIDByIPAddress(IPAddress);
         if (GuestID == 0) {
             GuestID = CreateGuest(IPAddress, ComputerName, Location, OperatingSystemName);
+            result = EngineUserManager.CreateOrUpdateSessionID(NewSessionID, NewSessionID, IPAddress, IPAddress);
+        }else{
             result = EngineUserManager.CreateOrUpdateSessionID(NewSessionID, NewSessionID, IPAddress, IPAddress);
         }
         return result;
@@ -728,7 +730,6 @@ public class EngineUserManager {
             String IPAddress = GetGuestSystemIPAddress();
             userid = GetLoginIDByIPAddress(IPAddress);
         }
-
         return userid;
     }
 
@@ -1557,7 +1558,7 @@ public class EngineUserManager {
         if (!sProductIds.isEmpty()) {
             for (int id : sProductIds) {
                 int prodid = DBManager.GetInt(Tables.SellerProductsTable.ProductID, Tables.SellerProductsTable.Table, "where " + Tables.SellerProductsTable.ID + " = " + id);
-       
+
                 EngineProductManager.DeleteProduct(prodid, 0, "Deleted");
                 DBManager.DeleteObject(Tables.SellerProductsTable.Table, "where " + Tables.SellerProductsTable.ID + " = " + id);
             }
@@ -1763,8 +1764,5 @@ public class EngineUserManager {
 
         return result;
     }
-    
-    
-   
 
 }

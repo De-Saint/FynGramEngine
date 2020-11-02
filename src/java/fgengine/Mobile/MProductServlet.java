@@ -129,7 +129,7 @@ public class MProductServlet extends HttpServlet {
                     ArrayList<Integer> IDS = EngineProductManager.GetProductsByCategoryID(CatID);
                     if (!IDS.isEmpty()) {
                         for (int id : IDS) {
-                            HashMap<String, String> details = EngineProductManager.GetProductData(id);
+                            HashMap<String, String> details = EngineProductManager.GetMobileMiniProductData(id);
                             if (!details.isEmpty()) {
                                 list.add(details);
                             }
@@ -247,6 +247,63 @@ public class MProductServlet extends HttpServlet {
                     } else {
                         datares.put("code", 400);
                         datares.put("msg", "No Related Products found");
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
+                case "AddOption": {
+                    String productid = (String) jsonParameter.get("productid");
+                    int ProductID = Integer.parseInt(productid);
+                    String price = (String) jsonParameter.get("price");
+                    double Price = Double.parseDouble(price);
+                    double ProductPrice = 0.0;
+                    String quantity = (String) jsonParameter.get("quantity");
+                    int ProductQuantity = Integer.parseInt(quantity);
+                    if (ProductQuantity > 1) {
+                        ProductPrice = Price * ProductQuantity;
+                    } else {
+                        ProductPrice = Price;
+                    }
+                    String Action = (String) jsonParameter.get("action");
+                    String sessionid = (String) jsonParameter.get("sid");
+                    String UserID = EngineUserManager.GetLoginIDBySessionID(sessionid);
+                    String Option = (String) jsonParameter.get("option");
+                    JSONObject datares = new JSONObject();
+                    if (Option.equals("Cart")) {
+                        result = EngineCartManager.ComputeCart(UserID, ProductID, ProductPrice, ProductQuantity, Action);
+                    } else if (Option.equals("SavedItems")) {
+                        result = EngineCartManager.ComputeWishList(UserID, ProductID, ProductPrice, ProductQuantity, Action);
+                    }
+                    if (result.equals("success")) {
+                        datares.put("code", 200);
+                        if (Option.equals("Cart")) {
+                            datares.put("msg", "Product has been successfully added to your Cart.");
+                        } else if (Option.equals("SavedItems")) {
+                            datares.put("msg", "Product has been successfully added to your Saved Items.");
+                        }
+                    } else {
+                        if (!result.equals("failed")) {
+                            datares.put("msg", result);
+                        } else {
+                            datares.put("msg", "Something went wrong. Please try again.");
+                        }
+                        datares.put("code", 400);
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
+                case "GetShopCart": {
+                    String sessionid = (String) jsonParameter.get("sid");
+                    String UserID = EngineUserManager.GetLoginIDBySessionID(sessionid);
+                    HashMap<String, String> CartDetails = EngineCartManager.GetMobileCartDataByUserID(UserID);
+                    JSONObject datares = new JSONObject();
+                    if (!CartDetails.isEmpty()) {
+                        datares.put("code", 200);
+                        datares.put("msg", "Cart Found.");
+                        datares.put("data", CartDetails);
+                    } else {
+                        datares.put("msg", "Something went wrong or your cart is empty. Please try again.");
+                        datares.put("code", 400);
                     }
                     json = new Gson().toJson(datares);
                     break;

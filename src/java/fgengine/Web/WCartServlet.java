@@ -51,7 +51,7 @@ public class WCartServlet extends HttpServlet {
             String empty = "none";
             String result = "";
             switch (type) {
-                case "AddOptions": {//[idmin, idmax, sessionid];
+                case "AddOptions": {
                     String[] data = request.getParameterValues("data[]");
                     String sessionid = data[0];
                     String UserID = EngineUserManager.GetLoginIDBySessionID(sessionid);

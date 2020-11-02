@@ -1360,4 +1360,62 @@ public class EngineCartManager {
         return List;
     }
 
+    /**
+     *
+     * @param UserID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static HashMap<String, String> GetMobileCartDataByUserID(String UserID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        HashMap<String, String> Data = new HashMap<>();
+        Data = DBManager.GetTableData(Tables.CartTable.Table, "where " + Tables.CartTable.UserID + " = '" + UserID + "'");
+        if (!Data.isEmpty()) {
+            int CartID = Integer.parseInt(Data.get(Tables.CartTable.ID));
+            ArrayList<HashMap<String, String>> CartProdDetList = EngineCartManager.GetCartProductDetailsList2(CartID);
+            JSONObject CartProductDet = new JSONObject();
+            CartProductDet.put("CartProductDetails", CartProdDetList);
+            if (!CartProductDet.isEmpty()) {
+                Data.putAll(CartProductDet);
+            }
+
+            String dt = Data.get(Tables.CartTable.Date);
+            String date = DateManager.readDate(dt);
+            Data.put(Tables.CartTable.Date, date);
+
+        }
+        return Data;
+    }
+
+    /**
+     *
+     * @param CartID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static ArrayList<HashMap<String, String>> GetCartProductDetailsList2(int CartID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        ArrayList<HashMap<String, String>> List = new ArrayList<>();
+        HashMap<String, String> ProdDetailList = new HashMap<>();
+        ArrayList<Integer> ProdDetIDS = GetCartProductDetailsIDsByCartID(CartID);
+        if (!ProdDetIDS.isEmpty()) {
+            for (int ProdDetID : ProdDetIDS) {
+                ProdDetailList = GetCartProductDetailsDataByID(ProdDetID);
+                if (!ProdDetailList.isEmpty()) {
+                    String productID = ProdDetailList.get(Tables.CartProductDetailsTable.ProductID);
+                    int ProductID = Integer.parseInt(productID);
+                    HashMap<String, String> ProductDetails = EngineProductManager.GetProductData(ProductID);
+                    JSONObject ProductDet = new JSONObject();
+                    ProductDet.put("ProductDetails", ProductDetails);
+                    if (!ProductDet.isEmpty()) {
+                        ProdDetailList.putAll(ProductDet);
+                    }
+                    List.add(ProdDetailList);
+                }
+            }
+        }
+        return List;
+    }
 }

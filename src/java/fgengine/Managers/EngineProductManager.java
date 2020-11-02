@@ -1199,13 +1199,7 @@ public class EngineProductManager {
             RatingsDet.put("RatingDetails", EngineReviewManager.ObjectReviews(ProductID));
             Details.putAll(RatingsDet);
 
-            //Get Rating Details
-            ArrayList<HashMap<String, String>> ReviewList = EngineReviewManager.GetObjectReviewList2(ProductID);
-            JSONObject ReviewDet = new JSONObject();
-            ReviewDet.put("ReviewDetails", ReviewList);
-            if (!ReviewDet.isEmpty()) {
-                Details.putAll(ReviewDet);
-            }
+           
 
             //Get Price
             int PriceID = GetProductPriceIDByProductID(ProductID);
@@ -1229,6 +1223,13 @@ public class EngineProductManager {
             SellerDet.put("SellerDetails", GetProductSellerData(SellerProdID));
             if (!SellerDet.isEmpty()) {
                 Details.putAll(SellerDet);
+            }
+             //Get Rating Details
+            ArrayList<HashMap<String, String>> ReviewList = EngineReviewManager.GetObjectReviewList2(ProductID);
+            JSONObject ReviewDet = new JSONObject();
+            ReviewDet.put("ReviewDetails", ReviewList);
+            if (!ReviewDet.isEmpty()) {
+                Details.putAll(ReviewDet);
             }
 
         }
