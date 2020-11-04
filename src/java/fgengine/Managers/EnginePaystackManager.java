@@ -50,9 +50,9 @@ public class EnginePaystackManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public String PayStackPay(String trxref) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+    public String PayStackPay(String trxref, int id) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         String payres = "";
-        String secretKey = GetPaystackSecretKey();
+        String secretKey = GetPaystackSecretKey(id);
         payres = Pay(trxref, secretKey);
         return payres;
     }
@@ -95,30 +95,28 @@ public class EnginePaystackManager {
 
     /**
      *
-     * @return
-     * @throws ClassNotFoundException
+     * @return @throws ClassNotFoundException
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String GetPaystackSecretKey() throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+    public static String GetPaystackSecretKey(int id) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         String result = "";
-        result = DBManager.GetString(Tables.ParametersTable.PaystackSecretKey, Tables.ParametersTable.Table, "where " + Tables.ParametersTable.ID + " = " + 1);
+        result = DBManager.GetString(Tables.ParametersTable.PaystackSecretKey, Tables.ParametersTable.Table, "where " + Tables.ParametersTable.ID + " = " + id);
         return result;
     }
 
     /**
      *
-     * @return
-     * @throws ClassNotFoundException
+     * @return @throws ClassNotFoundException
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
-    public static String GetPaystackPublicKey() throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+    public static String GetPaystackPublicKey(int id ) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         String result = "";
-        result = DBManager.GetString(Tables.ParametersTable.PaystackPublicKey,  Tables.ParametersTable.Table, "where " + Tables.ParametersTable.ID + " = " + 1);
+        result = DBManager.GetString(Tables.ParametersTable.PaystackPublicKey, Tables.ParametersTable.Table, "where " + Tables.ParametersTable.ID + " = " + id);
         return result;
     }
-    
+
     /**
      *
      * @param IpAddress
@@ -153,4 +151,6 @@ public class EnginePaystackManager {
         }
         return payres;
     }
+
+   
 }

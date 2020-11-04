@@ -292,6 +292,48 @@ public class MProductServlet extends HttpServlet {
                     json = new Gson().toJson(datares);
                     break;
                 }
+                case "UpdateOptions": {
+                    String sessionid = (String) jsonParameter.get("sid");
+                    String UserID = EngineUserManager.GetLoginIDBySessionID(sessionid);
+                    String Option = (String) jsonParameter.get("option");
+                    String productid = (String) jsonParameter.get("productid");
+                    int ProductID = Integer.parseInt(productid);
+                    String price = (String) jsonParameter.get("price");
+                    double Price = Double.parseDouble(price);
+                    double ProductPrice = 0.0;
+                    String quantity = (String) jsonParameter.get("quantity");
+                    int ProductQuantity = Integer.parseInt(quantity);
+                    if (ProductQuantity > 1) {
+                        ProductPrice = Price * ProductQuantity;
+                    } else {
+                        ProductPrice = Price;
+                    }
+                    String Action = (String) jsonParameter.get("action");
+                    if (Option.equals("Cart")) {
+                        result = EngineCartManager.ComputeCart(UserID, ProductID, ProductPrice, ProductQuantity, Action);
+                    } else if (Option.equals("SavedItems")) {
+                        result = EngineCartManager.ComputeWishList(UserID, ProductID, ProductPrice, ProductQuantity, Action);
+                    }
+                    JSONObject datares = new JSONObject();
+                    if (result.equals("success")) {
+                        datares.put("code", 200);
+                        if (Option.equals("Cart")) {
+                            datares.put("msg", "Product has been successfully updated in your Cart.");
+                        } else if (Option.equals("SavedItems")) {
+                            datares.put("msg", "Product has been successfully updated in your Saved Items.");
+                        }
+                    } else {
+                        if (!result.equals("failed")) {
+                            datares.put("msg", result);
+                        } else {
+                            datares.put("msg", "Something went wrong. Please try again.");
+                        }
+                        datares.put("code", 400);
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
+
                 case "GetShopCart": {
                     String sessionid = (String) jsonParameter.get("sid");
                     String UserID = EngineUserManager.GetLoginIDBySessionID(sessionid);
@@ -308,7 +350,187 @@ public class MProductServlet extends HttpServlet {
                     json = new Gson().toJson(datares);
                     break;
                 }
+                case "DeleteOptions": {
+                    String Option = (String) jsonParameter.get("option");//CART OR WISHLIST
+                    String optionid = (String) jsonParameter.get("optionid");
+                    int OptionID = Integer.parseInt(optionid);
+                    String productid = (String) jsonParameter.get("productid");
+                    int ProductID = Integer.parseInt(productid);
+                    if (Option.equals("Cart")) {
+                        result = EngineCartManager.DeleteCartProduct(OptionID, ProductID);
+                    } else if (Option.equals("SavedItems")) {
+                        result = EngineCartManager.DeleteWishListProduct(OptionID, ProductID);
+                    }
+                    JSONObject datares = new JSONObject();
+                    if (result.equals("success")) {
+                        datares.put("code", 200);
+                        if (Option.equals("Cart")) {
+                            datares.put("msg", "Product has been successfully deleted from your Cart.");
+                        } else if (Option.equals("SavedItems")) {
+                            datares.put("msg", "Product has been successfully deleted from Saved Items.");
+                        }
+                    } else {
+                        if (!result.equals("failed")) {
+                            datares.put("msg", result);
+                        } else {
+                            datares.put("msg", "Something went wrong. Please try again.");
+                        }
+                        datares.put("code", 400);
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
+                case "CartDiscountCode": {
+                    String sessionid = (String) jsonParameter.get("sid");
+                    String UserID = EngineUserManager.GetLoginIDBySessionID(sessionid);
+                    String DiscountCode = (String) jsonParameter.get("code");;
+                    result = EngineCartManager.ComputeCartDiscountCode(UserID, DiscountCode);
+                    JSONObject datares = new JSONObject();
+                    if (result.equals("success")) {
+                        datares.put("code", 200);
+                        datares.put("msg", "Discount Code has been added and your cart has been updated.");
+                    } else {
+                        if (!result.equals("failed")) {
+                            datares.put("msg", result);
+                        } else {
+                            datares.put("msg", "Something went wrong. Please try again.");
+                        }
+                        datares.put("code", 400);
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
+                case "GetCartDefaultAddress": {
+                    String sessionid = (String) jsonParameter.get("sid");
+                    String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
+                    int UserID = Integer.parseInt(SessionID);
+                    int addressid = EngineAddressManager.GetDefaultAddressDetailsIDByUserID("" + UserID);
+                    HashMap<String, String> data = EngineAddressManager.GetAddressData(addressid);
+                    JSONObject datares = new JSONObject();
+                    if (!data.isEmpty()) {
+                        datares.put("code", 200);
+                        datares.put("msg", "Delivery address found.");
+                        datares.put("data", data);
+                    } else {
+                        if (!result.equals("failed")) {
+                            datares.put("msg", result);
+                        } else {
+                            datares.put("msg", "Something went wrong. Please try again.");
+                        }
+                        datares.put("code", 400);
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
+                case "PlaceOrder": {
+                    String sessionid = (String) jsonParameter.get("sid");
+                    String PaymentType = (String) jsonParameter.get("paytype");
+                    String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
+                    int UserID = Integer.parseInt(SessionID);
+                    String WalletNumber = EngineWalletManager.GetUserWalletNumber(UserID);
+                    int CartID = EngineCartManager.GetCartIDByUserID("" + UserID);
+                    String shippingtypeid = (String) jsonParameter.get("shiptypeid");
+                    int ShippingTypeID = Integer.parseInt(shippingtypeid);
+                    String shippingaddressid = (String) jsonParameter.get("addressid");
+                    int ShippingAddressID = Integer.parseInt(shippingaddressid);
+                    EngineCartManager.UpdateCartShippingAddressIDByCartID(CartID, ShippingAddressID);
+                    EngineCartManager.UpdateCartShippingTypeIDByCartID(CartID, ShippingTypeID);
+                    result = EngineOrderManager.ComputePlaceOrder(UserID, PaymentType, "", WalletNumber);
+                    JSONObject datares = new JSONObject();
+                    if (result.equals("success")) {
+                        datares.put("code", 200);
+                        datares.put("msg", "Your Payment was Successful and your order has been placed.");
 
+                    } else {
+                        if (!result.equals("failed")) {
+                            datares.put("msg", result);
+                        } else {
+                            datares.put("msg", "Something went wrong. Please try again.");
+                        }
+                        datares.put("code", 400);
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
+                case "ValidatePaystackPayment": {
+                    String sessionid = (String) jsonParameter.get("sid");
+                    String actualamount = (String) jsonParameter.get("amount");
+                    String RefereceCode = (String) jsonParameter.get("refcode");
+                    String TransCode = (String) jsonParameter.get("tcode");
+                    String PaymentType = (String) jsonParameter.get("paytype");
+
+                    String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
+                    int UserID = Integer.parseInt(SessionID);
+                    double Amount = Double.parseDouble(actualamount);
+                    String message = "";
+
+                    JSONObject datares = new JSONObject();
+                    JSONObject jsonParseParameter = null;
+                    String payresult = EnginePaystackManager.getInstance().PayStackPay(RefereceCode, 2);
+
+                    try {
+                        jsonParseParameter = (JSONObject) parser.parse(payresult);
+                    } catch (Exception e) {
+                        message = "Your payment validation was not successful, Please contact the support team if your bank account was debited and send the debit advise!";
+                        datares.put("code", 400);
+                        datares.put("msg", message);
+                        e.printStackTrace();
+                    }
+                    String Status = jsonParseParameter.get("status").toString();
+                    if (Status.equals("false")) {
+                        message = "Your payment validation was not successful, Please contact the support team if your bank account was debited and send the debit advise!";
+                        datares.put("code", 400);
+                        datares.put("msg", message);
+                    } else if (Status.equals("true")) {
+                        if (PaymentType.equals("CheckOut Payment")) {
+                            result = EnginePaymentManager.ComputePaymentWithCash(UserID, Amount, TransCode, RefereceCode, PaymentType);
+                            if (result.equals("success")) {
+                                int CartID = EngineCartManager.GetCartIDByUserID("" + UserID);
+                                String shippingtypeid = (String) jsonParameter.get("shiptypeid");
+                                int ShippingTypeID = Integer.parseInt(shippingtypeid);
+                                String shippingaddressid = (String) jsonParameter.get("addressid");
+                                int ShippingAddressID = Integer.parseInt(shippingaddressid);
+                                EngineCartManager.UpdateCartShippingAddressIDByCartID(CartID, ShippingAddressID);
+                                EngineCartManager.UpdateCartShippingTypeIDByCartID(CartID, ShippingTypeID);
+                                result = EngineOrderManager.ComputePlaceOrder(UserID, "PayStack", "", RefereceCode);
+                                if (result.equals("success")) {
+                                    datares.put("code", 200);
+                                    datares.put("msg", "Your Payment was Successful and your order has been placed.");
+
+                                } else {
+                                    if (!result.equals("failed")) {
+                                        datares.put("msg", result);
+                                    } else {
+                                        datares.put("msg", "Something went wrong. Please try again or contact the support team for assistance");
+                                    }
+                                    datares.put("code", 400);
+                                }
+                            } else {
+                                message = "An error occured while updating your FynPay Account, Please contact the support team if your bank account was debited and send the debit advise!";
+                                datares.put("code", 400);
+                                datares.put("msg", message);
+                            }
+                        } else if (PaymentType.equals("Fund Wallet")) {
+
+                        }
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
+                case "GetPaystackKey": {
+                    String key = EnginePaystackManager.GetPaystackPublicKey(2);
+                    JSONObject datares = new JSONObject();
+                    if (!key.equals("")) {
+                        datares.put("code", 200);
+                        datares.put("msg", "Key found.");
+                        datares.put("data", key);
+                    } else {
+                        datares.put("msg", "Something went wrong. Please try again.");
+                        datares.put("code", 400);
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
             }
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");

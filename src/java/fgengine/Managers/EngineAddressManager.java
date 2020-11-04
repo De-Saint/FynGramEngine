@@ -638,6 +638,11 @@ public class EngineAddressManager {
             String tm = Data.get(Tables.AddressDetailsTable.Time);
             String time = DateManager.readTime(tm);
             Data.put(Tables.AddressDetailsTable.Time, time);
+            Data.put("statename", GetStateNameByID(Integer.parseInt(Data.get(Tables.AddressDetailsTable.StateID))));
+            Data.put("lganame", GetLGANameByID(Integer.parseInt(Data.get(Tables.AddressDetailsTable.LgaID))));
+            Data.put("townname", GetTownNameByID(Integer.parseInt(Data.get(Tables.AddressDetailsTable.TownID))));
+            Data.put("busname", GetBustopNameByID(Integer.parseInt(Data.get(Tables.AddressDetailsTable.BusStopID))));
+            Data.put("streetname", GetStreetNameByID(Integer.parseInt(Data.get(Tables.AddressDetailsTable.StreetID))));
 
         }
         return Data;

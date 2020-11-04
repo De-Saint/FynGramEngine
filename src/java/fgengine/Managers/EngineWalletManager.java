@@ -223,7 +223,7 @@ public class EngineWalletManager {
         if (WalletType == 1) {
             String mainBalRes = userbalance.split(";")[0];//1:0
             int mainBalID = Integer.parseInt(mainBalRes.split(":")[0]);
-            int mainBalValue = Integer.parseInt(mainBalRes.split(":")[1]);
+            double mainBalValue = Double.parseDouble(mainBalRes.split(":")[1]);
             if (TransactionType.equals("Credit")) {
                 mainBalValue += TransactionAmount;
             } else if (TransactionType.equals("Debit")) {
@@ -235,7 +235,7 @@ public class EngineWalletManager {
         } else {
             String PendingBalRes = userbalance.split(";")[1];//2:0
             int PendingBalID = Integer.parseInt(PendingBalRes.split(":")[0]);
-            int PendingBalValue = Integer.parseInt(PendingBalRes.split(":")[1]);
+            double PendingBalValue = Double.parseDouble(PendingBalRes.split(":")[1]);
             if (TransactionType.equals("Credit")) {
                 PendingBalValue += TransactionAmount;
             } else if (TransactionType.equals("Debit")) {

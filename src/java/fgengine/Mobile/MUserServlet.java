@@ -134,6 +134,7 @@ public class MUserServlet extends HttpServlet {
                             dataobject.addProperty("sid", NewSessionID);
                             dataobject.addProperty("usertype", usertype);
                             dataobject.addProperty("name", EngineUserManager.GetUserName(UserID));
+                            dataobject.addProperty("email", EngineUserManager.GetUserEmail(UserID));
                             returninfo.add("data", dataobject);
                             returninfo.addProperty("code", 200);
                             returninfo.addProperty("msg", "Successful Login");

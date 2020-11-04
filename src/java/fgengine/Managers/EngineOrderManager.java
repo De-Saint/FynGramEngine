@@ -120,7 +120,7 @@ public class EngineOrderManager {
                     EngineMessageManager.sendMessage(EngineUserManager.GetAdminUserID(), body, "Placed Order", UserID);
                     EngineEmailManager.SendEmail(EngineUserManager.GetUserEmail(UserID), body, "Placed Order - Fyngram");
                 } else {
-                    result = "Insufficient fund.";
+                    result = "Insufficient fund. Please fund your account using Paystack";
                 }
             } catch (Exception ex) {
                 String res = ex.getMessage();

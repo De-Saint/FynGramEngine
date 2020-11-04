@@ -958,11 +958,12 @@ public class EngineCartManager {
      */
     public static String ComputeCartDiscountCode(String UserID, String DiscountCode) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, ParseException {
         String result = "failed";
-        double CartAmount = GetCartTotalAmountByUserID(UserID);
-        int CartID = GetCartIDByUserID(UserID);
+
         double CartDiscountedAmount = 0.0;
         int DiscountCodeID = EngineDiscountManager.GetDiscountCodeIDByCode(UserID, DiscountCode);
         if (DiscountCodeID != 0) {
+            double CartAmount = GetCartTotalAmountByUserID(UserID);
+            int CartID = GetCartIDByUserID(UserID);
             int ExistingDiscountCodeID = GetDiscountCodeIDByCartID(CartID);
             if (ExistingDiscountCodeID == 0 && ExistingDiscountCodeID != DiscountCodeID) {
                 int DiscountDeductionTypeID = EngineDiscountManager.GetDiscountCodeDeductionTypeByDiscounCodeID(DiscountCodeID);
@@ -1370,20 +1371,28 @@ public class EngineCartManager {
      */
     public static HashMap<String, String> GetMobileCartDataByUserID(String UserID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         HashMap<String, String> Data = new HashMap<>();
-        Data = DBManager.GetTableData(Tables.CartTable.Table, "where " + Tables.CartTable.UserID + " = '" + UserID + "'");
-        if (!Data.isEmpty()) {
-            int CartID = Integer.parseInt(Data.get(Tables.CartTable.ID));
-            ArrayList<HashMap<String, String>> CartProdDetList = EngineCartManager.GetCartProductDetailsList2(CartID);
-            JSONObject CartProductDet = new JSONObject();
-            CartProductDet.put("CartProductDetails", CartProdDetList);
-            if (!CartProductDet.isEmpty()) {
-                Data.putAll(CartProductDet);
+        int CartID = GetCartIDByUserID(UserID);
+        if (CartID != 0) {
+            double cartAmount = GetCartAmountByUserID(UserID);
+            String shipping = EngineShippingManager.GetShippingFees(cartAmount);
+            String shippingFees = shipping.split("#")[0];
+            double ShippingFees = Double.parseDouble(shippingFees);
+            double DiscountCodeAmount = GetDiscountAmountByCartID(CartID);
+            double newCartTotalAmount = (cartAmount + ShippingFees) - DiscountCodeAmount;
+            UpdateCartTotalAmount(CartID, newCartTotalAmount);
+            UpdateCartShippingFeesByCartID(CartID, ShippingFees);
+            Data = DBManager.GetTableData(Tables.CartTable.Table, "where " + Tables.CartTable.UserID + " = '" + UserID + "'");
+            if (!Data.isEmpty()) {
+                ArrayList<HashMap<String, String>> CartProdDetList = EngineCartManager.GetCartProductDetailsList2(CartID);
+                JSONObject CartProductDet = new JSONObject();
+                CartProductDet.put("CartProductDetails", CartProdDetList);
+                if (!CartProductDet.isEmpty()) {
+                    Data.putAll(CartProductDet);
+                }
+                String dt = Data.get(Tables.CartTable.Date);
+                String date = DateManager.readDate(dt);
+                Data.put(Tables.CartTable.Date, date);
             }
-
-            String dt = Data.get(Tables.CartTable.Date);
-            String date = DateManager.readDate(dt);
-            Data.put(Tables.CartTable.Date, date);
-
         }
         return Data;
     }

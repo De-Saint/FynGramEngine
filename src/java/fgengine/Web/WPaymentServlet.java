@@ -68,7 +68,7 @@ public class WPaymentServlet extends HttpServlet {
                     int UserID = Integer.parseInt(SessionID);
                     double Amount = Double.parseDouble(actualamount);
                     String message = "";
-                    String payresult = EnginePaystackManager.getInstance().PayStackPay(RefereceCode);
+                    String payresult = EnginePaystackManager.getInstance().PayStackPay(RefereceCode, 1);
                     JSONParser parser = new JSONParser();
                     JSONObject jsonParameter = null;
                     JsonObject returninfo = new JsonObject();
