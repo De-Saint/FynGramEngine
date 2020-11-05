@@ -92,6 +92,18 @@
         <servlet-name>MUserServlet</servlet-name>
         <servlet-class>fgengine.Mobile.MUserServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>MShopServlet</servlet-name>
+        <servlet-class>fgengine.Mobile.MShopServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>MMessageServlet</servlet-name>
+        <servlet-class>fgengine.Mobile.MMessageServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>MReviewServlet</servlet-name>
+        <servlet-class>fgengine.Mobile.MReviewServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>DispatcherSerlvet</servlet-name>
         <url-pattern>/DispatcherSerlvet</url-pattern>
@@ -183,6 +195,18 @@
     <servlet-mapping>
         <servlet-name>MUserServlet</servlet-name>
         <url-pattern>/MUserServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>MShopServlet</servlet-name>
+        <url-pattern>/MShopServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>MMessageServlet</servlet-name>
+        <url-pattern>/MMessageServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>MReviewServlet</servlet-name>
+        <url-pattern>/MReviewServlet</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

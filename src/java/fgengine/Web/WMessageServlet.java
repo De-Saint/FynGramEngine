@@ -101,7 +101,6 @@ public class WMessageServlet extends HttpServlet {
                     int msgid = Integer.parseInt(messageid);
                     result = EngineMessageManager.DeleteMessage(msgid);
                     JsonObject returninfo = new JsonObject();
-                    ArrayList<Integer> IDS = new ArrayList<>();
                     if (result.equals("success")) {
                         returninfo.addProperty("status", "success");
                         returninfo.addProperty("msg", "The message has been deleted");

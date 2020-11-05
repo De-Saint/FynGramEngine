@@ -118,14 +118,6 @@ public class WReviewServlet extends HttpServlet {
                     json = new Gson().toJson(datares);
                     break;
                 }
-                case "GetPickUpCentres": {
-
-                    break;
-                }
-                case "GetPickUpStates": {
-
-                    break;
-                }
             }
 
             response.setContentType("application/json");

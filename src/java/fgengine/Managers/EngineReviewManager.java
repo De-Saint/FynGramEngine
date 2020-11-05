@@ -257,6 +257,35 @@ public class EngineReviewManager {
 
     /**
      *
+     * @param UserID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static ArrayList<HashMap<String, String>> GetMobileUserReviewList(int UserID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        ArrayList<HashMap<String, String>> ReviewList = new ArrayList<>();
+        HashMap<String, String> List = new HashMap<>();
+        ArrayList<Integer> RatingIDS = new ArrayList<>();
+        if (UserID == 1) {
+            RatingIDS = GetRatingIDs();
+        } else {
+            RatingIDS = GetUserRatingIDsByUserID(UserID);
+        }
+
+        if (!RatingIDS.isEmpty()) {
+            for (int ratingID : RatingIDS) {
+                List = ReviewData(ratingID);
+                if (!List.isEmpty()) {
+                    ReviewList.add(List);
+                }
+            }
+        }
+        return ReviewList;
+    }
+
+    /**
+     *
      * @param ReviewID
      * @return
      * @throws ClassNotFoundException

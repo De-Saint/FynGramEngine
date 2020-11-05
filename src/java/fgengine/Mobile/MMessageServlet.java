@@ -6,7 +6,6 @@
 package fgengine.Mobile;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import fgengine.Managers.*;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -26,7 +25,7 @@ import org.json.simple.parser.ParseException;
  *
  * @author mac
  */
-public class MProductServlet extends HttpServlet {
+public class MMessageServlet extends HttpServlet {
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -41,7 +40,6 @@ public class MProductServlet extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-
         }
     }
 
@@ -99,29 +97,54 @@ public class MProductServlet extends HttpServlet {
             String json3 = "";
             String result = "";
             switch (type) {
-                case "GetRootCategories": {
-                    ArrayList<Integer> IDS = EngineCategoryManager.GetRootCategoryIDs();
+                case "GetMessages": {
+                    String sessionid = (String) jsonParameter.get("sid");
+                    String option = (String) jsonParameter.get("option");
+                    String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
+                    int UserID = Integer.parseInt(SessionID);
                     ArrayList<HashMap<String, String>> list = new ArrayList<>();
+                    ArrayList<Integer> IDS = new ArrayList<>();
+                    if (option.equals("All")) {
+                        if (UserID == 1) {
+                            IDS = EngineMessageManager.GetAllMessagesTable();
+                        } else {
+                            IDS = EngineMessageManager.GetInboxMessageIDs(UserID);
+                        }
+                    }
                     JSONObject datares = new JSONObject();
                     if (!IDS.isEmpty()) {
                         for (int id : IDS) {
-                            HashMap<String, String> details = EngineCategoryManager.GetCategoryData(id);
+                            HashMap<String, String> details = EngineMessageManager.GetMessageDetails(id);
                             if (!details.isEmpty()) {
                                 list.add(details);
                             }
                         }
                         datares.put("code", 200);
                         datares.put("data", list);
-                        datares.put("msg", "Categories found.");
+                        datares.put("msg", "Messages found.");
 
                     } else {
                         datares.put("code", 400);
-                        datares.put("msg", "No categories found");
+                        datares.put("msg", "No Messages found.");
                     }
                     json = new Gson().toJson(datares);
                     break;
                 }
-               
+                case "DeleteMessage": {
+                    String messageid = (String) jsonParameter.get("messageid");
+                    int msgid = Integer.parseInt(messageid);
+                    result = EngineMessageManager.DeleteMessage(msgid);
+                    JSONObject datares = new JSONObject();
+                    if (result.equals("success")) {
+                        datares.put("code", 200);
+                        datares.put("msg", "The message has been deleted");
+                    } else {
+                        datares.put("code", 400);
+                        datares.put("msg", "Something went wrong! Please, try again!.");
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
             }
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
