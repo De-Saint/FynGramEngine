@@ -40,7 +40,7 @@ public class MShopServlet extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-           
+
         }
     }
 
@@ -69,7 +69,7 @@ public class MShopServlet extends HttpServlet {
      */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
-              throws ServletException, IOException {
+            throws ServletException, IOException {
         try {
             HttpSession session = request.getSession(true);
             String ans = "";
@@ -466,7 +466,6 @@ public class MShopServlet extends HttpServlet {
                     JSONObject datares = new JSONObject();
                     JSONObject jsonParseParameter = null;
                     String payresult = EnginePaystackManager.getInstance().PayStackPay(RefereceCode, 2);
-
                     try {
                         jsonParseParameter = (JSONObject) parser.parse(payresult);
                     } catch (Exception e) {
@@ -510,7 +509,18 @@ public class MShopServlet extends HttpServlet {
                                 datares.put("msg", message);
                             }
                         } else if (PaymentType.equals("Fund Wallet")) {
-
+                            result = EnginePaymentManager.ComputePaymentWithCash(UserID, Amount, TransCode, RefereceCode, PaymentType);
+                            if (result.equals("success")) {
+                                datares.put("code", 200);
+                                datares.put("msg", "Your Payment was Successful. Please check your FynPay Account.");
+                            } else {
+                                if (!result.equals("failed")) {
+                                    datares.put("msg", result);
+                                } else {
+                                    datares.put("msg", "Something went wrong. Please try again or contact the support team for assistance");
+                                }
+                                datares.put("code", 400);
+                            }
                         }
                     }
                     json = new Gson().toJson(datares);

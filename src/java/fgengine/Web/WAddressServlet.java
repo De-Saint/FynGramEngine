@@ -239,10 +239,10 @@ public class WAddressServlet extends HttpServlet {
                     break;
                 }
                 case "GetStreets": {
-                    String townid = request.getParameter("data");
-                    int TownID = Integer.parseInt(townid);
+                    String busstopid = request.getParameter("data");
+                    int BusStopID = Integer.parseInt(busstopid);
                     HashMap<Integer, HashMap<String, String>> List = new HashMap<>();
-                    ArrayList<Integer> IDS = EngineAddressManager.GetStreetIDs(TownID);
+                    ArrayList<Integer> IDS = EngineAddressManager.GetStreetIDs(BusStopID);
                     if (!IDS.isEmpty()) {
                         for (int id : IDS) {
                             HashMap<String, String> details = EngineAddressManager.GetStreetNameData(id);

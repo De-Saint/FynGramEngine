@@ -12,6 +12,8 @@ import fgengine.Managers.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.HashMap;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -83,7 +85,7 @@ public class MUserServlet extends HttpServlet {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            
+
             JSONParser parser = new JSONParser();
             JSONObject jsonParameter = null;
             try {
@@ -102,7 +104,7 @@ public class MUserServlet extends HttpServlet {
                     String Password = (String) jsonParameter.get("password");
                     int UserID = 0;
                     String OldSessionID = (String) jsonParameter.get("oldsid");
-                    
+
                     JsonObject returninfo = new JsonObject();
                     if (EngineUserManager.checkEmailAddressOrPhoneNumberExist(Email_PhoneNumber)) {
                         UserID = EngineUserManager.checkPasswordEmailMatch(Password, Email_PhoneNumber);
@@ -184,10 +186,11 @@ public class MUserServlet extends HttpServlet {
                         }
                         returninfo.addProperty("code", 400);
                     }
-                    
+
                     json = new Gson().toJson((JsonElement) returninfo);
                     break;
                 }
+
                 case "PasswordRecovery": {
                     String RecoveryCode = (String) jsonParameter.get("code");
                     String NewPassword = (String) jsonParameter.get("password");
@@ -230,7 +233,7 @@ public class MUserServlet extends HttpServlet {
                                         String Code = "FG-" + UtilityManager.randomAlphaNumeric(7) + "#C";
                                         EngineUserManager.CreateRecovery(CustomerUserID, EmailAddress, Code);
                                         EngineEmailManager.SendingEmailOption(EmailAddress, "Customer Account Created", Code, EngineUserManager.GetUserName(CustomerUserID), "Registration", "Customer");
-                                        
+
                                         returninfo.addProperty("code", 200);
                                         returninfo.addProperty("msg", msgbdy);
                                     } else {
@@ -240,22 +243,22 @@ public class MUserServlet extends HttpServlet {
                                 } else {
                                     returninfo.addProperty("code", 400);
                                     returninfo.addProperty("msg", "Oh No! Something went wrong while creating User Account. Please try again.");
-                                    
+
                                 }
                             } else {
                                 returninfo.addProperty("code", 400);
                                 returninfo.addProperty("msg", "Oh No! Something went wrong while creating User Account. Please try again.");
-                                
+
                             }
                         } else {
                             returninfo.addProperty("code", 400);
                             returninfo.addProperty("msg", "Oh No! An account with the same Phone Number already Exists. Please use another Phone Number.");
-                            
+
                         }
                     } else {
                         returninfo.addProperty("code", 400);
                         returninfo.addProperty("msg", "Oh No! An account with the same Email already Exists. Please use another Email.");
-                        
+
                     }
                     json = new Gson().toJson((JsonElement) returninfo);
                     break;
@@ -284,12 +287,118 @@ public class MUserServlet extends HttpServlet {
                     json = new Gson().toJson((JsonElement) returninfo);
                     break;
                 }
+
+                case "GetBanks": {
+                    ArrayList<HashMap<String, String>> list = new ArrayList<>();
+                    ArrayList<Integer> IDS = EngineCashoutManager.GetBankIDs();
+                    JSONObject datares = new JSONObject();
+                    if (!IDS.isEmpty()) {
+                        for (int id : IDS) {
+                            HashMap<String, String> details = EngineCashoutManager.GetBankData(id);
+                            if (!details.isEmpty()) {
+                                list.add(details);
+                            }
+                        }
+                        datares.put("code", 200);
+                        datares.put("data", list);
+                        datares.put("msg", "Banks found.");
+
+                    } else {
+                        datares.put("code", 400);
+                        datares.put("msg", "No Banks found.");
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
+                case "CreateBankDetails": {
+                    String sessionid = (String) jsonParameter.get("sid");
+                    String bankid = (String) jsonParameter.get("bankid");
+                    int BankID = Integer.parseInt(bankid);
+                    String AccounType = (String) jsonParameter.get("accounttype");
+                    String AccountNumber = (String) jsonParameter.get("accountnumber");
+                    String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
+                    int UserID = Integer.parseInt(SessionID);
+                    result = EngineCashoutManager.CreateBankDetails(UserID, BankID, AccountNumber, AccounType);
+                    JSONObject datares = new JSONObject();
+                    if (result.equals("success")) {
+                        datares.put("code", 200);
+                        datares.put("msg", "The New Bank Details has been added successfully.");
+                    } else {
+                        if (!result.equals("failed")) {
+                            datares.put("msg", result);
+                        } else {
+                            datares.put("msg", "Something went wrong! Please, try again!");
+                        }
+                        datares.put("code", 400);
+                        datares.put("msg", "No Banks found.");
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
+                case "GetBankDetails": {
+                    String sessionid = (String) jsonParameter.get("sid");
+                    String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
+                    int UserID = Integer.parseInt(SessionID);
+                    int BankDetailID = EngineCashoutManager.GetBankDetailsIDByUserID(UserID);
+                    HashMap<String, String> details = EngineCashoutManager.GetBankDetailsData(BankDetailID);
+                    JSONObject datares = new JSONObject();
+                    if (!details.isEmpty()) {
+                        datares.put("code", 200);
+                        datares.put("msg", "Bank Details Found");
+                        datares.put("data", details);
+
+                    } else {
+                        datares.put("code", 400);
+                        datares.put("msg", "No Bank Details found.");
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
+
+                case "DeleteBankDetails": {
+                    String bankdetid = (String) jsonParameter.get("bankdetid");
+                    int BankdetailID = Integer.parseInt(bankdetid);
+                    result = EngineCashoutManager.DeleteBankDetails(BankdetailID);
+                    JSONObject datares = new JSONObject();
+                    if (result.equals("success")) {
+                        datares.put("code", 200);
+                        datares.put("msg", "The Bank Detail has been deleted successfully.");
+
+                    } else {
+                        datares.put("code", 400);
+                        if (!result.equals("failed")) {
+                            datares.put("msg", result);
+                        } else {
+                            datares.put("msg", "Something went wrong! Please, try again!");
+                        }
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
+                case "GetWalletDetails": {
+                    String sessionid = (String) jsonParameter.get("sid");
+                    String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
+                    int UserID = Integer.parseInt(SessionID);
+                    HashMap<String, String> data = EngineWalletManager.ComputeWalletDetails(UserID);
+                    JSONObject datares = new JSONObject();
+                    if (!data.isEmpty()) {
+                        datares.put("code", 200);
+                        datares.put("msg", "Account Details Found");
+                        datares.put("data", data);
+
+                    } else {
+                        datares.put("code", 400);
+                        datares.put("msg", "No Account Details found.");
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
             }
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
             response.getWriter().write(json);
         } catch (Exception ex) {
-            
+
         }
     }
 

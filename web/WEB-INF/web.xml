@@ -104,6 +104,14 @@
         <servlet-name>MReviewServlet</servlet-name>
         <servlet-class>fgengine.Mobile.MReviewServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>MTransactionServlet</servlet-name>
+        <servlet-class>fgengine.Mobile.MTransactionServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>MPaymentServlet</servlet-name>
+        <servlet-class>fgengine.Mobile.MPaymentServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>DispatcherSerlvet</servlet-name>
         <url-pattern>/DispatcherSerlvet</url-pattern>
@@ -207,6 +215,14 @@
     <servlet-mapping>
         <servlet-name>MReviewServlet</servlet-name>
         <url-pattern>/MReviewServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>MTransactionServlet</servlet-name>
+        <url-pattern>/MTransactionServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>MPaymentServlet</servlet-name>
+        <url-pattern>/MPaymentServlet</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
