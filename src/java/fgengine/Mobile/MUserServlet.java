@@ -393,6 +393,151 @@ public class MUserServlet extends HttpServlet {
                     json = new Gson().toJson(datares);
                     break;
                 }
+                case "NewCashoutRequest": {
+                    String amount = (String) jsonParameter.get("amount");
+                    String pin = (String) jsonParameter.get("pin");
+                    String sessionid = (String) jsonParameter.get("sid");
+                    double Amount = Double.parseDouble(amount);
+                    int Pin = Integer.parseInt(pin);
+                    String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
+                    int UserID = Integer.parseInt(SessionID);
+                    int WalletPin = EngineWalletManager.GetUserWalletPIN(UserID);
+                    HashMap<Integer, HashMap<String, String>> List = new HashMap<>();
+                    ArrayList<Integer> IDS = new ArrayList<>();
+                    JSONObject datares = new JSONObject();
+                    if (Pin == WalletPin) {
+                        result = EngineCashoutManager.ComputeCashOut(UserID, Amount);
+                        if (result.equals("success")) {
+                            datares.put("code", 200);
+                            datares.put("msg", "The New Cashout Request has been logged and is pending approval.");
+
+                        } else {
+                            if (!result.equals("failed")) {
+                                datares.put("msg", result);
+                            } else {
+                                datares.put("msg", "Something went wrong! Please, try again!");
+                            }
+                            datares.put("code", 400);
+                        }
+                    } else {
+                        datares.put("msg", "Invalid FynPay Account Pin.");
+                        datares.put("code", 400);
+                    }
+
+                    json = new Gson().toJson(datares);
+                    break;
+                }
+                case "GetCashoutRequests": {
+                    String sessionid = (String) jsonParameter.get("sid");
+                    String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
+                    int UserID = Integer.parseInt(SessionID);
+                    ArrayList<Integer> IDS = EngineCashoutManager.GetCashOutIDs(UserID);
+                    JSONObject datares = new JSONObject();
+                    ArrayList<HashMap<String, String>> list = new ArrayList<>();
+                    if (!IDS.isEmpty()) {
+                        for (int id : IDS) {
+                            HashMap<String, String> details = EngineCashoutManager.GetCashOutData(id);
+                            if (!details.isEmpty()) {
+                                list.add(details);
+                            }
+                        }
+                        datares.put("code", 200);
+                        datares.put("msg", "Requests Found");
+                        datares.put("data", list);
+                    } else {
+                        datares.put("code", 400);
+                        datares.put("msg", "No Requests Found");
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
+                case "ProcessCashOut": {
+                    String Option = (String) jsonParameter.get("option");
+                    String cashoutid = (String) jsonParameter.get("cashoutid");
+                    int CashoutID = Integer.parseInt(cashoutid);
+                    JSONObject datares = new JSONObject();
+                    result = EngineCashoutManager.ProcessCashOut(CashoutID, Option);
+                    if (result.equals("success")) {
+                        datares.put("code", 200);
+                        datares.put("msg", "The cashout request has been " + Option);
+
+                    } else {
+                        if (!result.equals("failed")) {
+                            datares.put("msg", result);
+                        } else {
+                            datares.put("msg", "Something went wrong! Please, try again!");
+                        }
+                        datares.put("code", 400);
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
+                case "GetCustomerDiscountCodes": {
+                    String sessionid = (String) jsonParameter.get("sid");
+                    String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
+                    int UserID = Integer.parseInt(SessionID);
+                    JSONObject datares = new JSONObject();
+                    ArrayList<HashMap<String, String>> list = new ArrayList<>();
+                    ArrayList<Integer> IDS = EngineDiscountManager.GetCustomerDiscountCodeIDs(UserID);
+                    if (!IDS.isEmpty()) {
+                        for (int id : IDS) {
+                            HashMap<String, String> details = EngineDiscountManager.GetCustomerDiscountCodeData(id);
+                            if (!details.isEmpty()) {
+                                list.add(details);
+                            }
+                        }
+                        datares.put("code", 200);
+                        datares.put("msg", "Discount Codes Found");
+                        datares.put("data", list);
+                    } else {
+                        datares.put("code", 400);
+                        datares.put("msg", "No Discount Codes Found");
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
+                case "GetDiscountCodes": {
+                    ArrayList<HashMap<String, String>> list = new ArrayList<>();
+                    ArrayList<Integer> IDS = EngineDiscountManager.GetDiscountCodeIDs();
+                    JSONObject datares = new JSONObject();
+                    if (!IDS.isEmpty()) {
+                        for (int id : IDS) {
+                            HashMap<String, String> details = EngineDiscountManager.GetDiscountCodeData(id);
+                            if (!details.isEmpty()) {
+                                list.add(details);
+                            }
+                        }
+                        datares.put("code", 200);
+                        datares.put("msg", "Discount Codes Found");
+                        datares.put("data", list);
+                    } else {
+                        datares.put("code", 400);
+                        datares.put("msg", "No Discount Codes Found");
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
+                case "ProcessDiscount": {
+                    String Option = (String) jsonParameter.get("option");
+                    String discountid = (String) jsonParameter.get("discountid");
+                    int DiscountCodeID = Integer.parseInt(discountid);
+                    result = EngineDiscountManager.ProcessDiscountCode(Option, DiscountCodeID);
+                    JSONObject datares = new JSONObject();
+                    if (result.equals("success")) {
+                        datares.put("code", 200);
+                        datares.put("msg", "The Discount Code record has been " + Option);
+
+                    } else {
+                        if (!result.equals("failed")) {
+                            datares.put("msg", result);
+                        } else {
+                            datares.put("msg", "Something went wrong! Please, try again!");
+                        }
+                        datares.put("code", 400);
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
             }
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");

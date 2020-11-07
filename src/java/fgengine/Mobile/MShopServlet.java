@@ -540,6 +540,8 @@ public class MShopServlet extends HttpServlet {
                     json = new Gson().toJson(datares);
                     break;
                 }
+               
+                
             }
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
