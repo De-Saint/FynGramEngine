@@ -112,6 +112,10 @@
         <servlet-name>MPaymentServlet</servlet-name>
         <servlet-class>fgengine.Mobile.MPaymentServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>MOrderServlet</servlet-name>
+        <servlet-class>fgengine.Mobile.MOrderServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>DispatcherSerlvet</servlet-name>
         <url-pattern>/DispatcherSerlvet</url-pattern>
@@ -223,6 +227,10 @@
     <servlet-mapping>
         <servlet-name>MPaymentServlet</servlet-name>
         <url-pattern>/MPaymentServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>MOrderServlet</servlet-name>
+        <url-pattern>/MOrderServlet</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

@@ -1552,6 +1552,37 @@ public class EngineOrderManager {
      * @throws SQLException
      * @throws UnsupportedEncodingException
      */
+    public static ArrayList<HashMap<String, String>> GetOrderHistoryDataByOrderID2(int OrderID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        ArrayList<HashMap<String, String>> list = new ArrayList<>();
+        HashMap<String, String> orderHistoryList = new HashMap<>();
+        ArrayList<Integer> orderHistIDS = GetOrderHistoryIDs(OrderID);
+        if (!orderHistIDS.isEmpty()) {
+            for (int orderHistID : orderHistIDS) {
+                orderHistoryList = GetOrderHistoryData(orderHistID);
+                if (!orderHistoryList.isEmpty()) {
+                    String productID = orderHistoryList.get(Tables.OrderHistoryTable.ProductID);
+                    int ProductID = Integer.parseInt(productID);
+                    HashMap<String, String> ProductDetails = EngineProductManager.GetProductData(ProductID);
+                    JSONObject ProductDet = new JSONObject();
+                    ProductDet.put("ProductDetails", ProductDetails);
+                    if (!ProductDet.isEmpty()) {
+                        orderHistoryList.putAll(ProductDet);
+                    }
+                    list.add(orderHistoryList);
+                }
+            }
+        }
+        return list;
+    }
+
+    /**
+     *
+     * @param OrderID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
     public static HashMap<String, String> GetOrderInvoiceData(int OrderID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         HashMap<String, String> data = DBManager.GetTableData(Tables.OrderInvoicesTable.Table, "where " + Tables.OrderInvoicesTable.OrderID + " = " + OrderID);
         if (!data.isEmpty()) {
@@ -1969,4 +2000,130 @@ public class EngineOrderManager {
         result = DBManager.DeleteObject(Tables.OrdersTable.Table, "where " + Tables.OrdersTable.ID + " = " + OrderID);
         return result;
     }
+
+    /**
+     *
+     * @param OrderID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static HashMap<String, String> GetMobileOrderFullData(int OrderID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        HashMap<String, String> result = new HashMap<>();
+        result = DBManager.GetTableData(Tables.OrdersTable.Table, "where " + Tables.OrdersTable.ID + " = " + OrderID);
+        if (!result.isEmpty()) {
+            result.put("OrderID", "" + OrderID);
+
+            String customerid = result.get(Tables.OrdersTable.CustomerUserID);
+            int CustomerID = Integer.parseInt(customerid);
+            //Get Status Details
+            JSONObject CustomerDet = new JSONObject();
+            CustomerDet.put("CustomerDetails", GetCustomerInfoData(CustomerID));
+            if (!CustomerDet.isEmpty()) {
+                result.putAll(CustomerDet);
+            }
+            String sellerid = result.get(Tables.OrdersTable.SellerUserID);
+            int SellerID = Integer.parseInt(sellerid);
+            //Get Status Details
+            JSONObject SellerDet = new JSONObject();
+            SellerDet.put("SellerDetails", EngineProductManager.GetSellerInfoData(SellerID));
+            if (!SellerDet.isEmpty()) {
+                result.putAll(SellerDet);
+            }
+            String Shippingtypeid = result.get(Tables.OrdersTable.ShippingTypeID);
+            int ShippingTypeID = Integer.parseInt(Shippingtypeid);
+            String ShippingTypeName = EngineShippingManager.GetShippingTypeNameByID(ShippingTypeID);
+            result.put("ShippingTypeName", ShippingTypeName);
+            String Shippingaddressid = result.get(Tables.OrdersTable.ShippingAddressID);
+            int ShippingAddressID = Integer.parseInt(Shippingaddressid);
+            JSONObject ShippingAddressDet = new JSONObject();
+            if (ShippingTypeID == 1) {
+                ShippingAddressDet.put("ShippingAddressDetails", EngineAddressManager.GetAddressData(ShippingAddressID));
+            } else if (ShippingTypeID == 2) {
+                ShippingAddressDet.put("ShippingAddressDetails", EngineAddressManager.GetPickUpStationData(ShippingAddressID));
+            }
+            if (!ShippingAddressDet.isEmpty()) {
+                result.putAll(ShippingAddressDet);
+            }
+
+            String statusid = result.get(Tables.OrdersTable.PaymentStatusID);
+            int StatusID = Integer.parseInt(statusid);
+
+            //Get Status Details
+            JSONObject StatusDet = new JSONObject();
+            StatusDet.put("StatusDetails", GetOrderStatusData(StatusID));
+            if (!StatusDet.isEmpty()) {
+                result.putAll(StatusDet);
+            }
+
+            ArrayList<HashMap<String, String>> OrderHistoryDetList = GetOrderHistoryDataByOrderID2(OrderID);
+            JSONObject OrderHistoryDet = new JSONObject();
+            OrderHistoryDet.put("HistoryDetails", OrderHistoryDetList);
+            if (!OrderHistoryDet.isEmpty()) {
+                result.putAll(OrderHistoryDet);
+            }
+            result.put("product_count", "" + GetOrderHistoryIDs(OrderID).size());
+
+            HashMap<Integer, HashMap<String, String>> OrderStatusHistoryDetList = GetOrderStatusHistoryDataByOrderID(OrderID);
+            JSONObject StatusHistoryDet = new JSONObject();
+            StatusHistoryDet.put("StatusHistoryDetails", OrderStatusHistoryDetList);
+            if (!StatusHistoryDet.isEmpty()) {
+                result.putAll(StatusHistoryDet);
+            }
+
+            //Get Invoice Details
+            JSONObject InvoiceDet = new JSONObject();
+            InvoiceDet.put("InvoiceDetails", GetOrderInvoiceData(OrderID));
+            if (!InvoiceDet.isEmpty()) {
+                result.putAll(InvoiceDet);
+            }
+            //Get Payemnt Details
+            JSONObject PaymentDet = new JSONObject();
+            String OrderReference = result.get(Tables.OrdersTable.Reference);
+            PaymentDet.put("PaymentDetails", GetOrderPaymentData(OrderReference));
+            if (!PaymentDet.isEmpty()) {
+                result.putAll(PaymentDet);
+            }
+            //Get ShippingMethod Details
+            JSONObject ShippingMethodDet = new JSONObject();
+            ShippingMethodDet.put("ShippingMethodDetails", GetOrderShippingMethodData(OrderID));
+            if (!ShippingMethodDet.isEmpty()) {
+                result.putAll(ShippingMethodDet);
+            }
+
+            String dCodeID = result.get(Tables.OrdersTable.DiscountCodeID);
+            if (!dCodeID.equals("") && dCodeID != null) {
+                int DiscountCodeID = Integer.parseInt(dCodeID);
+                String DiscountCode = EngineDiscountManager.GetDiscountCodeByDiscounCodeID(DiscountCodeID);
+                result.put("DiscountCode", DiscountCode);
+                int DiscountDeductionTypeID = EngineDiscountManager.GetDiscountCodeDeductionTypeByDiscounCodeID(DiscountCodeID);
+                String DiscountDeductionType = EngineDiscountManager.GetDiscountCodeDeductionTypeNameByID(DiscountDeductionTypeID);
+                result.put("DiscountDeductionType", DiscountDeductionType);
+            }
+
+            String bkdate = result.get(Tables.OrdersTable.BookingDate);
+            String bkDate = DateManager.readDate(bkdate);
+            result.put(Tables.OrdersTable.BookingDate, bkDate);
+
+            String bktime = result.get(Tables.OrdersTable.BookingTime);
+            String bkTime = DateManager.readTime(bktime);
+            result.put(Tables.OrdersTable.BookingTime, bkTime);
+
+            String dldate = result.get(Tables.OrdersTable.DeliveryDate);
+            if (!dldate.equals("") && !dldate.equals("null")) {
+                String dlDate = DateManager.readDate(dldate);
+                result.put(Tables.OrdersTable.DeliveryDate, dlDate);
+            }
+
+            String dltime = result.get(Tables.OrdersTable.DeliveryTime);
+            if (!dltime.equals("") && !dltime.equals("null")) {
+                String dlTime = DateManager.readTime(dltime);
+                result.put(Tables.OrdersTable.DeliveryTime, dlTime);
+            }
+
+        }
+        return result;
+    }
+
 }

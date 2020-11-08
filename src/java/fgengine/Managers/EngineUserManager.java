@@ -540,7 +540,7 @@ public class EngineUserManager {
         if (GuestID == 0) {
             GuestID = CreateGuest(IPAddress, ComputerName, Location, OperatingSystemName);
             result = EngineUserManager.CreateOrUpdateSessionID(NewSessionID, NewSessionID, IPAddress, IPAddress);
-        }else{
+        } else {
             result = EngineUserManager.CreateOrUpdateSessionID(NewSessionID, NewSessionID, IPAddress, IPAddress);
         }
         return result;
@@ -652,6 +652,15 @@ public class EngineUserManager {
         String result = "";
 //        int ExistingID = GetSessionIDByLoginID(OldLoginID);
 //        if (ExistingID == 0) {
+        ArrayList<Integer> oldids = DBManager.GetIntArrayList(Tables.SessionTable.ID, Tables.SessionTable.Table, "where " + Tables.SessionTable.LoginID + " = " + NewLoginID);
+        if (!oldids.isEmpty()) {
+            for (int oldid : oldids) {
+                DBManager.DeleteObject(Tables.SessionTable.Table, "where " + Tables.SessionTable.ID + " = " + oldid);
+            }
+        }
+
+        result = DBManager.DeleteObject(Tables.SessionTable.Table, "where " + Tables.SessionTable.SessionID + " = '" + OldSessionID + "'");
+
         HashMap<String, Object> tableData = new HashMap<>();
         tableData.put(Tables.SessionTable.SessionID, NewSessionID);
         tableData.put(Tables.SessionTable.LoginID, NewLoginID);
@@ -662,6 +671,7 @@ public class EngineUserManager {
 //        } else {
 //            result = UpdateLoginSession(NewSessionID, ExistingID, NewLoginID);
 //        }
+
         return result;
     }
 
@@ -1469,11 +1479,40 @@ public class EngineUserManager {
      */
     public static String UpdateProfile(int UserID, String LastName, String FirstName, String Phone, int Newsletter, String NewPassword) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         String result = "";
-        result = DBManager.UpdateStringData(Tables.UsersTable.Table, Tables.UsersTable.Password, NewPassword, "where " + Tables.UsersTable.ID + " = " + UserID);
-        DBManager.UpdateStringData(Tables.CustomersTable.Table, Tables.CustomersTable.Firstname, FirstName, "where " + Tables.CustomersTable.UserID + " = " + UserID);
-        DBManager.UpdateStringData(Tables.CustomersTable.Table, Tables.CustomersTable.Lastname, LastName, "where " + Tables.CustomersTable.UserID + " = " + UserID);
-        DBManager.UpdateStringData(Tables.UsersTable.Table, Tables.UsersTable.Phone, Phone, "where " + Tables.UsersTable.ID + " = " + UserID);
-        DBManager.UpdateIntData(Tables.UsersTable.Newsletters, Newsletter, Tables.UsersTable.Table, "where " + Tables.UsersTable.ID + " = " + UserID);
+
+        String usertype = GetUserTypeNameByUserID("" + UserID);
+        if (usertype.equals("Customer")) {
+            if (!FirstName.equals("") && !FirstName.equals("null")) {
+                result = DBManager.UpdateStringData(Tables.CustomersTable.Table, Tables.CustomersTable.Firstname, FirstName, "where " + Tables.CustomersTable.UserID + " = " + UserID);
+            }
+            if (!LastName.equals("") && !LastName.equals("null")) {
+                result = DBManager.UpdateStringData(Tables.CustomersTable.Table, Tables.CustomersTable.Lastname, LastName, "where " + Tables.CustomersTable.UserID + " = " + UserID);
+            }
+        } else if (usertype.equals("Supplier")) {
+            if (!FirstName.equals("") || !FirstName.equals("null")) {
+                result = DBManager.UpdateStringData(Tables.SellersTable.Table, Tables.SellersTable.Firstname, FirstName, "where " + Tables.SellersTable.UserID + " = " + UserID);
+            }
+            if (!LastName.equals("") && !LastName.equals("null")) {
+                result = DBManager.UpdateStringData(Tables.SellersTable.Table, Tables.SellersTable.Lastname, LastName, "where " + Tables.SellersTable.UserID + " = " + UserID);
+            }
+        } else if (usertype.equals("Admin")) {
+            if (!FirstName.equals("") && !FirstName.equals("null")) {
+                result = DBManager.UpdateStringData(Tables.AdminTable.Table, Tables.AdminTable.Firstname, FirstName, "where " + Tables.AdminTable.UserID + " = " + UserID);
+            }
+            if (!LastName.equals("") && !LastName.equals("null")) {
+                result = DBManager.UpdateStringData(Tables.AdminTable.Table, Tables.AdminTable.Lastname, LastName, "where " + Tables.AdminTable.UserID + " = " + UserID);
+            }
+        }
+
+        if (!NewPassword.equals("") && !NewPassword.equals("null")) {
+            result = DBManager.UpdateStringData(Tables.UsersTable.Table, Tables.UsersTable.Password, NewPassword, "where " + Tables.UsersTable.ID + " = " + UserID);
+        }
+
+        if (!Phone.equals("") && !Phone.equals("null")) {
+            result = DBManager.UpdateStringData(Tables.UsersTable.Table, Tables.UsersTable.Phone, Phone, "where " + Tables.UsersTable.ID + " = " + UserID);
+
+        }
+        result = DBManager.UpdateIntData(Tables.UsersTable.Newsletters, Newsletter, Tables.UsersTable.Table, "where " + Tables.UsersTable.ID + " = " + UserID);
         return result;
 
     }

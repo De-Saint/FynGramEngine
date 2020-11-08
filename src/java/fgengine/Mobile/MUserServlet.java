@@ -538,6 +538,61 @@ public class MUserServlet extends HttpServlet {
                     json = new Gson().toJson(datares);
                     break;
                 }
+                case "GetUserDetails": {
+                    String sessionid = (String) jsonParameter.get("sid");
+                    String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
+                    int UserID = Integer.parseInt(SessionID);
+                    HashMap<String, Object> data = EngineUserManager.GetUserDetails(UserID);
+
+                    JSONObject datares = new JSONObject();
+                    if (!data.isEmpty()) {
+                        datares.put("code", 200);
+                        datares.put("msg", "User Details Found");
+                        datares.put("data", data);
+
+                    } else {
+                        datares.put("code", 400);
+                        datares.put("msg", "No User Details found.");
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
+                case "UpdateProfile": {
+                    String sessionid = (String) jsonParameter.get("sid");
+                    String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
+                    int UserID = Integer.parseInt(SessionID);
+                    String uLastName = (String) jsonParameter.get("lastname");
+                    String uFirstName = (String) jsonParameter.get("firstname");
+                    String uPhone = (String) jsonParameter.get("phone");
+                    String uOldPass = (String) jsonParameter.get("opassword");
+                    String uNewPass = (String) jsonParameter.get("npassword");
+                    String currentPass = EngineUserManager.GetUserPasswordl(UserID);
+                    JSONObject datares = new JSONObject();
+                    if (currentPass.equals(uOldPass)) {
+                        if (!uNewPass.equals("null")) {
+                            result = EngineUserManager.UpdateProfile(UserID, uLastName, uFirstName, uPhone, 1, uNewPass);
+                        } else {
+                            result = EngineUserManager.UpdateProfile(UserID, uLastName, uFirstName, uPhone, 1, currentPass);
+                        }
+                        if (result.equals("success")) {
+                            datares.put("code", 200);
+                            datares.put("msg", "Your Profile details has been updated successfully.");
+                        } else {
+                            if (!result.equals("failed")) {
+                                datares.put("msg", result);
+                            } else {
+                                datares.put("msg", "Something went wrong! Please, try again!");
+                            }
+                            datares.put("code", 400);
+                        }
+                    } else {
+                        datares.put("msg", "Your current password is incorrect and it is needed to update your profile!");
+                        datares.put("code", 400);
+                    }
+
+                    json = new Gson().toJson(datares);
+                    break;
+                }
             }
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");

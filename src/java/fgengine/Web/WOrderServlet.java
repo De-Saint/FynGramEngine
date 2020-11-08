@@ -91,7 +91,7 @@ public class WOrderServlet extends HttpServlet {
                     json = new Gson().toJson(OrderDetails);
                     break;
                 }
-                case "GetOrders": {//admin getting all carts
+                case "GetOrders": {
                     String sessionid = request.getParameter("data");
                     String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
                     int UserID = Integer.parseInt(SessionID);
