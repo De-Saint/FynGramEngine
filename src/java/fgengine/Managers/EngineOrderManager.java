@@ -697,15 +697,22 @@ public class EngineOrderManager {
         String result = "failed";
         int CurrentOrderStatus = GetOrderPaymentStatusID(OrderID);
         int PaymentStatusID = GetOrderPaymentStatusID("Cancelled");
-        if (CurrentOrderStatus != PaymentStatusID) {//3 Cancelled
-            if (CurrentOrderStatus == 4) {//Shipped
-                EngineStockManager.ComputeStockMovement(OrderID, "Increase");
-                result = ProcessCancelOrder(OrderID, UserID);
-            } else if (CurrentOrderStatus == 5 || CurrentOrderStatus == 7) {//Delivered or Settled
-                EngineStockManager.ComputeStockMovement(OrderID, "Increase");
-                result = ProcessCancelDeliveredOrSettledOrder(OrderID, PaymentStatusID, UserID);
-            } else {
-                result = ProcessCancelOrder(OrderID, UserID);//1 or 2 Confirmed
+        if (CurrentOrderStatus != PaymentStatusID) { //3 Cancelled
+            switch (CurrentOrderStatus) {
+                case 4:
+                    //Shipped
+                    EngineStockManager.ComputeStockMovement(OrderID, "Increase");
+                    result = ProcessCancelOrder(OrderID, UserID);
+                    break;
+                case 5:
+                case 7:
+                    //Delivered or Settled
+                    EngineStockManager.ComputeStockMovement(OrderID, "Increase");
+                    result = ProcessCancelDeliveredOrSettledOrder(OrderID, PaymentStatusID, UserID);
+                    break;
+                default:
+                    result = ProcessCancelOrder(OrderID, UserID);//1 or 2 Confirmed
+                    break;
             }
         } else {
             result = "The Order has already been cancelled.";

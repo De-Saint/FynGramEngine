@@ -349,6 +349,22 @@ public class MShopServlet extends HttpServlet {
                     json = new Gson().toJson(datares);
                     break;
                 }
+                case "GetShopSavedItems": {
+                    String sessionid = (String) jsonParameter.get("sid");
+                    String UserID = EngineUserManager.GetLoginIDBySessionID(sessionid);
+                    HashMap<String, String> WishListDetails = EngineCartManager.GetMobileFullWishListDataByUseID(UserID);
+                    JSONObject datares = new JSONObject();
+                    if (!WishListDetails.isEmpty()) {
+                        datares.put("code", 200);
+                        datares.put("msg", "Wishlist Found.");
+                        datares.put("data", WishListDetails);
+                    } else {
+                        datares.put("msg", "Something went wrong or your cart is empty. Please try again.");
+                        datares.put("code", 400);
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
                 case "DeleteOptions": {
                     String Option = (String) jsonParameter.get("option");//CART OR WISHLIST
                     String optionid = (String) jsonParameter.get("optionid");
@@ -540,8 +556,30 @@ public class MShopServlet extends HttpServlet {
                     json = new Gson().toJson(datares);
                     break;
                 }
-               
-                
+                case "GetStockMovement": {
+                    String sessionid = (String) jsonParameter.get("sid");
+                    String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
+                    int UserID = Integer.parseInt(SessionID);
+                    ArrayList<HashMap<String, String>> list = new ArrayList<>();
+                    ArrayList<Integer> IDS = EngineStockManager.GetStockIDs(UserID);
+                    JSONObject datares = new JSONObject();
+                    if (!IDS.isEmpty()) {
+                        for (int id : IDS) {
+                            HashMap<String, String> Details = EngineStockManager.GetStockMovementData(id);
+                            if (!Details.isEmpty()) {
+                                list.add(Details);
+                            }
+                        }
+                        datares.put("code", 200);
+                        datares.put("data", list);
+                        datares.put("msg", "Returned Products found.");
+                    } else {
+                        datares.put("code", 400);
+                        datares.put("msg", "No Returned Products found");
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
             }
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");

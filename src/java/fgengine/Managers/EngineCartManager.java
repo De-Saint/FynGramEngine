@@ -1363,6 +1363,37 @@ public class EngineCartManager {
 
     /**
      *
+     * @param WishListID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static ArrayList<HashMap<String, String>> GetWishListProductDetailsList2(int WishListID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        ArrayList<HashMap<String, String>> List = new ArrayList<>();
+        HashMap<String, String> ProdDetailList = new HashMap<>();
+        ArrayList<Integer> ProdDetIDS = GetWishListProductDetailsIDsByWishListID(WishListID);
+        if (!ProdDetIDS.isEmpty()) {
+            for (int ProdDetID : ProdDetIDS) {
+                ProdDetailList = GetWishListProductDetailsDataByID(ProdDetID);
+                if (!ProdDetailList.isEmpty()) {
+                    String productID = ProdDetailList.get(Tables.WishlistProductDetailsTable.ProductID);
+                    int ProductID = Integer.parseInt(productID);
+                    HashMap<String, String> ProductDetails = EngineProductManager.GetMobileMiniProductData(ProductID);
+                    JSONObject ProductDet = new JSONObject();
+                    ProductDet.put("ProductDetails", ProductDetails);
+                    if (!ProductDet.isEmpty()) {
+                        ProdDetailList.putAll(ProductDet);
+                    }
+                    List.add(ProdDetailList);
+                }
+            }
+        }
+        return List;
+    }
+
+    /**
+     *
      * @param UserID
      * @return
      * @throws ClassNotFoundException
@@ -1393,6 +1424,34 @@ public class EngineCartManager {
                 String date = DateManager.readDate(dt);
                 Data.put(Tables.CartTable.Date, date);
             }
+        }
+        return Data;
+    }
+
+    /**
+     *
+     * @param UserID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static HashMap<String, String> GetMobileFullWishListDataByUseID(String UserID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        HashMap<String, String> Data = new HashMap<>();
+        Data = DBManager.GetTableData(Tables.WishlistTable.Table, "where " + Tables.WishlistTable.UserID + " = '" + UserID + "'");
+        if (!Data.isEmpty()) {
+            int WishListID = Integer.parseInt(Data.get(Tables.WishlistTable.ID));
+            ArrayList<HashMap<String, String>> WishListProdDetList = EngineCartManager.GetWishListProductDetailsList2(WishListID);
+            JSONObject CartProductDet = new JSONObject();
+            CartProductDet.put("WishListProductDetails", WishListProdDetList);
+            if (!CartProductDet.isEmpty()) {
+                Data.putAll(CartProductDet);
+            }
+
+            String dt = Data.get(Tables.CartTable.Date);
+            String date = DateManager.readDate(dt);
+            Data.put(Tables.CartTable.Date, date);
+
         }
         return Data;
     }

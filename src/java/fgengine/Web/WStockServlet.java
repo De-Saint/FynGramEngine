@@ -73,22 +73,6 @@ public class WStockServlet extends HttpServlet {
                     }
                     break;
                 }
-                case "EditNewUserAddress": {
-
-                    break;
-                }
-                case "DeleteUserAddress": {
-
-                    break;
-                }
-                case "GetPickUpCentres": {
-
-                    break;
-                }
-                case "GetPickUpStates": {
-
-                    break;
-                }
             }
 
             response.setContentType("application/json");

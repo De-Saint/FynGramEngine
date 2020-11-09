@@ -7,7 +7,9 @@ package fgengine.Managers;
 
 import fgengine.Tables.Tables;
 import java.io.UnsupportedEncodingException;
+import java.math.RoundingMode;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -18,6 +20,8 @@ import java.util.HashMap;
  * @author mac
  */
 public class EngineWalletManager {
+
+    private static DecimalFormat df = new DecimalFormat("0.00");
 
     /**
      *
@@ -219,6 +223,7 @@ public class EngineWalletManager {
      */
     public static String InsertWalletRecord(int UserID, double TransactionAmount, int WalletType, String TransactionType) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         String result = "failed";
+        df.setRoundingMode(RoundingMode.UP);
         String userbalance = DBManager.GetString(Tables.WalletTable.Balance, Tables.WalletTable.Table, "where " + Tables.WalletTable.UserID + " = " + UserID);
         if (WalletType == 1) {
             String mainBalRes = userbalance.split(";")[0];//1:0
@@ -229,7 +234,7 @@ public class EngineWalletManager {
             } else if (TransactionType.equals("Debit")) {
                 mainBalValue -= TransactionAmount;
             }
-            String newMainBalRes = mainBalID + ":" + mainBalValue + ";" + userbalance.split(";")[1];
+            String newMainBalRes = mainBalID + ":" + df.format(mainBalValue) + ";" + userbalance.split(";")[1];
             userbalance = userbalance.replace(userbalance, newMainBalRes);
 
         } else {
@@ -241,7 +246,7 @@ public class EngineWalletManager {
             } else if (TransactionType.equals("Debit")) {
                 PendingBalValue -= TransactionAmount;
             }
-            String newPendingBalRes = userbalance.split(";")[0] + ";" + PendingBalID + ":" + PendingBalValue;
+            String newPendingBalRes = userbalance.split(";")[0] + ";" + PendingBalID + ":" + df.format(PendingBalValue);
             userbalance = userbalance.replace(userbalance, newPendingBalRes);
         }
         result = DBManager.UpdateStringData(Tables.WalletTable.Table, Tables.WalletTable.Balance, userbalance, "where " + Tables.WalletTable.UserID + " = " + UserID);
