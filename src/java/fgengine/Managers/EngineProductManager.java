@@ -1158,9 +1158,10 @@ public class EngineProductManager {
             Details.put("FirstImage", FirstImage);
         }
 
+        Details.put("Status", DBManager.GetString(Tables.SellerProductsTable.Status, Tables.SellerProductsTable.Table, "where " + Tables.SellerProductsTable.ProductID + " = " + ProductID));
+
         String ProductName = DBManager.GetString(Tables.ProductInfoTable.Name, Tables.ProductInfoTable.Table, "where " + Tables.ProductInfoTable.ProductID + " = " + ProductID);
         Details.put("ProductName", ProductName);
-        //Get Price
 
         Double ProductPrice = DBManager.GetDouble(Tables.ProductPriceTable.SellingPrice, Tables.ProductPriceTable.Table, "where " + Tables.ProductPriceTable.ProductID + " = " + ProductID);
         Details.put("ProductPrice", "" + ProductPrice);
@@ -1196,7 +1197,7 @@ public class EngineProductManager {
             }
 
             int FirstImageID = EngineImageManager.GetFirstImageID(ProductID, "Product");
-            if (FirstCatID != 0 || FirstCatRootID != 0) {
+            if (FirstImageID != 0 || FirstImageID != 0) {
                 String FirstImage = EngineImageManager.GetImageTextByImageID(FirstImageID);
                 Details.put("FirstImage", FirstImage);
             }
@@ -1929,7 +1930,7 @@ public class EngineProductManager {
      * @throws UnsupportedEncodingException
      */
     public static ArrayList<Integer> GetProductIDsByName(int UserID, String Name) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        ArrayList<Integer> IDs = DBManager.GetIntArrayListDescending(Tables.ProductInfoTable.ProductID, Tables.ProductInfoTable.Table, "where " + Tables.ProductInfoTable.Name + " = '" + Name + "' ORDER BY id DESC");
+        ArrayList<Integer> IDs = DBManager.GetIntArrayListDescending(Tables.ProductInfoTable.ProductID, Tables.ProductInfoTable.Table, "where " + Tables.ProductInfoTable.Name  + " LIKE '%" + Name + "%' ORDER BY id DESC");
         if (!IDs.isEmpty()) {
             if (UserID != 1) {
                 IDs = GetSellerProductIDsOptions(IDs, UserID);

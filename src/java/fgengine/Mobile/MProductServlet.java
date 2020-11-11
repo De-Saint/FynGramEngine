@@ -121,7 +121,57 @@ public class MProductServlet extends HttpServlet {
                     json = new Gson().toJson(datares);
                     break;
                 }
-               
+                case "GetProducts": {
+                    String sessionid = (String) jsonParameter.get("sid");
+                    String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
+                    int UserID = Integer.parseInt(SessionID);
+                    ArrayList<HashMap<String, String>> list = new ArrayList<>();
+                    ArrayList<Integer> IDS = EngineProductManager.GetProductIDs(UserID);
+                    JSONObject datares = new JSONObject();
+                    if (!IDS.isEmpty()) {
+                        for (int id : IDS) {
+                            HashMap<String, String> details = EngineProductManager.GetMobileMiniProductData(id);
+                            if (!details.isEmpty()) {
+                                list.add(details);
+                            }
+                        }
+                        datares.put("code", 200);
+                        datares.put("data", list);
+                        datares.put("msg", "Products found.");
+
+                    } else {
+                        datares.put("code", 400);
+                        datares.put("msg", "No Products found");
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
+                case "GetProductsByName": {
+                    String searchvalue = (String) jsonParameter.get("searchvalue");
+                    String sessionid = (String) jsonParameter.get("sid");
+                    String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
+                    int UserID = Integer.parseInt(SessionID);
+                    ArrayList<HashMap<String, String>> list = new ArrayList<>();
+                    ArrayList<Integer> IDS = EngineProductManager.GetProductIDsByName(UserID, searchvalue);
+                    JSONObject datares = new JSONObject();
+                    if (!IDS.isEmpty()) {
+                        for (int id : IDS) {
+                            HashMap<String, String> details = EngineProductManager.GetMobileMiniProductData(id);
+                            if (!details.isEmpty()) {
+                                list.add(details);
+                            }
+                        }
+                        datares.put("code", 200);
+                        datares.put("data", list);
+                        datares.put("msg", "Products found.");
+
+                    } else {
+                        datares.put("code", 400);
+                        datares.put("msg", "No Products found");
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
             }
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
