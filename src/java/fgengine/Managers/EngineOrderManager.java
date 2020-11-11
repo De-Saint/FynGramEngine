@@ -2133,4 +2133,31 @@ public class EngineOrderManager {
         return result;
     }
 
+    /**
+     *
+     * @param OrderID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static HashMap<String, String> GetMobileOrderData(int OrderID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        HashMap<String, String> result = new HashMap<>();
+        result = DBManager.GetTableData(Tables.OrdersTable.Table, "where " + Tables.OrdersTable.ID + " = " + OrderID);
+        if (!result.isEmpty()) {
+            result.put("OrderID", "" + OrderID);
+            String statusid = result.get(Tables.OrdersTable.PaymentStatusID);
+            int StatusID = Integer.parseInt(statusid);
+
+            //Get Status Details
+            JSONObject StatusDet = new JSONObject();
+            StatusDet.put("StatusDetails", GetOrderStatusData(StatusID));
+            if (!StatusDet.isEmpty()) {
+                result.putAll(StatusDet);
+            }
+            result.put("product_count", "" + GetOrderHistoryIDs(OrderID).size());
+        }
+        return result;
+    }
+
 }

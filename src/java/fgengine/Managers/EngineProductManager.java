@@ -1150,6 +1150,32 @@ public class EngineProductManager {
      * @throws UnsupportedEncodingException
      */
     public static HashMap<String, String> GetMobileMiniProductData(int ProductID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        HashMap<String, String> Details = new HashMap<>();
+        Details.put("ProductID", "" + ProductID);
+        int FirstImageID = EngineImageManager.GetFirstImageID(ProductID, "Product");
+        if (FirstImageID != 0 || FirstImageID != 0) {
+            String FirstImage = EngineImageManager.GetImageTextByImageID(FirstImageID);
+            Details.put("FirstImage", FirstImage);
+        }
+
+        String ProductName = DBManager.GetString(Tables.ProductInfoTable.Name, Tables.ProductInfoTable.Table, "where " + Tables.ProductInfoTable.ProductID + " = " + ProductID);
+        Details.put("ProductName", ProductName);
+        //Get Price
+
+        Double ProductPrice = DBManager.GetDouble(Tables.ProductPriceTable.SellingPrice, Tables.ProductPriceTable.Table, "where " + Tables.ProductPriceTable.ProductID + " = " + ProductID);
+        Details.put("ProductPrice", "" + ProductPrice);
+        return Details;
+    }
+
+    /**
+     *
+     * @param ProductID
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws UnsupportedEncodingException
+     */
+    public static HashMap<String, String> GetMobileProductData(int ProductID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
 
         HashMap<String, String> Details = DBManager.GetTableData(Tables.ProductsTable.Table, "where " + Tables.ProductsTable.ID + " = " + ProductID);
         if (!Details.isEmpty()) {
@@ -1199,8 +1225,6 @@ public class EngineProductManager {
             RatingsDet.put("RatingDetails", EngineReviewManager.ObjectReviews(ProductID));
             Details.putAll(RatingsDet);
 
-           
-
             //Get Price
             int PriceID = GetProductPriceIDByProductID(ProductID);
             JSONObject PriceDet = new JSONObject();
@@ -1224,7 +1248,7 @@ public class EngineProductManager {
             if (!SellerDet.isEmpty()) {
                 Details.putAll(SellerDet);
             }
-             //Get Rating Details
+            //Get Rating Details
             ArrayList<HashMap<String, String>> ReviewList = EngineReviewManager.GetObjectReviewList2(ProductID);
             JSONObject ReviewDet = new JSONObject();
             ReviewDet.put("ReviewDetails", ReviewList);

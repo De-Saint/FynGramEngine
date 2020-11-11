@@ -102,23 +102,38 @@ public class MOrderServlet extends HttpServlet {
                     String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
                     int UserID = Integer.parseInt(SessionID);
                     ArrayList<HashMap<String, String>> list = new ArrayList<>();
-                    ArrayList<Integer> IDS = new ArrayList<>();
                     JSONObject datares = new JSONObject();
-                    IDS = EngineOrderManager.GetOrderIDs(UserID);
+                    ArrayList<Integer> IDS = EngineOrderManager.GetOrderIDs(UserID);
                     if (!IDS.isEmpty()) {
                         for (int id : IDS) {
-                            HashMap<String, String> Details = EngineOrderManager.GetMobileOrderFullData(id);
+                            HashMap<String, String> Details = EngineOrderManager.GetMobileOrderData(id);
                             if (!Details.isEmpty()) {
                                 list.add(Details);
                             }
                         }
                         datares.put("code", 200);
                         datares.put("data", list);
-                        datares.put("msg", "Messages found.");
+                        datares.put("msg", "Orders found.");
 
                     } else {
                         datares.put("code", 400);
-                        datares.put("msg", "No Messages found.");
+                        datares.put("msg", "No Orders found.");
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
+                case "GetOrderDetails": {
+                    String orderid = (String) jsonParameter.get("orderid");
+                    int OrderID = Integer.parseInt(orderid);
+                    HashMap<String, String> Details = EngineOrderManager.GetMobileOrderFullData(OrderID);
+                    JSONObject datares = new JSONObject();
+                    if (!Details.isEmpty()) {
+                        datares.put("code", 200);
+                        datares.put("msg", "Order Details Found.");
+                        datares.put("data", Details);
+                    } else {
+                        datares.put("msg", "Something went wrong or your cart is empty. Please try again.");
+                        datares.put("code", 400);
                     }
                     json = new Gson().toJson(datares);
                     break;

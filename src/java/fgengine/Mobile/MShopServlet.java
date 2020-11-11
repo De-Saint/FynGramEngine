@@ -128,7 +128,7 @@ public class MShopServlet extends HttpServlet {
                     ArrayList<Integer> IDS = EngineProductManager.GetProductsByCategoryID(CatID);
                     if (!IDS.isEmpty()) {
                         for (int id : IDS) {
-                            HashMap<String, String> details = EngineProductManager.GetMobileMiniProductData(id);
+                            HashMap<String, String> details = EngineProductManager.GetMobileProductData(id);
                             if (!details.isEmpty()) {
                                 list.add(details);
                             }
@@ -227,6 +227,22 @@ public class MShopServlet extends HttpServlet {
                     json = new Gson().toJson(datares);
                     break;
                 }
+                case "GetProductDetails": {
+                    String productid = (String) jsonParameter.get("productid");
+                    int ProductID = Integer.parseInt(productid);
+                    HashMap<String, String> Details = EngineProductManager.GetMobileProductData(ProductID);
+                    JSONObject datares = new JSONObject();
+                    if (!Details.isEmpty()) {
+                        datares.put("code", 200);
+                        datares.put("msg", "Product Details Found.");
+                        datares.put("data", Details);
+                    } else {
+                        datares.put("msg", "Something went wrong or your cart is empty. Please try again.");
+                        datares.put("code", 400);
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
                 case "GetRelatedProducts": {//[idmin, idmax, sessionid];
                     String productid = (String) jsonParameter.get("productid");
                     int ProductID = Integer.parseInt(productid);
@@ -235,7 +251,7 @@ public class MShopServlet extends HttpServlet {
                     ArrayList<Integer> IDS = EngineProductManager.GetRelatedProductsByCategoryID(ProductID);
                     if (!IDS.isEmpty()) {
                         for (int id : IDS) {
-                            HashMap<String, String> details = EngineProductManager.GetMobileMiniProductData(id);
+                            HashMap<String, String> details = EngineProductManager.GetMobileProductData(id);
                             if (!details.isEmpty()) {
                                 list.add(details);
                             }
@@ -576,6 +592,29 @@ public class MShopServlet extends HttpServlet {
                     } else {
                         datares.put("code", 400);
                         datares.put("msg", "No Returned Products found");
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
+                case "SearchProducts": {//by productName, brand, and category
+                    String searchvalue = (String) jsonParameter.get("searchvalue");
+                    ArrayList<Integer> IDS = new ArrayList<>();
+                    ArrayList<HashMap<String, String>> list = new ArrayList<>();
+                    IDS = EngineProductManager.GetProductIDsBySearchValue(searchvalue);
+                    JSONObject datares = new JSONObject();
+                    if (!IDS.isEmpty()) {
+                        for (int id : IDS) {
+                            HashMap<String, String> details = EngineProductManager.GetMobileMiniProductData(id);
+                            if (!details.isEmpty()) {
+                                list.add(details);
+                            }
+                        }
+                        datares.put("code", 200);
+                        datares.put("data", list);
+                        datares.put("msg", "Products found.");
+                    } else {
+                        datares.put("code", 400);
+                        datares.put("msg", "No Products found");
                     }
                     json = new Gson().toJson(datares);
                     break;
