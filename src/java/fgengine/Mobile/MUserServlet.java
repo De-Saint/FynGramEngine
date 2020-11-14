@@ -825,6 +825,34 @@ public class MUserServlet extends HttpServlet {
                     json = new Gson().toJson((JsonElement) returninfo);
                     break;
                 }
+                 case "GetCustomerStats": {
+                    String sessionid = (String) jsonParameter.get("sid");
+                    String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
+                    int UserID = Integer.parseInt(SessionID);
+                    HashMap<String, Object> data = EngineReportManager.GetCustomerStats(UserID);
+                    JSONObject datares = new JSONObject();
+                    datares.putAll(data);
+                    json = new Gson().toJson(datares);
+                    break;
+                }
+                case "GetStats": {
+                    String sessionid = (String) jsonParameter.get("sid");
+                    String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
+                    int UserID = Integer.parseInt(SessionID);
+                    HashMap<String, Object> data = EngineReportManager.GetStats(UserID);
+                    JSONObject datares = new JSONObject();
+                    if (!data.isEmpty()) {
+                        datares.put("code", 200);
+                        datares.put("msg", "Details Found");
+                        datares.put("data", data);
+
+                    } else {
+                        datares.put("code", 400);
+                        datares.put("msg", "No Details found.");
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
             }
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
