@@ -247,6 +247,12 @@ public class EngineShippingManager {
      */
     public static String DeleteShipping(int ShippingID) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         String result = DBManager.DeleteObject(Tables.ShippingTable.Table, "where " + Tables.ShippingTable.ID + " = " + ShippingID);
+        ArrayList<Integer> Ids = DBManager.GetIntArrayList(Tables.ShippingPaymentHistoryTable.ID, Tables.ShippingPaymentHistoryTable.Table, "where " + Tables.ShippingPaymentHistoryTable.ShippingID + " = " + ShippingID);
+        if (!Ids.isEmpty()) {
+            for (int id : Ids) {
+                DBManager.DeleteObject(Tables.ShippingPaymentHistoryTable.Table, "where " + Tables.ShippingPaymentHistoryTable.ID + " = " + id);
+            }
+        }
         return result;
     }
 

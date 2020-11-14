@@ -310,6 +310,85 @@ public class MUserServlet extends HttpServlet {
                     json = new Gson().toJson(datares);
                     break;
                 }
+                case "GetShippings": {
+                    ArrayList<Integer> IDs = EngineShippingManager.GetShippingIDs();
+                    ArrayList<HashMap<String, String>> list = new ArrayList<>();
+                    HashMap<String, String> details = new HashMap<>();
+                    JSONObject datares = new JSONObject();
+                    if (!IDs.isEmpty()) {
+                        for (int ID : IDs) {
+                            details = EngineShippingManager.GetShippingData(ID);
+                            list.add(details);
+                        }
+                        datares.put("code", 200);
+                        datares.put("data", list);
+                        datares.put("msg", "Shippings found.");
+
+                    } else {
+                        datares.put("code", 400);
+                        datares.put("msg", "No Shippings found.");
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
+                case "GetShippingDetails": {
+                    String shippingid = (String) jsonParameter.get("shippingid");
+                    int ShippingID = Integer.parseInt(shippingid);
+                    HashMap<String, String> details = EngineShippingManager.GetShippingData(ShippingID);
+                    JSONObject datares = new JSONObject();
+                    if (!details.isEmpty()) {
+                        datares.put("code", 200);
+                        datares.put("data", details);
+                        datares.put("msg", "Shipping Details found.");
+
+                    } else {
+                        datares.put("code", 400);
+                        datares.put("msg", "No Shipping Details found.");
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
+                case "DeleteShipping": {
+                    String shippingid = (String) jsonParameter.get("shippingid");
+                    int ShippingID = Integer.parseInt(shippingid);
+                    result = EngineShippingManager.DeleteShipping(ShippingID);
+                    JSONObject datares = new JSONObject();
+                    if (result.equals("success")) {
+                        datares.put("code", 200);
+                        datares.put("msg", "The shipping method has been deleted successfully.");
+
+                    } else {
+                        datares.put("code", 400);
+                        if (!result.equals("failed")) {
+                            datares.put("msg", result);
+                        } else {
+                            datares.put("msg", "Something went wrong! Please, try again!");
+                        }
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
+                case "ResetShipping": {
+                    String shippingid = (String) jsonParameter.get("shippingid");
+                    int ShippingID = Integer.parseInt(shippingid);
+                    result = EngineShippingManager.ResetShipping(ShippingID);
+                    JSONObject datares = new JSONObject();
+                    if (result.equals("success")) {
+                        datares.put("code", 200);
+                        datares.put("msg", "The shipping method's earning has been reset successfully.");
+
+                    } else {
+                        datares.put("code", 400);
+                        if (!result.equals("failed")) {
+                            datares.put("msg", result);
+                        } else {
+                            datares.put("msg", "Something went wrong! Please, try again!");
+                        }
+                    }
+                    json = new Gson().toJson(datares);
+
+                    break;
+                }
                 case "CreateBankDetails": {
                     String sessionid = (String) jsonParameter.get("sid");
                     String bankid = (String) jsonParameter.get("bankid");
@@ -517,6 +596,124 @@ public class MUserServlet extends HttpServlet {
                     json = new Gson().toJson(datares);
                     break;
                 }
+                case "GetAllCustomers": {
+                    ArrayList<HashMap<String, Object>> list = new ArrayList<>();
+                    ArrayList<Integer> IDS = EngineUserManager.GetAllCustomerUsers();
+                    JSONObject datares = new JSONObject();
+                    if (!IDS.isEmpty()) {
+                        for (int id : IDS) {
+                            HashMap<String, Object> details = EngineUserManager.GetUserDetails(id);
+                            if (!details.isEmpty()) {
+                                list.add(details);
+                            }
+                        }
+                        datares.put("code", 200);
+                        datares.put("msg", "Customers Found");
+                        datares.put("data", list);
+                    } else {
+                        datares.put("code", 400);
+                        datares.put("msg", "No Customers Found");
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
+                case "SearchCustomers": {
+                    String searchvalue = (String) jsonParameter.get("searchvalue");
+                    ArrayList<HashMap<String, Object>> list = new ArrayList<>();
+                    ArrayList<Integer> IDS = EngineUserManager.SearchCustomerUsers(searchvalue);
+                    JSONObject datares = new JSONObject();
+                    if (!IDS.isEmpty()) {
+                        for (int id : IDS) {
+                            HashMap<String, Object> details = EngineUserManager.GetUserDetails(id);
+                            if (!details.isEmpty()) {
+                                list.add(details);
+                            }
+                        }
+                        datares.put("code", 200);
+                        datares.put("msg", "Customers Found");
+                        datares.put("data", list);
+                    } else {
+                        datares.put("code", 400);
+                        datares.put("msg", "No Customers Found");
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
+                case "DeleteCustomer": {
+                    String customeruserid = (String) jsonParameter.get("userid");
+                    int CustomerUserID = Integer.parseInt(customeruserid);
+                    result = EngineUserManager.DeleteCustomer(CustomerUserID);
+                    JSONObject datares = new JSONObject();
+                    if (result.equals("success")) {
+                        datares.put("code", 200);
+                        datares.put("msg", "The customer account has been deleted.");
+
+                    } else {
+                        datares.put("code", 400);
+                        datares.put("msg", "Oh No! Please try again.");
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
+                case "GetAllSellers": {
+                    ArrayList<HashMap<String, Object>> list = new ArrayList<>();
+                    ArrayList<Integer> IDS = EngineUserManager.GetAllSellerUsers();
+                    JSONObject datares = new JSONObject();
+                    if (!IDS.isEmpty()) {
+                        for (int id : IDS) {
+                            HashMap<String, Object> details = EngineUserManager.GetUserDetails(id);
+                            if (!details.isEmpty()) {
+                                list.add(details);
+                            }
+                        }
+                        datares.put("code", 200);
+                        datares.put("msg", "Sellers Found");
+                        datares.put("data", list);
+                    } else {
+                        datares.put("code", 400);
+                        datares.put("msg", "No Sellers Found");
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
+                case "SearchSellers": {
+                    String searchvalue = (String) jsonParameter.get("searchvalue");
+                    ArrayList<HashMap<String, Object>> list = new ArrayList<>();
+                    ArrayList<Integer> IDS = EngineUserManager.SearchSellerUsers(searchvalue);
+                    JSONObject datares = new JSONObject();
+                    if (!IDS.isEmpty()) {
+                        for (int id : IDS) {
+                            HashMap<String, Object> details = EngineUserManager.GetUserDetails(id);
+                            if (!details.isEmpty()) {
+                                list.add(details);
+                            }
+                        }
+                        datares.put("code", 200);
+                        datares.put("msg", "Sellers Found");
+                        datares.put("data", list);
+                    } else {
+                        datares.put("code", 400);
+                        datares.put("msg", "No Sellers Found");
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
+                case "DeleteSeller": {
+                    String selleruserid = (String) jsonParameter.get("userid");
+                    int SellerUserID = Integer.parseInt(selleruserid);
+                    result = EngineUserManager.DeleteSeller(SellerUserID);
+                    JSONObject datares = new JSONObject();
+                    if (result.equals("success")) {
+                        datares.put("code", 200);
+                        datares.put("msg", "The seller account has been deleted.");
+
+                    } else {
+                        datares.put("code", 400);
+                        datares.put("msg", "Oh No! Please try again.");
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
                 case "ProcessDiscount": {
                     String Option = (String) jsonParameter.get("option");
                     String discountid = (String) jsonParameter.get("discountid");
@@ -543,7 +740,6 @@ public class MUserServlet extends HttpServlet {
                     String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
                     int UserID = Integer.parseInt(SessionID);
                     HashMap<String, Object> data = EngineUserManager.GetUserDetails(UserID);
-
                     JSONObject datares = new JSONObject();
                     if (!data.isEmpty()) {
                         datares.put("code", 200);
@@ -557,6 +753,7 @@ public class MUserServlet extends HttpServlet {
                     json = new Gson().toJson(datares);
                     break;
                 }
+
                 case "UpdateProfile": {
                     String sessionid = (String) jsonParameter.get("sid");
                     String SessionID = EngineUserManager.GetLoginIDBySessionID(sessionid);
@@ -591,6 +788,41 @@ public class MUserServlet extends HttpServlet {
                     }
 
                     json = new Gson().toJson(datares);
+                    break;
+                }
+                case "NewShippingAddress": {
+                    String Name = (String) jsonParameter.get("name");
+                    String Interval = (String) jsonParameter.get("interval");
+                    String admin_percent = (String) jsonParameter.get("adminpercent");
+                    String shipping_method_percent = (String) jsonParameter.get("shippingpercent");
+                    String shippingoption = (String) jsonParameter.get("option");
+                    String Phone = (String) jsonParameter.get("phone");
+                    String Email = (String) jsonParameter.get("email");
+                    String optiontext = "";
+                    int AdminPercent = Integer.parseInt(admin_percent);
+                    int ShipMethodPercent = Integer.parseInt(shipping_method_percent);
+                    if (shippingoption.equals("add")) {
+                        result = EngineShippingManager.CreateShipping(Name, Interval, AdminPercent, ShipMethodPercent, Phone, Email);
+                        optiontext = "added";
+                    } else if (shippingoption.equals("edit")) {
+                        String shippingid = (String) jsonParameter.get("shippingid");
+                        int ShippingID = Integer.parseInt(shippingid);
+                        result = EngineShippingManager.EditShipping(ShippingID, Name, Interval, AdminPercent, ShipMethodPercent, Phone, Email);
+                        optiontext = "edited";
+                    }
+                    JsonObject returninfo = new JsonObject();
+                    if (result.equals("success")) {
+                        returninfo.addProperty("code", 200);
+                        returninfo.addProperty("msg", "New Shipping Method has been " + optiontext + " successfully");
+                    } else {
+                        if (!result.equals("failed")) {
+                            returninfo.addProperty("msg", result);
+                        } else {
+                            returninfo.addProperty("msg", "Something went wrong. Please try again.");
+                        }
+                        returninfo.addProperty("code", 400);
+                    }
+                    json = new Gson().toJson((JsonElement) returninfo);
                     break;
                 }
             }

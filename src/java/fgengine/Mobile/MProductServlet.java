@@ -6,7 +6,6 @@
 package fgengine.Mobile;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import fgengine.Managers.*;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -168,6 +167,50 @@ public class MProductServlet extends HttpServlet {
                     } else {
                         datares.put("code", 400);
                         datares.put("msg", "No Products found");
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
+                case "GetProperties": {
+                    ArrayList<HashMap<String, String>> list = new ArrayList<>();
+                    ArrayList<Integer> IDS = EngineCategoryManager.GetPropertyRootIDs();
+                    JSONObject datares = new JSONObject();
+                    if (!IDS.isEmpty()) {
+                        for (int id : IDS) {
+                            HashMap<String, String> details = EngineCategoryManager.GetPropertyData(id);
+                            if (!details.isEmpty()) {
+                                list.add(details);
+                            }
+                        }
+                        datares.put("code", 200);
+                        datares.put("data", list);
+                        datares.put("msg", "Properties found.");
+
+                    } else {
+                        datares.put("code", 400);
+                        datares.put("msg", "No Properties found");
+                    }
+                    json = new Gson().toJson(datares);
+                    break;
+                }
+                case "GetUnits": {
+                    ArrayList<HashMap<String, String>> list = new ArrayList<>();
+                    ArrayList<Integer> IDS = EngineProductManager.GetUnitIDs();
+                    JSONObject datares = new JSONObject();
+                    if (!IDS.isEmpty()) {
+                        for (int id : IDS) {
+                            HashMap<String, String> details = EngineProductManager.GetUnitData(id);
+                            if (!details.isEmpty()) {
+                                list.add(details);
+                            }
+                        }
+                        datares.put("code", 200);
+                        datares.put("data", list);
+                        datares.put("msg", "Units found.");
+
+                    } else {
+                        datares.put("code", 400);
+                        datares.put("msg", "No Units found");
                     }
                     json = new Gson().toJson(datares);
                     break;

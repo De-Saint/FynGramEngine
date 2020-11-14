@@ -163,21 +163,6 @@ public class MOrderServlet extends HttpServlet {
                     json = new Gson().toJson(datares);
                     break;
                 }
-                case "DeleteMessage": {
-                    String messageid = (String) jsonParameter.get("messageid");
-                    int msgid = Integer.parseInt(messageid);
-                    result = EngineMessageManager.DeleteMessage(msgid);
-                    JSONObject datares = new JSONObject();
-                    if (result.equals("success")) {
-                        datares.put("code", 200);
-                        datares.put("msg", "The message has been deleted");
-                    } else {
-                        datares.put("code", 400);
-                        datares.put("msg", "Something went wrong! Please, try again!.");
-                    }
-                    json = new Gson().toJson(datares);
-                    break;
-                }
                 case "UpdateOrderStatus": {
                     String sessionid = (String) jsonParameter.get("sid");
                     String orderID = (String) jsonParameter.get("orderid");

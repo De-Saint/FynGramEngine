@@ -1161,9 +1161,11 @@ public class EngineUserManager {
     public static ArrayList<Integer> SearchSellerUsers(String SearchValue) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         ArrayList<Integer> ids = new ArrayList<>();
         //user search
-        ids = DBManager.GetIntArrayList(Tables.UsersTable.ID, Tables.UsersTable.Table, "where " + Tables.UsersTable.Email + " LIKE '%" + SearchValue + "%' OR " + Tables.UsersTable.Phone + " LIKE '%" + SearchValue + "%'");
+        ids = DBManager.GetIntArrayList(Tables.SellerInfoTable.SellerUserID, Tables.SellerInfoTable.Table, "where " + Tables.SellerInfoTable.BusinessEmail + " LIKE '%" + SearchValue + "%' OR " + Tables.SellerInfoTable.BusinessPhone + " LIKE '%" + SearchValue + "%'");
         //customer table search
         ids.addAll(DBManager.GetIntArrayList(Tables.SellersTable.UserID, Tables.SellersTable.Table, "where " + Tables.SellersTable.Firstname + " LIKE '%" + SearchValue + "%' OR " + Tables.SellersTable.Lastname + " LIKE '%" + SearchValue + "%'"));
+        //remove duplicates
+        ids.addAll(DBManager.GetIntArrayList(Tables.SellerInfoTable.SellerUserID, Tables.SellerInfoTable.Table, "where " + Tables.SellerInfoTable.BusinessName + " LIKE '%" + SearchValue + "%'"));
         //remove duplicates
         ids = UtilityManager.removeDuplicatesIntegerArrayList(ids);
         return ids;
