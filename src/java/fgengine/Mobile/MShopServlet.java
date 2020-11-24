@@ -619,6 +619,14 @@ public class MShopServlet extends HttpServlet {
                     json = new Gson().toJson(datares);
                     break;
                 }
+                case "GetAppVersion": {
+                    JSONObject datares = new JSONObject();
+                    datares.put("code", 200);
+                    datares.put("msg", "App Version");
+                    datares.put("data", "1.0.1");
+                    json = new Gson().toJson(datares);
+                    break;
+                }
             }
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
